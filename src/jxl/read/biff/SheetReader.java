@@ -343,7 +343,7 @@ final class SheetReader
     MsoDrawingRecord msoRecord = null;
     ObjRecord objRecord = null;
     boolean firstMsoRecord = true;
-    
+
     // Handle to the last conditional format record
     ConditionalFormat condFormat = null;
 
@@ -370,6 +370,8 @@ final class SheetReader
     // A handle to a continue record read in
     ContinueRecord continueRecord = null;
 
+  boolean first = true;
+
     while (cont)
     {
       r = excelFile.next();
@@ -389,6 +391,13 @@ final class SheetReader
         {
           logger.warn("Biff code zero found - Ignoring.");
         }
+      }
+
+      if (first && type != Type.DIMENSION) {
+        numRows = workbookSettings.getStartRowCount();
+        numCols = workbookSettings.getStartColumnCount();
+        cells = new Cell[numRows][numCols];
+        first = false;
       }
 
       if (type == Type.DIMENSION)
@@ -477,10 +486,10 @@ final class SheetReader
 
           if (formattingRecords.isDate(ixf))
           {
-            DateCell dc = new DateRecord(nv, 
-                                         ixf, 
+            DateCell dc = new DateRecord(nv,
+                                         ixf,
                                          formattingRecords,
-                                         nineteenFour, 
+                                         nineteenFour,
                                          sheet);
             addCell(dc);
           }
@@ -679,7 +688,7 @@ final class SheetReader
                                              sheet);
               }
             }
-            
+
             addCell(cell);
           }
           catch (FormulaException e)
@@ -735,7 +744,7 @@ final class SheetReader
         if (!rr.isDefaultHeight() ||
             !rr.matchesDefaultFontHeight() ||
             rr.isCollapsed() ||
-            rr.hasDefaultFormat() || 
+            rr.hasDefaultFormat() ||
             rr.getOutlineLevel() != 0)
         {
           rowProperties.add(rr);
@@ -768,7 +777,7 @@ final class SheetReader
                ixf,
                formattingRecords,
                sheet);
-            
+
             addCell(mbc);
           }
         }
@@ -816,7 +825,7 @@ final class SheetReader
       else if (type == Type.SETUP)
       {
         SetupRecord sr = new SetupRecord(r);
-        
+
         // If the setup record has its not initialized bit set, then
         // use the sheet settings default values
         if (sr.getInitialized())
@@ -874,7 +883,7 @@ final class SheetReader
       }
       else if (type == Type.CONDFMT)
       {
-        ConditionalFormatRangeRecord cfrr = 
+        ConditionalFormatRangeRecord cfrr =
           new ConditionalFormatRangeRecord(r);
         condFormat = new ConditionalFormat(cfrr);
         conditionalFormats.add(condFormat);
@@ -891,7 +900,7 @@ final class SheetReader
       else if (type == Type.AUTOFILTERINFO)
       {
         autoFilterInfo = new AutoFilterInfoRecord(r);
-      } 
+      }
       else if (type == Type.AUTOFILTER)
       {
         if (!workbookSettings.getAutoFilterDisabled())
@@ -983,7 +992,7 @@ final class SheetReader
                 drawingData = new DrawingData();
               }
 
-              Drawing2 d2 = new Drawing2(msoRecord, drawingData, 
+              Drawing2 d2 = new Drawing2(msoRecord, drawingData,
                                          workbook.getDrawingGroup());
               drawings.add(d2);
               msoRecord = null;
@@ -1011,7 +1020,7 @@ final class SheetReader
       {
       	CentreRecord hr = new CentreRecord(r);
       	settings.setHorizontalCentre(hr.isCentre());
-      } 
+      }
       else if (type == Type.VCENTER)
       {
       	CentreRecord vc = new CentreRecord(r);
@@ -1021,9 +1030,9 @@ final class SheetReader
       {
         if (!workbookSettings.getCellValidationDisabled())
         {
-          DataValiditySettingsRecord dvsr = 
-            new DataValiditySettingsRecord(r, 
-                                           workbook, 
+          DataValiditySettingsRecord dvsr =
+            new DataValiditySettingsRecord(r,
+                                           workbook,
                                            workbook,
                                            workbook.getSettings());
           if (dataValidation != null)
@@ -1032,7 +1041,7 @@ final class SheetReader
             addCellValidation(dvsr.getFirstColumn(),
                               dvsr.getFirstRow(),
                               dvsr.getLastColumn(),
-                              dvsr.getLastRow(), 
+                              dvsr.getLastRow(),
                               dvsr);
           }
           else
@@ -1103,9 +1112,9 @@ final class SheetReader
       else if (type == Type.GUTS)
       {
         GuttersRecord gr = new GuttersRecord(r);
-        maxRowOutlineLevel = 
+        maxRowOutlineLevel =
           gr.getRowOutlineLevel() > 0 ? gr.getRowOutlineLevel() - 1 : 0;
-        maxColumnOutlineLevel = 
+        maxColumnOutlineLevel =
           gr.getColumnOutlineLevel() > 0 ? gr.getRowOutlineLevel() - 1 : 0;
       }
       else if (type == Type.BOF)
@@ -1135,7 +1144,7 @@ final class SheetReader
             {
               drawingData = new DrawingData();
             }
-          
+
             if (!workbookSettings.getDrawingsDisabled())
             {
               Chart chart = new Chart(msoRecord, objRecord, drawingData,
@@ -1205,7 +1214,7 @@ final class SheetReader
     {
       workbook.getDrawingGroup().setDrawingsOmitted(msoRecord, objRecord);
     }
-      
+
     // Check that the comments hash is empty
     if (!comments.isEmpty())
     {
@@ -1225,7 +1234,7 @@ final class SheetReader
     boolean added = false;
     SharedFormulaRecord sfr = null;
 
-    for (int i=0, size=sharedFormulas.size(); i<size && !added; ++i) 
+    for (int i=0, size=sharedFormulas.size(); i<size && !added; ++i)
     {
       sfr = (SharedFormulaRecord ) sharedFormulas.get(i);
       added = sfr.add(fr);
@@ -1242,7 +1251,7 @@ final class SheetReader
    * @return the new formula
    * @exception FormulaException
    */
-  private Cell revertSharedFormula(BaseSharedFormulaRecord f) 
+  private Cell revertSharedFormula(BaseSharedFormulaRecord f)
   {
     // String formulas look for a STRING record soon after the formula
     // occurred.  Temporarily the position in the excel file back
@@ -1286,7 +1295,7 @@ final class SheetReader
       // Something has gone wrong trying to read the formula data eg. it
       // might be unsupported biff7 data
       logger.warn
-        (CellReferenceHelper.getCellReference(fr.getColumn(), fr.getRow()) + 
+        (CellReferenceHelper.getCellReference(fr.getColumn(), fr.getRow()) +
          " " + e.getMessage());
 
       return null;
@@ -1483,9 +1492,9 @@ final class SheetReader
    * @param width the width of the comment text box
    * @param height the height of the comment text box
    */
-  private void addCellComment(int col, 
-                              int row, 
-                              String text, 
+  private void addCellComment(int col,
+                              int row,
+                              String text,
                               double width,
                               double height)
   {
@@ -1537,8 +1546,8 @@ final class SheetReader
    * @param row2 the row for the comment
    * @param dvsr the validation settings
    */
-  private void addCellValidation(int col1, 
-                                 int row1, 
+  private void addCellValidation(int col1,
+                                 int row1,
                                  int col2,
                                  int row2,
                                  DataValiditySettingsRecord dvsr)
@@ -1606,7 +1615,7 @@ final class SheetReader
                   " record - ignoring");
       return;
     }
-    
+
     try
     {
       // Handle images
@@ -1685,7 +1694,7 @@ final class SheetReader
         drawings.add(comboBox);
         return;
       }
-    
+
       // Handle check boxes
       if (objRecord.getType() == ObjRecord.CHECKBOX)
       {
@@ -1701,7 +1710,7 @@ final class SheetReader
                                          workbookSettings);
 
         Record r2 = excelFile.next();
-        Assert.verify(r2.getType() == Type.MSODRAWING || 
+        Assert.verify(r2.getType() == Type.MSODRAWING ||
                       r2.getType() == Type.CONTINUE);
         if (r2.getType() == Type.MSODRAWING || r2.getType() == Type.CONTINUE)
         {
@@ -1751,9 +1760,9 @@ final class SheetReader
                                    workbookSettings);
 
         Record r2 = excelFile.next();
-        Assert.verify(r2.getType() == Type.MSODRAWING || 
+        Assert.verify(r2.getType() == Type.MSODRAWING ||
                       r2.getType() == Type.CONTINUE);
-        if (r2.getType() == Type.MSODRAWING || 
+        if (r2.getType() == Type.MSODRAWING ||
             r2.getType() == Type.CONTINUE)
         {
           MsoDrawingRecord mso = new MsoDrawingRecord(r2);
@@ -1798,9 +1807,9 @@ final class SheetReader
         drawingData.addData(msoRecord.getData());
 
         Record r2 = excelFile.next();
-        Assert.verify(r2.getType() == Type.MSODRAWING || 
+        Assert.verify(r2.getType() == Type.MSODRAWING ||
                       r2.getType() == Type.CONTINUE);
-        if (r2.getType() == Type.MSODRAWING || 
+        if (r2.getType() == Type.MSODRAWING ||
             r2.getType() == Type.CONTINUE)
         {
           MsoDrawingRecord mso = new MsoDrawingRecord(r2);
@@ -1845,7 +1854,7 @@ final class SheetReader
     }
     catch (DrawingDataException e)
     {
-      logger.warn(e.getMessage() + 
+      logger.warn(e.getMessage() +
                   "...disabling drawings for the remainder of the workbook");
       workbookSettings.setDrawingsDisabled(true);
     }
@@ -1875,7 +1884,7 @@ final class SheetReader
       resizedRows = Math.max(resizedRows, cell.getRow() + 1);
       resizedCols = Math.max(resizedCols, cell.getColumn() + 1);
     }
-    
+
     // There used to be a warning here about exceeding the sheet dimensions,
     // but removed it when I added the ability to perform data validation
     // on entire rows or columns - in which case it would blow out any
@@ -1920,22 +1929,22 @@ final class SheetReader
     outOfBoundsCells.clear();
   }
 
-  /** 
+  /**
    * Accessor for the maximum column outline level
    *
    * @return the maximum column outline level, or 0 if no outlines/groups
    */
-  public int getMaxColumnOutlineLevel() 
+  public int getMaxColumnOutlineLevel()
   {
     return maxColumnOutlineLevel;
   }
 
-  /** 
+  /**
    * Accessor for the maximum row outline level
    *
    * @return the maximum row outline level, or 0 if no outlines/groups
    */
-  public int getMaxRowOutlineLevel() 
+  public int getMaxRowOutlineLevel()
   {
     return maxRowOutlineLevel;
   }
