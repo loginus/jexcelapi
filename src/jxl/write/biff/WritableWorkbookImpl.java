@@ -270,14 +270,14 @@ public class WritableWorkbookImpl extends WritableWorkbook
       for (int i = 0; i < readsr.length; i++)
       {
         jxl.read.biff.SupbookRecord readSupbook = readsr[i];
-        if (readSupbook.getType() == readSupbook.INTERNAL ||
-            readSupbook.getType() == readSupbook.EXTERNAL)
+        if (readSupbook.getType() == INTERNAL ||
+            readSupbook.getType() == EXTERNAL)
         {
           supbooks.add(new SupbookRecord(readSupbook, settings));
         }
         else
         {
-          if (readSupbook.getType() != readSupbook.ADDIN)
+          if (readSupbook.getType() != ADDIN)
           {
             logger.warn("unsupported supbook type - ignoring");
           }
@@ -625,11 +625,8 @@ public class WritableWorkbookImpl extends WritableWorkbook
   {
     // Perform some preliminary sheet check before we start writing out
     // the workbook
-    WritableSheetImpl wsi = null;
-    for (int i = 0; i < getNumberOfSheets(); i++)
+    for (WritableSheetImpl wsi : sheets)
     {
-      wsi = (WritableSheetImpl) getSheet(i);
-
       // Check the merged records.  This has to be done before the
       // globals are written out because some more XF formats might be created
       wsi.checkMergedBorders();
@@ -829,12 +826,10 @@ public class WritableWorkbookImpl extends WritableWorkbook
     // Write out the boundsheet records.  Keep a handle to each one's
     // position so we can write in the stream offset later
     int[] boundsheetPos = new int[getNumberOfSheets()];
-    Sheet sheet = null;
 
-    for (int i = 0; i < getNumberOfSheets(); i++)
-    {
-      boundsheetPos[i] = outputFile.getPos();
-      sheet = getSheet(i);
+    int number = 0;
+    for (WritableSheetImpl sheet : sheets) {
+      boundsheetPos[number++] = outputFile.getPos();
       BoundsheetRecord br = new BoundsheetRecord(sheet.getName());
       if (sheet.getSettings().isHidden())
       {
@@ -955,12 +950,10 @@ public class WritableWorkbookImpl extends WritableWorkbook
   {
     int numSheets = w.getNumberOfSheets();
     wbProtected = w.isProtected();
-    Sheet s = null;
-    WritableSheetImpl ws = null;
     for (int i = 0 ; i < numSheets; i++)
     {
-      s = w.getSheet(i);
-      ws = (WritableSheetImpl) createSheet(s.getName(),i, false);
+      Sheet s = w.getSheet(i);
+      WritableSheetImpl ws = createSheet(s.getName(),i, false);
       ws.copy(s);
     }
   }
@@ -1019,10 +1012,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
     IndexMapping xfMapping     = formatRecords.rationalize(fontMapping, 
                                                            formatMapping);
 
-    WritableSheetImpl wsi = null;
-    for (int i = 0; i < sheets.size(); i++)
-    {
-      wsi = (WritableSheetImpl) sheets.get(i);
+    for (WritableSheetImpl wsi : sheets) {
       wsi.rationalize(xfMapping, fontMapping, formatMapping);
     }
   }
@@ -1035,18 +1025,15 @@ public class WritableWorkbookImpl extends WritableWorkbook
    */
   private int getInternalSheetIndex(String name)
   {
-    int index = -1;
-    String[] names = getSheetNames();
-    for (int i = 0 ; i < names.length; i++)
-    {
-      if (name.equals(names[i]))
-      {
-        index = i;
-        break;
-      }
+    int index = 0;
+    for (String sheetName : getSheetNames()) {
+      if (name.equals(sheetName))
+        return index;
+      
+      index++;
     }
 
-    return index;
+    return -1;
   }
 
   /**

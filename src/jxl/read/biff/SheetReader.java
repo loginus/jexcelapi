@@ -269,6 +269,11 @@ final class SheetReader
     workbookSettings = workbook.getSettings();
   }
 
+  private void addCells(Collection<Cell> cells) {
+    for (Cell cell : cells)
+      addCell(cell);
+  }
+  
   /**
    * Adds the cell to the array
    *
@@ -690,11 +695,9 @@ final class SheetReader
       }
       else if (type == Type.RSTRING)
       {
-        RStringRecord lr = null;
-
         // RString records are obsolete in biff 8
         Assert.verify(!workbookBof.isBiff8());
-        lr = new RStringRecord(r, formattingRecords,
+        RStringRecord lr = new RStringRecord(r, formattingRecords,
                                sheet, workbookSettings,
                                RStringRecord.biff7);
         addCell(lr);
@@ -1159,12 +1162,7 @@ final class SheetReader
     }
 
     // Add all the shared formulas to the sheet as individual formulas
-    Iterator i = sharedFormulas.iterator();
-
-    while (i.hasNext())
-    {
-      SharedFormulaRecord sfr = (SharedFormulaRecord) i.next();
-
+    for (SharedFormulaRecord sfr : sharedFormulas) {
       Cell[] sfnr = sfr.getFormulas(formattingRecords, nineteenFour);
 
       for (int sf = 0; sf < sfnr.length; sf++)
@@ -1204,13 +1202,9 @@ final class SheetReader
   private boolean addToSharedFormulas(BaseSharedFormulaRecord fr)
   {
     boolean added = false;
-    SharedFormulaRecord sfr = null;
 
-    for (int i=0, size=sharedFormulas.size(); i<size && !added; ++i)
-    {
-      sfr = (SharedFormulaRecord ) sharedFormulas.get(i);
-      added = sfr.add(fr);
-    }
+    for (int i=0, size=sharedFormulas.size(); i<size && !added; ++i) 
+      added = sharedFormulas.get(i).add(fr);
 
     return added;
   }
@@ -1310,7 +1304,7 @@ final class SheetReader
    *
    * @return the row properties
    */
-  final ArrayList    getRowProperties()
+  final ArrayList getRowProperties()
   {
     return rowProperties;
   }
@@ -1849,9 +1843,7 @@ final class SheetReader
     int resizedCols = numCols;
 
     // First, determine the new bounds
-    for (Iterator i = outOfBoundsCells.iterator() ; i.hasNext() ;)
-    {
-      Cell cell = (Cell) i.next();
+    for (Cell cell : outOfBoundsCells) {
       resizedRows = Math.max(resizedRows, cell.getRow() + 1);
       resizedCols = Math.max(resizedCols, cell.getColumn() + 1);
     }
@@ -1891,12 +1883,8 @@ final class SheetReader
     numCols = resizedCols;
 
     // Now add all the out of bounds cells into the new cells
-    for (Iterator i = outOfBoundsCells.iterator(); i.hasNext(); )
-    {
-      Cell cell = (Cell) i.next();
-      addCell(cell);
-    }
-
+    addCells(outOfBoundsCells);
+    
     outOfBoundsCells.clear();
   }
 

@@ -599,12 +599,7 @@ public class SheetImpl implements Sheet
     if (!columnInfosInitialized)
     {
       // Initialize the array
-      Iterator i = columnInfosArray.iterator();
-      ColumnInfoRecord cir = null;
-      while (i.hasNext())
-      {
-        cir = (ColumnInfoRecord) i.next();
-
+      for (ColumnInfoRecord cir : columnInfosArray) {
         int startcol = Math.max(0, cir.getStartColumn());
         int endcol = Math.min(columnInfos.length - 1, cir.getEndColumn());
 
@@ -740,9 +735,7 @@ public class SheetImpl implements Sheet
     // Add any local names
     if (localNames != null)
     {
-      for (Iterator it = localNames.iterator(); it.hasNext() ;)
-      {
-        NameRecord nr = (NameRecord) it.next();
+      for (NameRecord nr : localNames) {
         if (nr.getBuiltInName() == BuiltInName.PRINT_AREA)
         {
           if(nr.getRanges().length > 0)
@@ -852,14 +845,9 @@ public class SheetImpl implements Sheet
     if (!rowRecordsInitialized)
     {
       rowRecords = new RowRecord[getRows()];
-      Iterator i = rowProperties.iterator();
 
-      int rownum = 0;
-      RowRecord rr = null;
-      while (i.hasNext())
-      {
-        rr = (RowRecord) i.next();
-        rownum = rr.getRowNumber();
+      for (RowRecord rr : rowProperties) {
+        int rownum = rr.getRowNumber();
         if (rownum < rowRecords.length)
         {
           rowRecords[rownum] = rr;
