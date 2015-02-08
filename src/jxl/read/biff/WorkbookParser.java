@@ -916,7 +916,7 @@ public class WorkbookParser extends Workbook
 
       if (nr.getBuiltInName() == null)
       {
-        logger.warn("Usage of a local non-builtin name");
+        logger.warn("Usage of a local non-builtin name: " + nr.getName());
       } 
       else if (nr.getBuiltInName() == BuiltInName.PRINT_AREA || 
                nr.getBuiltInName() == BuiltInName.PRINT_TITLES)
