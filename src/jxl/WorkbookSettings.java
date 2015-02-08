@@ -184,7 +184,7 @@ public final class WorkbookSettings
   private HashMap localeFunctionNames;
 
   /**
-   * Flag to indicate whether all external data and pivot stuff should 
+   * Flag to indicate whether all external data and pivot stuff should
    * refreshed
    */
   private boolean refreshAll;
@@ -245,7 +245,7 @@ public final class WorkbookSettings
   private static final int DEFAULT_INITIAL_FILE_SIZE = 5 * 1024 * 1024;
     // 5 megabytes
   private static final int DEFAULT_ARRAY_GROW_SIZE = 1024 * 1024; // 1 megabyte
-  
+
   /**
    * Default constructor
    */
@@ -278,9 +278,9 @@ public final class WorkbookSettings
       propertySetsDisabled = Boolean.getBoolean("jxl.nopropertysets");
       ignoreBlankCells = Boolean.getBoolean("jxl.ignoreblanks");
       cellValidationDisabled = Boolean.getBoolean("jxl.nocellvalidation");
-      autoFilterDisabled = !Boolean.getBoolean("jxl.autofilter"); 
+      autoFilterDisabled = !Boolean.getBoolean("jxl.autofilter");
              // autofilter currently disabled by default
-      useTemporaryFileDuringWrite = 
+      useTemporaryFileDuringWrite =
         Boolean.getBoolean("jxl.usetemporaryfileduringwrite");
       String tempdir =
         System.getProperty("jxl.temporaryfileduringwritedirectory");
@@ -289,7 +289,7 @@ public final class WorkbookSettings
       {
         temporaryFileDuringWriteDirectory = new File(tempdir);
       }
-      
+
       encoding = System.getProperty("file.encoding");
     }
     catch (SecurityException e)
@@ -315,7 +315,7 @@ public final class WorkbookSettings
       {
         encoding = System.getProperty("jxl.encoding");
       }
-    } 
+    }
     catch (SecurityException e)
     {
       logger.warn("Error accessing system properties.", e);
@@ -707,9 +707,9 @@ public final class WorkbookSettings
   }
 
   /**
-   * Sets the autofilter disabled 
+   * Sets the autofilter disabled
    *
-   * @param disabled 
+   * @param disabled
    */
   public void setAutoFilterDisabled(boolean disabled)
   {
@@ -723,7 +723,7 @@ public final class WorkbookSettings
    * this flag involves an assessment of the trade-offs between memory usage
    * and performance
    *
-   * @return TRUE if a temporary is file is used during writing, 
+   * @return TRUE if a temporary is file is used during writing,
    * FALSE otherwise
    */
   public boolean getUseTemporaryFileDuringWrite()
@@ -738,7 +738,7 @@ public final class WorkbookSettings
    * this flag involves an assessment of the trade-offs between memory usage
    * and performance
    *
-   * @return TRUE if a temporary is file is used during writing, 
+   * @return TRUE if a temporary is file is used during writing,
    * FALSE otherwise
    */
   public void setUseTemporaryFileDuringWrite(boolean temp)
@@ -762,11 +762,11 @@ public final class WorkbookSettings
 
   /**
    * Used in conjunction with the UseTemporaryFileDuringWrite setting to
-   * set the target directory for the temporary files.  This value can 
+   * set the target directory for the temporary files.  This value can
    * be NULL, in which case the normal system default temporary directory
    * is used instead
    *
-   * @return the temporary directory used during write, or NULL if it is 
+   * @return the temporary directory used during write, or NULL if it is
    *         not set
    */
   public File getTemporaryFileDuringWriteDirectory()
@@ -817,7 +817,7 @@ public final class WorkbookSettings
 
   /**
    * Has this file been written by excel 2000?
-   * 
+   *
    * @return the excel9file
    */
   public boolean getExcel9File()
