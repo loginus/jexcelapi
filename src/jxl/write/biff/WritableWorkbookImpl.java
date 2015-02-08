@@ -1685,6 +1685,9 @@ public class WritableWorkbookImpl extends WritableWorkbook
                      firstCol, lastCol, 
                      global);
     
+    // avoid name collisions
+    removeRangeName(name);
+    
     // Add new name to name array.
     names.add(nr);
     
