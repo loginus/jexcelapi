@@ -225,6 +225,9 @@ public final class WorkbookSettings
    */
   private int hideobj;
 
+  private Integer startColumnCount;
+  private Integer startRowCount;
+
   /**
    * The HIDEOBJ record stores options selected in the Options dialog,View tab.
    */
@@ -887,6 +890,22 @@ public final class WorkbookSettings
   public void setWriteAccess(String writeAccess)
   {
     this.writeAccess = writeAccess;
+  }
+
+  public Integer getStartColumnCount() {
+    return startColumnCount;
+  }
+
+  public void setStartColumnCount(Integer startColumnCount) {
+    this.startColumnCount = startColumnCount;
+  }
+
+  public Integer getStartRowCount() {
+    return startRowCount;
+  }
+
+  public void setStartRowCount(Integer startRowCount) {
+    this.startRowCount = startRowCount;
   }
 }
 

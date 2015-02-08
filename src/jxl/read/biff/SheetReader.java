@@ -370,6 +370,8 @@ final class SheetReader
     // A handle to a continue record read in
     ContinueRecord continueRecord = null;
 
+    boolean first = true;
+
     while (cont)
     {
       r = excelFile.next();
@@ -389,6 +391,13 @@ final class SheetReader
         {
           logger.warn("Biff code zero found - Ignoring.");
         }
+      }
+
+      if (first && type != Type.DIMENSION) {
+        numRows = workbookSettings.getStartRowCount();
+        numCols = workbookSettings.getStartColumnCount();
+        cells = new Cell[numRows][numCols];
+        first = false;
       }
 
       if (type == Type.DIMENSION)
