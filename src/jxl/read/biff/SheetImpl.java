@@ -630,9 +630,7 @@ public class SheetImpl implements Sheet
     // Just chuck all the column infos we have into an array
     ColumnInfoRecord[] infos = new ColumnInfoRecord[columnInfosArray.size()];
     for (int i = 0; i < columnInfosArray.size(); i++)
-    {
       infos[i] = (ColumnInfoRecord) columnInfosArray.get(i);
-    }
 
     return infos;
   }
@@ -784,9 +782,7 @@ public class SheetImpl implements Sheet
     Hyperlink[] hl = new Hyperlink[hyperlinks.size()];
 
     for (int i = 0; i < hyperlinks.size(); i++)
-    {
       hl[i] = (Hyperlink) hyperlinks.get(i);
-    }
 
     return hl;
   }
@@ -800,9 +796,7 @@ public class SheetImpl implements Sheet
   public Range[] getMergedCells()
   {
     if (mergedCells == null)
-    {
       return new Range[0];
-    }
 
     return mergedCells;
   }
@@ -816,9 +810,7 @@ public class SheetImpl implements Sheet
   {
     RowRecord[] rp = new RowRecord[rowProperties.size()];
     for (int i = 0; i < rp.length; i++)
-    {
       rp[i] = (RowRecord) rowProperties.get(i);
-    }
 
     return rp;
   }
@@ -849,9 +841,7 @@ public class SheetImpl implements Sheet
       for (RowRecord rr : rowProperties) {
         int rownum = rr.getRowNumber();
         if (rownum < rowRecords.length)
-        {
           rowRecords[rownum] = rr;
-        }
       }
 
       rowRecordsInitialized = true;
@@ -892,9 +882,7 @@ public class SheetImpl implements Sheet
     Chart[] ch = new Chart[charts.size()];
 
     for (int i = 0; i < ch.length; i++)
-    {
       ch[i] = (Chart) charts.get(i);
-    }
     return ch;
   }
 
@@ -1150,9 +1138,7 @@ public class SheetImpl implements Sheet
     for (int i = 0; i < dgos.length; i++)
     {
       if (dgos[i] instanceof Drawing)
-      {
         images.add(dgos[i]);
-      }
     }
   }
 

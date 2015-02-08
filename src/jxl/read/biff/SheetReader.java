@@ -381,13 +381,9 @@ final class SheetReader
         DimensionRecord dr = null;
 
         if (workbookBof.isBiff8())
-        {
           dr = new DimensionRecord(r);
-        }
         else
-        {
           dr = new DimensionRecord(r, DimensionRecord.biff7);
-        }
         numRows = dr.getNumberOfRows();
         numCols = dr.getNumberOfColumns();
         cells = new Cell[numRows][numCols];
@@ -395,9 +391,9 @@ final class SheetReader
       else if (type == Type.LABELSST)
       {
         LabelSSTRecord label = new LabelSSTRecord(r,
-                                                  sharedStrings,
-                                                  formattingRecords,
-                                                  sheet);
+                                   sharedStrings,
+                                   formattingRecords,
+                                   sheet);
         addCell(label);
       }
       else if (type == Type.RK || type == Type.RK2)
@@ -524,13 +520,9 @@ final class SheetReader
         window2Record = null;
 
         if (workbookBof.isBiff8())
-        {
           window2Record = new Window2Record(r);
-        }
         else
-        {
           window2Record = new Window2Record(r, Window2Record.biff7);
-        }
 
         settings.setShowGridLines(window2Record.getShowGridLines());
         settings.setDisplayZeroValues(window2Record.getDisplayZeroValues());
@@ -683,14 +675,10 @@ final class SheetReader
         LabelRecord lr = null;
 
         if (workbookBof.isBiff8())
-        {
           lr = new LabelRecord(r, formattingRecords, sheet, workbookSettings);
-        }
         else
-        {
           lr = new LabelRecord(r, formattingRecords, sheet, workbookSettings,
                                LabelRecord.biff7);
-        }
         addCell(lr);
       }
       else if (type == Type.RSTRING)
@@ -771,13 +759,9 @@ final class SheetReader
       {
         HeaderRecord hr = null;
         if (workbookBof.isBiff8())
-        {
           hr = new HeaderRecord(r, workbookSettings);
-        }
         else
-        {
           hr = new HeaderRecord(r, workbookSettings, HeaderRecord.biff7);
-        }
 
         HeaderFooter header = new HeaderFooter(hr.getHeader());
         settings.setHeader(header);
@@ -786,13 +770,9 @@ final class SheetReader
       {
         FooterRecord fr = null;
         if (workbookBof.isBiff8())
-        {
           fr = new FooterRecord(r, workbookSettings);
-        }
         else
-        {
           fr = new FooterRecord(r, workbookSettings, FooterRecord.biff7);
-        }
 
         HeaderFooter footer = new HeaderFooter(fr.getFooter());
         settings.setFooter(footer);
@@ -917,14 +897,11 @@ final class SheetReader
         HorizontalPageBreaksRecord dr = null;
 
         if (workbookBof.isBiff8())
-        {
           dr = new HorizontalPageBreaksRecord(r);
-        }
         else
-        {
           dr = new HorizontalPageBreaksRecord
             (r, HorizontalPageBreaksRecord.biff7);
-        }
+
         rowBreaks = dr.getRowBreaks();
       }
       else if (type == Type.VERTICALPAGEBREAKS)
@@ -932,14 +909,11 @@ final class SheetReader
         VerticalPageBreaksRecord dr = null;
 
         if (workbookBof.isBiff8())
-        {
           dr = new VerticalPageBreaksRecord(r);
-        }
         else
-        {
           dr = new VerticalPageBreaksRecord
             (r, VerticalPageBreaksRecord.biff7);
-        }
+
         columnBreaks = dr.getColumnBreaks();
       }
       else if (type == Type.PLS)
@@ -1166,9 +1140,7 @@ final class SheetReader
       Cell[] sfnr = sfr.getFormulas(formattingRecords, nineteenFour);
 
       for (int sf = 0; sf < sfnr.length; sf++)
-      {
         addCell(sfnr[sf]);
-      }
     }
 
     // If the last base shared formula wasn't added to the sheet, then

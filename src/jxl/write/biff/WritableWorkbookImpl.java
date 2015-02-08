@@ -835,14 +835,10 @@ public class WritableWorkbookImpl extends WritableWorkbook
       boundsheetPos[number++] = outputFile.getPos();
       BoundsheetRecord br = new BoundsheetRecord(sheet.getName());
       if (sheet.getSettings().isHidden())
-      {
         br.setHidden();
-      }
 
-      if ( ( (WritableSheetImpl) sheets.get(i)).isChartOnly())
-      {
+      if ( sheet.isChartOnly())
         br.setChartOnly();
-      }
 
       outputFile.write(br);
     }
@@ -1015,9 +1011,8 @@ public class WritableWorkbookImpl extends WritableWorkbook
     IndexMapping xfMapping     = formatRecords.rationalize(fontMapping, 
                                                            formatMapping);
 
-    for (WritableSheetImpl wsi : sheets) {
+    for (WritableSheetImpl wsi : sheets)
       wsi.rationalize(xfMapping, fontMapping, formatMapping);
-    }
   }
 
   /**
@@ -1115,18 +1110,16 @@ public class WritableWorkbookImpl extends WritableWorkbook
 
 
   /**
-   * Gets the index of the external sheet for the name
+   * Gets the index of the external sheet with index
    *
-   * @param sheetName
+   * @param index
    * @return the sheet index of the external sheet index
    */
   @Override
   public int getExternalSheetIndex(int index)
   {
     if (externSheet == null)
-    {
       return index;
-    }
 
     Assert.verify(externSheet != null);
 
@@ -1136,18 +1129,16 @@ public class WritableWorkbookImpl extends WritableWorkbook
   }
 
   /**
-   * Gets the index of the external sheet for the name
+   * Gets the index of the external sheet with index
    *
-   * @param sheetName
+   * @param index
    * @return the sheet index of the external sheet index
    */
   @Override
   public int getLastExternalSheetIndex(int index)
   {
     if (externSheet == null)
-    {
       return index;
-    }
 
     Assert.verify(externSheet != null);
 
@@ -1275,13 +1266,9 @@ public class WritableWorkbookImpl extends WritableWorkbook
       s = (WritableSheetImpl) i.next();
       
       if (s.getName().equals(sheetName))
-      {
         found = true;
-      }
       else
-      {
         sheetpos++;
-      }
     }
 
     if (!found)
@@ -1371,20 +1358,14 @@ public class WritableWorkbookImpl extends WritableWorkbook
   void columnInserted(WritableSheetImpl s, int col)
   {
     int externalSheetIndex = getExternalSheetIndex(s.getName());
-    for (Iterator i = rcirCells.iterator() ; i.hasNext() ;)
-    {
-      CellValue cv = (CellValue) i.next();
+    for (CellValue cv : rcirCells)
       cv.columnInserted(s, externalSheetIndex, col);
-    }
 
     // Adjust any named cells
     if (names != null)
     {
-      for (Iterator i = names.iterator(); i.hasNext() ;)
-      {
-        NameRecord nameRecord = (NameRecord) i.next();
+      for (NameRecord nameRecord : names)
         nameRecord.columnInserted(externalSheetIndex, col);
-      }
     }
   }
 
@@ -1398,36 +1379,18 @@ public class WritableWorkbookImpl extends WritableWorkbook
   void columnRemoved(WritableSheetImpl s, int col)
   {
     int externalSheetIndex = getExternalSheetIndex(s.getName());
-    for (Iterator i = rcirCells.iterator() ; i.hasNext() ;)
-    {
-      CellValue cv = (CellValue) i.next();
+    for (CellValue cv : rcirCells)
       cv.columnRemoved(s, externalSheetIndex, col);
-    }
 
     // Adjust any named cells
     ArrayList removedNames = new ArrayList();
     if (names != null)
     {
-      for (Iterator i = names.iterator(); i.hasNext() ;)
-      {
-        NameRecord nameRecord = (NameRecord) i.next();
-        boolean removeName = nameRecord.columnRemoved(externalSheetIndex,
-                                                      col);
-
-        if (removeName)
-        {
+      for (NameRecord nameRecord : names)
+        if (nameRecord.columnRemoved(externalSheetIndex, col))
           removedNames.add(nameRecord);
-        }
-      }
 
-      // Remove any names which have been deleted
-      for (Iterator i = removedNames.iterator(); i.hasNext() ;)
-      {
-        NameRecord nameRecord = (NameRecord) i.next();
-        boolean removed = names.remove(nameRecord);
-        Assert.verify(removed, "Could not remove name " + 
-                      nameRecord.getName());
-      }
+      names.removeAll(removedNames);
     }
   }
 
@@ -1443,21 +1406,13 @@ public class WritableWorkbookImpl extends WritableWorkbook
     int externalSheetIndex = getExternalSheetIndex(s.getName());
     
     // Adjust the row infos
-    for (Iterator i = rcirCells.iterator() ; i.hasNext() ;)
-    {
-      CellValue cv = (CellValue) i.next();
+    for (CellValue cv : rcirCells)
       cv.rowInserted(s, externalSheetIndex, row);
-    }
 
     // Adjust any named cells
     if (names != null)
-    {
-      for (Iterator i = names.iterator(); i.hasNext() ;)
-      {
-        NameRecord nameRecord = (NameRecord) i.next();
+      for (NameRecord nameRecord : names)
         nameRecord.rowInserted(externalSheetIndex, row);
-      }
-    }
   }
 
   /**
@@ -1470,35 +1425,19 @@ public class WritableWorkbookImpl extends WritableWorkbook
   void rowRemoved(WritableSheetImpl s, int row)
   {
     int externalSheetIndex = getExternalSheetIndex(s.getName());
-    for (Iterator i = rcirCells.iterator() ; i.hasNext() ;)
-    {
-      CellValue cv = (CellValue) i.next();
+    for (CellValue cv : rcirCells)
       cv.rowRemoved(s, externalSheetIndex, row);
-    }
 
     // Adjust any named cells
     ArrayList removedNames = new ArrayList();
     if (names != null)
     {
-      for (Iterator i = names.iterator(); i.hasNext() ;)
-      {
-        NameRecord nameRecord = (NameRecord) i.next();
-        boolean removeName = nameRecord.rowRemoved(externalSheetIndex, row);
-
-        if (removeName)
-        {
+      for (NameRecord nameRecord : names)
+        if (nameRecord.rowRemoved(externalSheetIndex, row))
           removedNames.add(nameRecord);
-        }
-      }
 
       // Remove any names which have been deleted
-      for (Iterator i = removedNames.iterator(); i.hasNext() ;)
-      {
-        NameRecord nameRecord = (NameRecord) i.next();
-        boolean removed = names.remove(nameRecord);
-        Assert.verify(removed, "Could not remove name " + 
-                      nameRecord.getName());
-      }
+      names.removeAll(removedNames);
     }
   }
 
@@ -1638,9 +1577,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
   public String[] getRangeNames()
   {
     if (names == null)
-    {
       return new String[0];
-    }
 
     String[] n = new String[names.size()];
     for (int i = 0 ; i < names.size() ; i++)
@@ -1666,13 +1603,9 @@ public class WritableWorkbookImpl extends WritableWorkbook
     {
       NameRecord nr = (NameRecord) i.next();
       if (nr.getName().equals(name))
-      {
         found = true;
-      }
       else
-      {
         pos++;
-      }
     }
 
     // Remove the name from the list of names and the associated hashmap
@@ -1740,9 +1673,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
                    boolean global)
   {
     if (names == null)
-    {
       names = new ArrayList();
-    }
 
     int externalSheetIndex = getExternalSheetIndex(sheet.getName());
 

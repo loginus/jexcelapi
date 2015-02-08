@@ -175,9 +175,7 @@ public final class Record
   public void addContinueRecord(Record d)
   {
     if (continueRecords == null)
-    {
       continueRecords = new ArrayList();
-    }
 
     continueRecords.add(d);
   }
