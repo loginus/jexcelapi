@@ -205,35 +205,14 @@ public abstract class Workbook implements Closeable
    * @return a workbook instance
    */
   public static Workbook getWorkbook(java.io.File file, WorkbookSettings ws)
-    throws IOException, BiffException
-  {
-    FileInputStream fis = new FileInputStream(file);
+    throws IOException, BiffException {
+    try (FileInputStream fis = new FileInputStream(file)) {
+      File dataFile = new File(fis, ws);
+      Workbook workbook = new WorkbookParser(dataFile, ws);
+      workbook.parse();
 
-    // Always close down the input stream, regardless of whether or not the
-    // file can be parsed.  Thanks to Steve Hahn for this
-    File dataFile = null;
-
-    try
-    {
-      dataFile = new File(fis, ws);
+      return workbook;
     }
-    catch (IOException e)
-    {
-      fis.close();
-      throw e;
-    }
-    catch (BiffException e)
-    {
-      fis.close();
-      throw e;
-    }
-
-    fis.close();
-
-    Workbook workbook = new WorkbookParser(dataFile, ws);
-    workbook.parse();
-
-    return workbook;
   }
 
   /**
