@@ -330,7 +330,6 @@ final class SheetReader
    */
   final void read()
   {
-    Record r = null;
     BaseSharedFormulaRecord sharedFormula = null;
     boolean sharedFormulaAdded = false;
 
@@ -343,7 +342,7 @@ final class SheetReader
     MsoDrawingRecord msoRecord = null;
     ObjRecord objRecord = null;
     boolean firstMsoRecord = true;
-
+    
     // Handle to the last conditional format record
     ConditionalFormat condFormat = null;
 
@@ -353,12 +352,6 @@ final class SheetReader
 
     // A handle to window2 record
     Window2Record window2Record = null;
-
-    // A handle to printgridlines record
-    PrintGridLinesRecord printGridLinesRecord = null;
-
-    // A handle to printheaders record
-    PrintHeadersRecord printHeadersRecord = null;
 
     // Hash map of comments, indexed on objectId.  As each corresponding
     // note record is encountered, these are removed from the array
@@ -374,7 +367,7 @@ final class SheetReader
 
     while (cont)
     {
-      r = excelFile.next();
+      Record r = excelFile.next();
       Type type = r.getType();
 
       if (type == Type.UNKNOWN && r.getCode() == 0)
@@ -470,7 +463,6 @@ final class SheetReader
 
         // Get the individual cell records from the multiple record
         int num = mulrk.getNumberOfColumns();
-        int ixf = 0;
         for (int i = 0; i < num; i++)
         {
           ixf = mulrk.getXFIndex(i);
@@ -534,12 +526,14 @@ final class SheetReader
       }
       else if (type == Type.PRINTGRIDLINES)
       {
-        printGridLinesRecord = new PrintGridLinesRecord(r);
+        // A handle to printgridlines record
+        PrintGridLinesRecord printGridLinesRecord = new PrintGridLinesRecord(r);
         settings.setPrintGridLines(printGridLinesRecord.getPrintGridLines());
       }
       else if (type == Type.PRINTHEADERS)
       {
-        printHeadersRecord = new PrintHeadersRecord(r);
+        // A handle to printheaders record
+        PrintHeadersRecord printHeadersRecord = new PrintHeadersRecord(r);
         settings.setPrintHeaders(printHeadersRecord.getPrintHeaders());
       }
       else if (type == Type.WINDOW2)

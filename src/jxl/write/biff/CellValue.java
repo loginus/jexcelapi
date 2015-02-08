@@ -26,8 +26,6 @@ import jxl.Cell;
 import jxl.CellFeatures;
 import jxl.CellReferenceHelper;
 import jxl.Sheet;
-import jxl.biff.DataValidation;
-import jxl.biff.DataValiditySettingsRecord;
 import jxl.biff.DVParser;
 import jxl.biff.FormattingRecords;
 import jxl.biff.IntegerHelper;

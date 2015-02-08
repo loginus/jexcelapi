@@ -161,7 +161,7 @@ public abstract class WritableWorkbook
    * @param sheet the sheet (from another workbook) to merge into this one
    * @return the new sheet
    */
-  public abstract WritableSheet importSheet(String name, int index, Sheet s);
+  public abstract WritableSheet importSheet(String name, int index, Sheet sheet);
 
   /**
    * Copy sheet within the same workbook.  The sheet specified is copied to

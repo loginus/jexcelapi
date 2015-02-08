@@ -304,12 +304,11 @@ public class SheetImpl implements Sheet
       startPosition -= (sheetBof.getLength() + 4);
     }
 
-    Record r = null;
     int bofs = 1;
 
     while (bofs >= 1)
     {
-      r = f.next();
+      Record r = f.next();
 
       // use this form for quick performance
       if (r.getCode() == Type.EOF.value)
@@ -737,8 +736,6 @@ public class SheetImpl implements Sheet
     buttonPropertySet = reader.getButtonPropertySet();
     maxRowOutlineLevel = reader.getMaxRowOutlineLevel();
     maxColumnOutlineLevel = reader.getMaxColumnOutlineLevel();
-
-    reader = null;
 
     if (!workbookSettings.getGCDisabled())
     {
