@@ -40,7 +40,7 @@ public final class Record
   /**
    * The excel biff code
    */
-  private int code;
+  private final int code;
   /**
    * The data type
    */
@@ -48,15 +48,15 @@ public final class Record
   /**
    * The length of this record
    */
-  private int length;
+  private final int length;
   /**
    * A pointer to the beginning of the actual data
    */
-  private int dataPos;
+  private final int dataPos;
   /**
    * A handle to the excel 97 file
    */
-  private File file;
+  private final File file;
   /**
    * The raw data within this record
    */

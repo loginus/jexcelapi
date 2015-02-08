@@ -135,6 +135,7 @@ public abstract class WritableWorkbook
    *
    * @throws IOException
    */
+  @Override
   public abstract void close() throws IOException;
 
   /**

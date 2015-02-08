@@ -330,6 +330,7 @@ public class SheetImpl implements Sheet
    * @param loc the cell reference
    * @return the cell at the specified co-ordinates
    */
+  @Override
   public Cell getCell(String loc)
   {
     return getCell(CellReferenceHelper.getColumn(loc),
@@ -343,6 +344,7 @@ public class SheetImpl implements Sheet
    * @param column the column number
    * @return the cell at the specified co-ordinates
    */
+  @Override
   public Cell getCell(int column, int row)
   {
     // just in case this has been cleared, but something else holds
@@ -372,6 +374,7 @@ public class SheetImpl implements Sheet
    * @param  contents the string to match
    * @return the Cell whose contents match the paramter, null if not found
    */
+  @Override
   public Cell findCell(String contents)
   {
     CellFinder cellFinder = new CellFinder(this);
@@ -392,6 +395,7 @@ public class SheetImpl implements Sheet
    * @param reverse indicates whether to perform a reverse search or not
    * @return the Cell whose contents match the parameter, null if not found
    */
+  @Override
   public Cell findCell(String contents, 
                        int firstCol, 
                        int firstRow, 
@@ -422,6 +426,7 @@ public class SheetImpl implements Sheet
    * @param reverse indicates whether to perform a reverse search or not
    * @return the Cell whose contents match the parameter, null if not found
    */
+  @Override
   public Cell findCell(Pattern pattern, 
                        int firstCol, 
                        int firstRow, 
@@ -450,6 +455,7 @@ public class SheetImpl implements Sheet
    * @param  contents the string to match
    * @return the Cell whose contents match the paramter, null if not found
    */
+  @Override
   public LabelCell findLabelCell(String contents)
   {
     CellFinder cellFinder = new CellFinder(this);
@@ -461,6 +467,7 @@ public class SheetImpl implements Sheet
    *
    * @return the number of rows in this sheet
    */
+  @Override
   public int getRows()
   {
     // just in case this has been cleared, but something else holds
@@ -478,6 +485,7 @@ public class SheetImpl implements Sheet
    *
    * @return the number of columns in this sheet
    */
+  @Override
   public int getColumns()
   {
     // just in case this has been cleared, but something else holds
@@ -497,6 +505,7 @@ public class SheetImpl implements Sheet
    * @param row the rows whose cells are to be returned
    * @return the cells on the given row
    */
+  @Override
   public Cell[] getRow(int row)
   {
     // just in case this has been cleared, but something else holds
@@ -538,6 +547,7 @@ public class SheetImpl implements Sheet
    * @param col the column whose cells are to be returned
    * @return the cells on the specified column
    */
+  @Override
   public Cell[] getColumn(int col)
   {
     // just in case this has been cleared, but something else holds
@@ -577,6 +587,7 @@ public class SheetImpl implements Sheet
    *
    * @return the name of the sheet
    */
+  @Override
   public String getName()
   {
     return name;
@@ -598,6 +609,7 @@ public class SheetImpl implements Sheet
    * @return whether or not the sheet is hidden
    * @deprecated in favour of the getSettings function
    */
+  @Override
   public boolean isHidden()
   {
     return hidden;
@@ -801,6 +813,7 @@ public class SheetImpl implements Sheet
    *
    * @return an array of hyperlinks
    */
+  @Override
   public Hyperlink[] getHyperlinks()
   {
     Hyperlink[] hl = new Hyperlink[hyperlinks.size()];
@@ -818,6 +831,7 @@ public class SheetImpl implements Sheet
    *
    * @return an array of range objects
    */
+  @Override
   public Range[] getMergedCells()
   {
     if (mergedCells == null)
@@ -891,6 +905,7 @@ public class SheetImpl implements Sheet
    *
    * @return the explicit row breaks
    */
+  @Override
   public final int[] getRowPageBreaks()
   {
     return rowBreaks;
@@ -901,6 +916,7 @@ public class SheetImpl implements Sheet
    *
    * @return the explicit row breaks
    */
+  @Override
   public final int[] getColumnPageBreaks()
   {
     return columnBreaks;
@@ -940,6 +956,7 @@ public class SheetImpl implements Sheet
    * @return whether or not the sheet is protected
    * @deprecated in favour of the getSettings() api
    */
+  @Override
   public boolean isProtected()
   {
     return settings.isProtected();
@@ -961,6 +978,7 @@ public class SheetImpl implements Sheet
    *
    * @return the settings for this sheet
    */
+  @Override
   public SheetSettings getSettings()
   {
     return settings;
@@ -984,6 +1002,7 @@ public class SheetImpl implements Sheet
    * @return the column format, or NULL if the column has no specific format
    * @deprecated use getColumnView instead
    */
+  @Override
   public CellFormat getColumnFormat(int col)
   {
     CellView cv = getColumnView(col);
@@ -997,6 +1016,7 @@ public class SheetImpl implements Sheet
    * @return the column width, or the default width if the column has no
    *         specified format
    */
+  @Override
   public int getColumnWidth(int col)
   {
     return getColumnView(col).getSize() / 256;
@@ -1009,6 +1029,7 @@ public class SheetImpl implements Sheet
    * @return the column format, or the default format if no override is
              specified
    */
+  @Override
   public CellView getColumnView(int col)
   {
     ColumnInfoRecord cir = getColumnInfo(col);
@@ -1038,6 +1059,7 @@ public class SheetImpl implements Sheet
    *         specified format
    * @deprecated use getRowView instead
    */
+  @Override
   public int getRowHeight(int row)
   {
     return getRowView(row).getDimension();
@@ -1050,6 +1072,7 @@ public class SheetImpl implements Sheet
    * @return the row format, or the default format if no override is
              specified
    */
+  @Override
   public CellView getRowView(int row)
   {
     RowRecord rr = getRowInfo(row);
@@ -1123,6 +1146,7 @@ public class SheetImpl implements Sheet
    *
    * @return the number of images on this sheet
    */
+  @Override
   public int getNumberOfImages()
   {
     if (images == null)
@@ -1139,6 +1163,7 @@ public class SheetImpl implements Sheet
    * @param i the 0 based image number
    * @return  the image at the specified position
    */
+  @Override
   public Image getDrawing(int i)
   {
     if (images == null)

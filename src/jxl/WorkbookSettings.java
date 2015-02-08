@@ -742,8 +742,6 @@ public final class WorkbookSettings
    * and performance
    *
    * @param temp
-   * @return TRUE if a temporary is file is used during writing,
-   * FALSE otherwise
    */
   public void setUseTemporaryFileDuringWrite(boolean temp)
   {

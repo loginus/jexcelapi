@@ -156,7 +156,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
   private CountryRecord countryRecord;
 
   // synchronizer object for static unitiatialization
-  private static Object SYNCHRONIZER = new Object();
+  private static final Object SYNCHRONIZER = new Object();
   /**
    * The names of any add in functions
    */
@@ -357,6 +357,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * 
    * @return an array of the individual sheets
    */
+  @Override
   public WritableSheet[] getSheets()
   {
     WritableSheet[] sheetArray = new WritableSheet[getNumberOfSheets()];
@@ -373,6 +374,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
    *
    * @return an array of strings containing the sheet names
    */
+  @Override
   public String[] getSheetNames()
   {
     String[] sheetNames = new String[getNumberOfSheets()];
@@ -392,6 +394,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * @param index the zero based index of the required sheet
    * @return The sheet specified by the index
    */
+  @Override
   public Sheet getReadSheet(int index)
   {
     return getSheet(index);
@@ -403,6 +406,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * @param index the zero based index of the reQuired sheet
    * @return The sheet specified by the index
    */
+  @Override
   public WritableSheet getSheet(int index)
   {
     return (WritableSheet) sheets.get(index);
@@ -414,6 +418,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * @param name the sheet name
    * @return The sheet with the specified name, or null if it is not found
    */
+  @Override
   public WritableSheet getSheet(String name)
   {
     // Iterate through the boundsheet records
@@ -439,6 +444,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * 
    * @return the number of sheets in this workbook
    */
+  @Override
   public int getNumberOfSheets()
   {
     return sheets.size();
@@ -451,6 +457,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * @exception IOException 
    * @exception JxlWriteException
    */
+  @Override
   public void close() throws IOException, JxlWriteException
   {
     outputFile.close(closeStream);
@@ -464,6 +471,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * @param fileName the file name
    * @exception IOException
    */
+  @Override
   public void setOutputFile(java.io.File fileName) throws IOException
   {
     FileOutputStream fos = new FileOutputStream(fileName);
@@ -533,6 +541,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * @param index the index at which to add the sheet
    * @return the created sheet
    */
+  @Override
   public WritableSheet createSheet(String name, int index)
   {
     return createSheet(name, index, true);
@@ -545,6 +554,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * 
    * @param index the index of the sheet to remove
    */
+  @Override
   public void removeSheet(int index)
   {
     int pos = index;
@@ -607,6 +617,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * @param toIndex the zero based index of the reQuired sheet
    * @return the sheet that has been moved
    */
+  @Override
   public WritableSheet moveSheet(int fromIndex, int toIndex)
   {
     // Handle dodgy index 
@@ -628,6 +639,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * 
    * @exception IOException 
    */
+  @Override
   public void write() throws IOException
   {
     // Perform some preliminary sheet check before we start writing out
@@ -980,6 +992,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * @param name the name of the new sheet
    * @param index the position of the new sheet
    */
+  @Override
   public void copySheet(int s, String name, int index)
   {
     WritableSheet sheet = getSheet(s);
@@ -995,6 +1008,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * @param name the name of the new sheet
    * @param index the position of the new sheet
    */
+  @Override
   public void copySheet(String s, String name, int index)
   {
     WritableSheet sheet = getSheet(s);
@@ -1007,6 +1021,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * 
    * @param prot protected flag
    */
+  @Override
   public void setProtected(boolean prot)
   {
     wbProtected = prot;
@@ -1059,6 +1074,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * @param index the external sheet index
    * @return the name of the external sheet
    */
+  @Override
   public String getExternalSheetName(int index)
   {
     int supbookIndex = externSheet.getSupbookIndex(index);
@@ -1120,6 +1136,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
    *
    * @return the BOF record, which 
    */
+  @Override
   public jxl.read.biff.BOFRecord getWorkbookBof()
   {
     return null;
@@ -1132,6 +1149,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * @param sheetName
    * @return the sheet index of the external sheet index
    */
+  @Override
   public int getExternalSheetIndex(int index)
   {
     if (externSheet == null)
@@ -1152,6 +1170,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * @param sheetName
    * @return the sheet index of the external sheet index
    */
+  @Override
   public int getLastExternalSheetIndex(int index)
   {
     if (externSheet == null)
@@ -1172,6 +1191,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * @param sheetName 
    * @return the sheet index or -1 if the sheet could not be found
    */
+  @Override
   public int getExternalSheetIndex(String sheetName)
   {
     if (externSheet == null)
@@ -1263,6 +1283,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * @param sheetName 
    * @return the sheet index or -1 if the sheet could not be found
    */
+  @Override
   public int getLastExternalSheetIndex(String sheetName)
   {
     if (externSheet == null)
@@ -1314,6 +1335,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * @param g the green portion to set (0-255)
    * @param b the blue portion to set (0-255)
    */
+  @Override
   public void setColourRGB(Colour c, int r, int g, int b)
   {
     formatRecords.setColourRGB(c,r,g,b);
@@ -1322,6 +1344,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
   /**
    * Accessor for the RGB value for the specified colour
    *
+   * @param c colour
    * @return the RGB for the specified colour
    */
   public RGB getColourRGB(Colour c)
@@ -1335,6 +1358,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * @param index the index into the name table
    * @return the name of the cell
    */
+  @Override
   public String getName(int index)
   {
     Assert.verify(index >= 0 && index < names.size());
@@ -1348,6 +1372,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * @param name 
    * @return the index in the name table
    */
+  @Override
   public int getNameIndex(String name)
   {
     NameRecord nr = (NameRecord) nameRecords.get(name);
@@ -1515,6 +1540,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * @return the cell in the top left of the range if found, NULL
    *         otherwise
    */
+  @Override
   public WritableCell findCellByName(String name)
   {
     NameRecord nr = (NameRecord) nameRecords.get(name);
@@ -1549,6 +1575,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * @param  the name of the cell/range to search for
    * @return the range of cells
    */
+  @Override
   public Range[] findByName(String name)
   {
     NameRecord nr = (NameRecord) nameRecords.get(name);
@@ -1636,6 +1663,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
    *
    * @return the list of named cells within the workbook
    */
+  @Override
   public String[] getRangeNames()
   {
     if (names == null)
@@ -1658,6 +1686,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
    *
    * @param name the name to remove
    */
+  @Override
   public void removeRangeName(String name)
   {
     int pos = 0;
@@ -1708,6 +1737,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * @param lastCol    last column this name refers to.
    * @param lastRow    last row this name refers to.
    */
+  @Override
   public void addNameArea(String name, 
                           WritableSheet sheet,
                           int firstCol, 
@@ -1876,6 +1906,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * @param loc the cell to retrieve
    * @return the cell at the specified location
    */
+  @Override
   public WritableCell getWritableCell(String loc)
   {
     WritableSheet s = getSheet(CellReferenceHelper.getSheet(loc)); 
@@ -1891,6 +1922,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * @param sheet the sheet (from another workbook) to merge into this one
    * @return the new sheet
    */
+  @Override
   public WritableSheet importSheet(String name, int index, Sheet sheet)
   {
     WritableSheet ws = createSheet(name, index);

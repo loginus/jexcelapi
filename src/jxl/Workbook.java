@@ -36,7 +36,7 @@ import jxl.write.biff.WritableWorkbookImpl;
  * Represents a Workbook.  Contains the various factory methods and provides
  * a variety of accessors which provide access to the work sheets.
  */
-public abstract class Workbook
+public abstract class Workbook implements Closeable
 {
   /**
    * The current version of the software
@@ -182,6 +182,7 @@ public abstract class Workbook
    * Closes this workbook, and frees makes any memory allocated available
    * for garbage collection
    */
+  @Override
   public abstract void close();
 
   /**
