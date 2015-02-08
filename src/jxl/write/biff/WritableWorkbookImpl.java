@@ -790,6 +790,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
     }
 
     Window1Record w1r = new Window1Record(selectedSheetIndex);
+    w1r.setWindowHidden(settings.isWindowHidden());
     outputFile.write(w1r);
 
     BackupRecord bkr = new BackupRecord(false);

@@ -225,6 +225,8 @@ public final class WorkbookSettings
    */
   private int hideobj;
 
+  private boolean windowHidden = false;
+
   private Integer startColumnCount;
   private Integer startRowCount;
 
@@ -889,6 +891,14 @@ public final class WorkbookSettings
   public void setWriteAccess(String writeAccess)
   {
     this.writeAccess = writeAccess;
+  }
+
+  public boolean isWindowHidden() {
+    return windowHidden;
+  }
+
+  public void setWindowHidden(boolean windowHidden) {
+    this.windowHidden = windowHidden;
   }
 
   public Integer getStartColumnCount() {
