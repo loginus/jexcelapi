@@ -378,12 +378,10 @@ final class SheetReader
 
       if (type == Type.DIMENSION)
       {
-        DimensionRecord dr = null;
-
-        if (workbookBof.isBiff8())
-          dr = new DimensionRecord(r);
-        else
-          dr = new DimensionRecord(r, DimensionRecord.biff7);
+        DimensionRecord dr = workbookBof.isBiff8()
+                ? new DimensionRecord(r)
+                : new DimensionRecord(r, DimensionRecord.biff7);
+        
         numRows = dr.getNumberOfRows();
         numCols = dr.getNumberOfColumns();
         cells = new Cell[numRows][numCols];
@@ -517,12 +515,9 @@ final class SheetReader
       }
       else if (type == Type.WINDOW2)
       {
-        window2Record = null;
-
-        if (workbookBof.isBiff8())
-          window2Record = new Window2Record(r);
-        else
-          window2Record = new Window2Record(r, Window2Record.biff7);
+        window2Record = workbookBof.isBiff8()
+                ? new Window2Record(r)
+                : new Window2Record(r, Window2Record.biff7);
 
         settings.setShowGridLines(window2Record.getShowGridLines());
         settings.setDisplayZeroValues(window2Record.getDisplayZeroValues());
@@ -671,14 +666,10 @@ final class SheetReader
       }
       else if (type == Type.LABEL)
       {
-        LabelRecord lr = null;
-
-        if (workbookBof.isBiff8())
-          lr = new LabelRecord(r, formattingRecords, sheet, workbookSettings);
-        else
-          lr = new LabelRecord(r, formattingRecords, sheet, workbookSettings,
-                               LabelRecord.biff7);
-        addCell(lr);
+        addCell(workbookBof.isBiff8()
+                 ? new LabelRecord(r, formattingRecords, sheet, workbookSettings)
+                 : new LabelRecord(r, formattingRecords, sheet, workbookSettings,
+                                LabelRecord.biff7));
       }
       else if (type == Type.RSTRING)
       {
@@ -756,22 +747,18 @@ final class SheetReader
       }
       else if (type == Type.HEADER)
       {
-        HeaderRecord hr = null;
-        if (workbookBof.isBiff8())
-          hr = new HeaderRecord(r, workbookSettings);
-        else
-          hr = new HeaderRecord(r, workbookSettings, HeaderRecord.biff7);
+        HeaderRecord hr = workbookBof.isBiff8()
+                ? new HeaderRecord(r, workbookSettings)
+                : new HeaderRecord(r, workbookSettings, HeaderRecord.biff7);
 
         HeaderFooter header = new HeaderFooter(hr.getHeader());
         settings.setHeader(header);
       }
       else if (type == Type.FOOTER)
       {
-        FooterRecord fr = null;
-        if (workbookBof.isBiff8())
-          fr = new FooterRecord(r, workbookSettings);
-        else
-          fr = new FooterRecord(r, workbookSettings, FooterRecord.biff7);
+        FooterRecord fr = workbookBof.isBiff8()
+                ? new FooterRecord(r, workbookSettings)
+                : new FooterRecord(r, workbookSettings, FooterRecord.biff7);
 
         HeaderFooter footer = new HeaderFooter(fr.getFooter());
         settings.setFooter(footer);
@@ -893,24 +880,18 @@ final class SheetReader
       }
       else if (type == Type.HORIZONTALPAGEBREAKS)
       {
-        HorizontalPageBreaksRecord dr = null;
-
-        if (workbookBof.isBiff8())
-          dr = new HorizontalPageBreaksRecord(r);
-        else
-          dr = new HorizontalPageBreaksRecord
+        HorizontalPageBreaksRecord dr = workbookBof.isBiff8()
+                ? new HorizontalPageBreaksRecord(r)
+                : new HorizontalPageBreaksRecord
             (r, HorizontalPageBreaksRecord.biff7);
 
         rowBreaks = dr.getRowBreaks();
       }
       else if (type == Type.VERTICALPAGEBREAKS)
       {
-        VerticalPageBreaksRecord dr = null;
-
-        if (workbookBof.isBiff8())
-          dr = new VerticalPageBreaksRecord(r);
-        else
-          dr = new VerticalPageBreaksRecord
+        VerticalPageBreaksRecord dr = workbookBof.isBiff8()
+                ? new VerticalPageBreaksRecord(r)
+                : new VerticalPageBreaksRecord
             (r, VerticalPageBreaksRecord.biff7);
 
         columnBreaks = dr.getColumnBreaks();
