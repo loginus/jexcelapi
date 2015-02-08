@@ -19,18 +19,16 @@
 
 package jxl.write;
 
-import java.io.IOException;
+import java.io.*;
 
-import jxl.Range;
-import jxl.Sheet;
-import jxl.Workbook;
+import jxl.*;
 import jxl.format.Colour;
 import jxl.format.UnderlineStyle;
 
 /**
  * A writable workbook
  */
-public abstract class WritableWorkbook
+public abstract class WritableWorkbook implements Closeable
 {
   // Globally available stuff
 

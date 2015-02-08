@@ -19,22 +19,12 @@
 
 package jxl.read.biff;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.*;
+import jxl.*;
 
 import jxl.common.Assert;
 import jxl.common.Logger;
 
-import jxl.Cell;
-import jxl.CellFeatures;
-import jxl.CellReferenceHelper;
-import jxl.CellType;
-import jxl.DateCell;
-import jxl.HeaderFooter;
-import jxl.Range;
-import jxl.SheetSettings;
-import jxl.WorkbookSettings;
 import jxl.biff.AutoFilter;
 import jxl.biff.AutoFilterInfoRecord;
 import jxl.biff.AutoFilterRecord;
@@ -49,19 +39,7 @@ import jxl.biff.FilterModeRecord;
 import jxl.biff.FormattingRecords;
 import jxl.biff.Type;
 import jxl.biff.WorkspaceInformationRecord;
-import jxl.biff.drawing.Button;
-import jxl.biff.drawing.Chart;
-import jxl.biff.drawing.CheckBox;
-import jxl.biff.drawing.ComboBox;
-import jxl.biff.drawing.Comment;
-import jxl.biff.drawing.Drawing;
-import jxl.biff.drawing.Drawing2;
-import jxl.biff.drawing.DrawingData;
-import jxl.biff.drawing.DrawingDataException;
-import jxl.biff.drawing.MsoDrawingRecord;
-import jxl.biff.drawing.NoteRecord;
-import jxl.biff.drawing.ObjRecord;
-import jxl.biff.drawing.TextObjectRecord;
+import jxl.biff.drawing.*;
 import jxl.biff.formula.FormulaException;
 import jxl.format.PageOrder;
 import jxl.format.PageOrientation;

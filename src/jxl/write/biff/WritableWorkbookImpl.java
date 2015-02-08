@@ -19,41 +19,22 @@
 
 package jxl.write.biff;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.io.*;
+import java.util.*;
 
-import jxl.common.Assert;
-import jxl.common.Logger;
+import jxl.common.*;
 
-import jxl.Range;
-import jxl.Sheet;
-import jxl.Workbook;
-import jxl.WorkbookSettings;
-import jxl.biff.BuiltInName;
+import jxl.*;
+import jxl.biff.*;
 import jxl.biff.CellReferenceHelper;
-import jxl.biff.CountryCode;
-import jxl.biff.Fonts;
-import jxl.biff.FormattingRecords;
-import jxl.biff.IndexMapping;
-import jxl.biff.IntegerHelper;
-import jxl.biff.RangeImpl;
-import jxl.biff.WorkbookMethods;
-import jxl.biff.XCTRecord;
-import jxl.biff.drawing.Drawing;
-import jxl.biff.drawing.DrawingGroup;
-import jxl.biff.drawing.DrawingGroupObject;
-import jxl.biff.drawing.Origin;
+import jxl.biff.drawing.*;
 import jxl.biff.formula.ExternalSheet;
-import jxl.format.Colour;
-import jxl.format.RGB;
+import jxl.format.*;
 import jxl.read.biff.WorkbookParser;
 import jxl.write.WritableCell;
 import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
+import static jxl.read.biff.SupbookRecord.*;
 
 
 /**

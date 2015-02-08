@@ -19,9 +19,7 @@
 
 package jxl.write.biff;
 
-import jxl.biff.IntegerHelper;
-import jxl.biff.Type;
-import jxl.biff.WritableRecordData;
+import jxl.biff.*;
 
 /**
  * Contains workbook level windowing attributes

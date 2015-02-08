@@ -23,30 +23,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.regex.Pattern;
 
-import jxl.Cell;
-import jxl.CellType;
-import jxl.CellView;
-import jxl.Hyperlink;
-import jxl.Image;
-import jxl.LabelCell;
-import jxl.Range;
-import jxl.Sheet;
-import jxl.SheetSettings;
-import jxl.WorkbookSettings;
-import jxl.biff.BuiltInName;
-import jxl.biff.AutoFilter;
-import jxl.biff.CellFinder;
+import jxl.*;
+import jxl.biff.*;
 import jxl.biff.CellReferenceHelper;
-import jxl.biff.ConditionalFormat;
-import jxl.biff.DataValidation;
-import jxl.biff.EmptyCell;
-import jxl.biff.FormattingRecords;
-import jxl.biff.Type;
-import jxl.biff.WorkspaceInformationRecord;
-import jxl.biff.drawing.Chart;
-import jxl.biff.drawing.Drawing;
-import jxl.biff.drawing.DrawingData;
-import jxl.biff.drawing.DrawingGroupObject;
+import jxl.biff.drawing.*;
 import jxl.format.CellFormat;
 
 /**
