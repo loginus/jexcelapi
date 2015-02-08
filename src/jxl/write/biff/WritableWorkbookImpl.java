@@ -436,12 +436,15 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * for garbage collection
    * 
    * @exception IOException 
-   * @exception JxlWriteException
    */
   @Override
-  public void close() throws IOException, JxlWriteException
+  public void close() throws IOException
   {
-    outputFile.close(closeStream);
+    try {
+      outputFile.close(closeStream);
+    } catch (JxlWriteException ex) {
+      throw new IOException(ex);
+    }
   }
 
   /**
