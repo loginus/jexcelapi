@@ -388,11 +388,10 @@ final class SheetReader
       }
       else if (type == Type.LABELSST)
       {
-        LabelSSTRecord label = new LabelSSTRecord(r,
+        addCell(new LabelSSTRecord(r,
                                    sharedStrings,
                                    formattingRecords,
-                                   sheet);
-        addCell(label);
+                                   sheet));
       }
       else if (type == Type.RK || type == Type.RK2)
       {
@@ -706,10 +705,7 @@ final class SheetReader
       else if (type == Type.BLANK)
       {
         if (!workbookSettings.getIgnoreBlanks())
-        {
-          BlankCell bc = new BlankCell(r, formattingRecords, sheet);
-          addCell(bc);
-        }
+          addCell(new BlankCell(r, formattingRecords, sheet));
       }
       else if (type == Type.MULBLANK)
       {
