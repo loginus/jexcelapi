@@ -370,7 +370,7 @@ final class SheetReader
     // A handle to a continue record read in
     ContinueRecord continueRecord = null;
 
-  boolean first = true;
+    boolean first = true;
 
     while (cont)
     {
