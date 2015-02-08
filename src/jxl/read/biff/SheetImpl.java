@@ -23,9 +23,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.regex.Pattern;
 
-import jxl.common.Logger;
-import jxl.common.Assert;
-
 import jxl.Cell;
 import jxl.CellType;
 import jxl.CellView;
@@ -62,11 +59,6 @@ import jxl.format.CellFormat;
  */
 public class SheetImpl implements Sheet
 {
-  /**
-   * The logger
-   */
-  private static Logger logger = Logger.getLogger(SheetImpl.class);
-
   /**
    * The excel file
    */
