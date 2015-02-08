@@ -133,10 +133,9 @@ public abstract class WritableWorkbook
    * for garbage collection.  Also closes the underlying output stream
    * if necessary.
    *
-   * @exception IOException
-   * @exception WriteException
+   * @throws IOException
    */
-  public abstract void close() throws IOException, WriteException;
+  public abstract void close() throws IOException;
 
   /**
    * Creates, and returns a worksheet at the specified position

@@ -75,7 +75,7 @@ public abstract class Workbook
    *
    * @param index the zero based index of the reQuired sheet
    * @return The sheet specified by the index
-   * @exception IndexOutOfBoundException when index refers to a non-existent
+   * @throws IndexOutOfBoundsException when index refers to a non-existent
    *            sheet
    */
   public abstract Sheet getSheet(int index)
@@ -329,6 +329,7 @@ public abstract class Workbook
    * @param in the workbook to copy
    * @param ws the configuration for this workbook
    * @return a writable workbook
+   * @throws IOException  
    */
   public static WritableWorkbook createWorkbook(java.io.File file,
                                                 Workbook in,

@@ -465,7 +465,7 @@ final class SheetReader
         int num = mulrk.getNumberOfColumns();
         for (int i = 0; i < num; i++)
         {
-          ixf = mulrk.getXFIndex(i);
+          int ixf = mulrk.getXFIndex(i);
 
           NumberValue nv = new NumberValue
             (mulrk.getRow(),
@@ -601,7 +601,7 @@ final class SheetReader
       }
       else if (type == Type.ARRAY)
       {
-        ;
+        
       }
       else if (type == Type.PROTECT)
       {
@@ -723,7 +723,7 @@ final class SheetReader
       }
       else if (type == Type.NAME)
       {
-        ;
+        
       }
       else if (type == Type.PASSWORD)
       {
@@ -1843,7 +1843,6 @@ final class SheetReader
                                                         objRecord);
         }
 
-        return;
       }
     }
     catch (DrawingDataException e)

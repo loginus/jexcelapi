@@ -741,6 +741,7 @@ public final class WorkbookSettings
    * this flag involves an assessment of the trade-offs between memory usage
    * and performance
    *
+   * @param temp
    * @return TRUE if a temporary is file is used during writing,
    * FALSE otherwise
    */
@@ -837,7 +838,7 @@ public final class WorkbookSettings
   }
 
   /**
-   * @return the windowprotected
+   * @return the windowProtected
    */
   public boolean getWindowProtected()
   {
@@ -845,9 +846,9 @@ public final class WorkbookSettings
   }
 
   /**
-   * @param windowprotected the windowprotected to set
+   * @param windowProtected the windowProtected to set
    */
-  public void setWindowProtected(boolean windowprotected)
+  public void setWindowProtected(boolean windowProtected)
   {
     this.windowProtected = windowProtected;
   }
