@@ -101,13 +101,13 @@ public class SheetImpl implements Sheet
   /**
    * The list of non-default row properties
    */
-  private ArrayList rowProperties;
+  private ArrayList<RowRecord> rowProperties;
 
   /**
    * An array of column info records.  They are held this way before
    * they are transferred to the more convenient array
    */
-  private ArrayList columnInfosArray;
+  private ArrayList<ColumnInfoRecord> columnInfosArray;
 
   /**
    * A list of shared formula groups
@@ -117,23 +117,23 @@ public class SheetImpl implements Sheet
   /**
    * A list of hyperlinks on this page
    */
-  private ArrayList hyperlinks;
+  private ArrayList<Hyperlink> hyperlinks;
 
   /**
    * A list of charts on this page
    */
-  private ArrayList charts;
+  private ArrayList<Chart> charts;
 
   /**
    * A list of drawings on this page
    */
-  private ArrayList drawings;
+  private ArrayList<DrawingGroupObject> drawings;
 
   /**
    * A list of drawings (as opposed to comments/validation/charts) on this
    * page
    */
-  private ArrayList images;
+  private ArrayList<Image> images;
 
   /**
    * A list of data validations on this page
@@ -208,12 +208,12 @@ public class SheetImpl implements Sheet
   /**
    * The list of local names for this sheet
    */
-  private ArrayList localNames;
+  private ArrayList<NameRecord> localNames;
 
   /**
    * The list of conditional formats for this sheet
    */
-  private ArrayList conditionalFormats;
+  private ArrayList<ConditionalFormat> conditionalFormats;
 
   /**
    * The autofilter information
@@ -257,10 +257,10 @@ public class SheetImpl implements Sheet
     formattingRecords = fr;
     sheetBof = sb;
     workbookBof = wb;
-    columnInfosArray = new ArrayList();
-    sharedFormulas = new ArrayList();
-    hyperlinks = new ArrayList();
-    rowProperties = new ArrayList(10);
+    columnInfosArray = new ArrayList<>();
+    sharedFormulas = new ArrayList<>();
+    hyperlinks = new ArrayList<>();
+    rowProperties = new ArrayList<>(10);
     columnInfosInitialized = false;
     rowRecordsInitialized = false;
     nineteenFour = nf;
@@ -628,11 +628,7 @@ public class SheetImpl implements Sheet
   public ColumnInfoRecord[] getColumnInfos()
   {
     // Just chuck all the column infos we have into an array
-    ColumnInfoRecord[] infos = new ColumnInfoRecord[columnInfosArray.size()];
-    for (int i = 0; i < columnInfosArray.size(); i++)
-      infos[i] = (ColumnInfoRecord) columnInfosArray.get(i);
-
-    return infos;
+    return columnInfosArray.toArray(new ColumnInfoRecord[columnInfosArray.size()]);
   }
 
   /**
@@ -721,8 +717,7 @@ public class SheetImpl implements Sheet
 
     if (columnInfosArray.size() > 0)
     {
-      ColumnInfoRecord cir = (ColumnInfoRecord)
-        columnInfosArray.get(columnInfosArray.size() - 1);
+      ColumnInfoRecord cir = columnInfosArray.get(columnInfosArray.size() - 1);
       columnInfos = new ColumnInfoRecord[cir.getEndColumn() + 1];
     }
     else
@@ -779,12 +774,7 @@ public class SheetImpl implements Sheet
   @Override
   public Hyperlink[] getHyperlinks()
   {
-    Hyperlink[] hl = new Hyperlink[hyperlinks.size()];
-
-    for (int i = 0; i < hyperlinks.size(); i++)
-      hl[i] = (Hyperlink) hyperlinks.get(i);
-
-    return hl;
+    return hyperlinks.toArray(new Hyperlink[hyperlinks.size()]);
   }
 
   /**
@@ -806,13 +796,8 @@ public class SheetImpl implements Sheet
    *
    * @return an array of row properties
    */
-  public RowRecord[] getRowProperties()
-  {
-    RowRecord[] rp = new RowRecord[rowProperties.size()];
-    for (int i = 0; i < rp.length; i++)
-      rp[i] = (RowRecord) rowProperties.get(i);
-
-    return rp;
+  public RowRecord[] getRowProperties() {
+    return rowProperties.toArray(new RowRecord[rowProperties.size()]);
   }
 
   /**
@@ -879,11 +864,7 @@ public class SheetImpl implements Sheet
    */
   public final Chart[] getCharts()
   {
-    Chart[] ch = new Chart[charts.size()];
-
-    for (int i = 0; i < ch.length; i++)
-      ch[i] = (Chart) charts.get(i);
-    return ch;
+    return charts.toArray(new Chart[charts.size()]);
   }
 
   /**
@@ -893,9 +874,7 @@ public class SheetImpl implements Sheet
    */
   public final DrawingGroupObject[] getDrawings()
   {
-    DrawingGroupObject[] dr = new DrawingGroupObject[drawings.size()];
-    dr = (DrawingGroupObject[]) drawings.toArray(dr);
-    return dr;
+    return drawings.toArray(new DrawingGroupObject[drawings.size()]);
   }
 
   /**
@@ -1119,7 +1098,7 @@ public class SheetImpl implements Sheet
       initializeImages();
     }
 
-    return (Image) images.get(i);
+    return images.get(i);
   }
 
   /**
@@ -1132,13 +1111,13 @@ public class SheetImpl implements Sheet
       return;
     }
 
-    images = new ArrayList();
+    images = new ArrayList<>();
     DrawingGroupObject[] dgos = getDrawings();
 
     for (int i = 0; i < dgos.length; i++)
     {
       if (dgos[i] instanceof Drawing)
-        images.add(dgos[i]);
+        images.add((Drawing) dgos[i]);
     }
   }
 
@@ -1169,7 +1148,7 @@ public class SheetImpl implements Sheet
   {
     if (localNames == null)
     {
-      localNames = new ArrayList();
+      localNames = new ArrayList<>();
     }
 
     localNames.add(nr);
@@ -1184,7 +1163,7 @@ public class SheetImpl implements Sheet
   {
     ConditionalFormat[] formats = 
       new ConditionalFormat[conditionalFormats.size()];
-    formats = (ConditionalFormat[]) conditionalFormats.toArray(formats);
+    formats = conditionalFormats.toArray(formats);
     return formats;
   }
 

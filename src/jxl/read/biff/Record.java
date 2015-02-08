@@ -65,7 +65,7 @@ public final class Record
   /**
    * Any continue records
    */
-  private ArrayList continueRecords;
+  private ArrayList<Record> continueRecords;
 
   /**
    * Constructor
@@ -124,7 +124,7 @@ public final class Record
       byte[][] contData = new byte[continueRecords.size()][];
       for (int i = 0; i < continueRecords.size(); i++)
       {
-        Record r = (Record) continueRecords.get(i);
+        Record r = continueRecords.get(i);
         contData[i] = r.getData();
         byte[] d2 = contData[i];
         size += d2.length;
@@ -175,7 +175,7 @@ public final class Record
   public void addContinueRecord(Record d)
   {
     if (continueRecords == null)
-      continueRecords = new ArrayList();
+      continueRecords = new ArrayList<>();
 
     continueRecords.add(d);
   }

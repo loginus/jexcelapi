@@ -181,7 +181,7 @@ public final class WorkbookSettings
   /**
    * A hash map of function names keyed on locale
    */
-  private HashMap localeFunctionNames;
+  private HashMap<Locale, FunctionNames> localeFunctionNames;
 
   /**
    * Flag to indicate whether all external data and pivot stuff should
@@ -256,7 +256,7 @@ public final class WorkbookSettings
   {
     initialFileSize = DEFAULT_INITIAL_FILE_SIZE;
     arrayGrowSize = DEFAULT_ARRAY_GROW_SIZE;
-    localeFunctionNames = new HashMap();
+    localeFunctionNames = new HashMap<>();
     excelDisplayLanguage = CountryCode.USA.getCode();
     excelRegionalSettings = CountryCode.UK.getCode();
     refreshAll = false;
@@ -573,7 +573,7 @@ public final class WorkbookSettings
   {
     if (functionNames == null)
     {
-      functionNames = (FunctionNames) localeFunctionNames.get(locale);
+      functionNames = localeFunctionNames.get(locale);
 
       // have not previously accessed function names for this locale,
       // so create a brand new one and add it to the list

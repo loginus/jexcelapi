@@ -100,7 +100,7 @@ final class SheetReader
   /**
    * Any cells which are out of the defined bounds
    */
-  private ArrayList outOfBoundsCells;
+  private ArrayList<Cell> outOfBoundsCells;
 
   /**
    * The start position in the stream of this sheet
@@ -110,28 +110,28 @@ final class SheetReader
   /**
    * The list of non-default row properties
    */
-  private ArrayList rowProperties;
+  private ArrayList<RowRecord> rowProperties;
 
   /**
    * An array of column info records.  They are held this way before
    * they are transferred to the more convenient array
    */
-  private ArrayList columnInfosArray;
+  private ArrayList<ColumnInfoRecord> columnInfosArray;
 
   /**
    * A list of shared formula groups
    */
-  private ArrayList sharedFormulas;
+  private ArrayList<SharedFormulaRecord> sharedFormulas;
 
   /**
    * A list of hyperlinks on this page
    */
-  private ArrayList hyperlinks;
+  private ArrayList<Hyperlink> hyperlinks;
 
   /**
    * The list of conditional formats on this page
    */
-  private ArrayList conditionalFormats;
+  private ArrayList<ConditionalFormat> conditionalFormats;
 
   /**
    * The autofilter information
@@ -151,12 +151,12 @@ final class SheetReader
   /**
    * The list of charts on this page
    */
-  private ArrayList charts;
+  private ArrayList<Chart> charts;
 
   /**
    * The list of drawings on this page
    */
-  private ArrayList drawings;
+  private ArrayList<DrawingGroupObject> drawings;
 
   /**
    * The drawing data for the drawings
@@ -253,14 +253,14 @@ final class SheetReader
     formattingRecords = fr;
     sheetBof = sb;
     workbookBof = wb;
-    columnInfosArray = new ArrayList();
-    sharedFormulas = new ArrayList();
-    hyperlinks = new ArrayList();
-    conditionalFormats = new ArrayList();
-    rowProperties = new ArrayList(10);
-    charts = new ArrayList();
-    drawings = new ArrayList();
-    outOfBoundsCells = new ArrayList();
+    columnInfosArray = new ArrayList<>();
+    sharedFormulas = new ArrayList<>();
+    hyperlinks = new ArrayList<>();
+    conditionalFormats = new ArrayList<>();
+    rowProperties = new ArrayList<>(10);
+    charts = new ArrayList<>();
+    drawings = new ArrayList<>();
+    outOfBoundsCells = new ArrayList<>();
     nineteenFour = nf;
     workbook = wp;
     startPosition = sp;
@@ -338,10 +338,10 @@ final class SheetReader
 
     // Hash map of comments, indexed on objectId.  As each corresponding
     // note record is encountered, these are removed from the array
-    HashMap comments = new HashMap();
+    HashMap<Integer, Comment> comments = new HashMap<>();
 
     // A list of object ids - used for cross referencing
-    ArrayList objectIds = new ArrayList();
+    ArrayList<Integer> objectIds = new ArrayList<>();
 
     // A handle to a continue record read in
     ContinueRecord continueRecord = null;
@@ -552,8 +552,7 @@ final class SheetReader
           NoteRecord nr = new NoteRecord(r);
 
           // Get the comment for the object id
-          Comment comment = (Comment) comments.remove
-            (new Integer(nr.getObjectId()));
+          Comment comment = comments.remove(new Integer(nr.getObjectId()));
 
           if (comment == null)
           {
@@ -590,7 +589,7 @@ final class SheetReader
           logger.warn("Shared template formula is null - " +
                       "trying most recent formula template");
           SharedFormulaRecord lastSharedFormula =
-            (SharedFormulaRecord) sharedFormulas.get(sharedFormulas.size() - 1);
+            sharedFormulas.get(sharedFormulas.size() - 1);
 
           if (lastSharedFormula != null)
           {
@@ -1276,7 +1275,7 @@ final class SheetReader
    *
    * @return the row properties
    */
-  final ArrayList getRowProperties()
+  final ArrayList<RowRecord> getRowProperties()
   {
     return rowProperties;
   }
@@ -1286,7 +1285,7 @@ final class SheetReader
    *
    * @return the column information
    */
-  final ArrayList getColumnInfosArray()
+  final ArrayList<ColumnInfoRecord> getColumnInfosArray()
   {
     return columnInfosArray;
   }
@@ -1296,7 +1295,7 @@ final class SheetReader
    *
    * @return the hyperlinks
    */
-  final ArrayList getHyperlinks()
+  final ArrayList<Hyperlink> getHyperlinks()
   {
     return hyperlinks;
   }
@@ -1306,7 +1305,7 @@ final class SheetReader
    *
    * @return the conditional formatting
    */
-  final ArrayList getConditionalFormats()
+  final ArrayList<ConditionalFormat> getConditionalFormats()
   {
     return conditionalFormats;
   }
@@ -1326,7 +1325,7 @@ final class SheetReader
    *
    * @return the charts
    */
-  final ArrayList getCharts()
+  final ArrayList<Chart> getCharts()
   {
     return charts;
   }
@@ -1336,7 +1335,7 @@ final class SheetReader
    *
    * @return the drawings
    */
-  final ArrayList getDrawings()
+  final ArrayList<DrawingGroupObject> getDrawings()
   {
     return drawings;
   }
@@ -1545,7 +1544,7 @@ final class SheetReader
    */
   private void handleObjectRecord(ObjRecord objRecord,
                                   MsoDrawingRecord msoRecord,
-                                  HashMap comments)
+                                  HashMap<Integer, Comment> comments)
   {
     if (msoRecord == null)
     {
