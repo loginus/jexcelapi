@@ -227,8 +227,8 @@ public final class WorkbookSettings
 
   private boolean windowHidden = false;
 
-  private Integer startColumnCount;
-  private Integer startRowCount;
+  private int startColumnCount;
+  private int startRowCount;
 
   /**
    * The HIDEOBJ record stores options selected in the Options dialog,View tab.
@@ -901,19 +901,19 @@ public final class WorkbookSettings
     this.windowHidden = windowHidden;
   }
 
-  public Integer getStartColumnCount() {
+  public int getStartColumnCount() {
     return startColumnCount;
   }
 
-  public void setStartColumnCount(Integer startColumnCount) {
+  public void setStartColumnCount(int startColumnCount) {
     this.startColumnCount = startColumnCount;
   }
 
-  public Integer getStartRowCount() {
+  public int getStartRowCount() {
     return startRowCount;
   }
 
-  public void setStartRowCount(Integer startRowCount) {
+  public void setStartRowCount(int startRowCount) {
     this.startRowCount = startRowCount;
   }
 }
