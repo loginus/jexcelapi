@@ -50,6 +50,7 @@ class HorizontalPageBreaksRecord extends WritableRecordData
    * 
    * @return the binary data
    */
+  @Override
   public byte[] getData()
   {
     byte[] data = new byte[rowBreaks.length * 6 + 2];

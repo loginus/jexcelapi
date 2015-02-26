@@ -29,7 +29,6 @@ import jxl.common.Logger;
 
 import jxl.Cell;
 import jxl.CellFeatures;
-import jxl.CellReferenceHelper;
 import jxl.Range;
 import jxl.SheetSettings;
 import jxl.WorkbookSettings;
@@ -37,12 +36,9 @@ import jxl.biff.AutoFilter;
 import jxl.biff.ConditionalFormat;
 import jxl.biff.DataValidation;
 import jxl.biff.DataValiditySettingsRecord;
-import jxl.biff.DVParser;
 import jxl.biff.WorkspaceInformationRecord;
 import jxl.biff.XFRecord;
-import jxl.biff.drawing.Chart;
-import jxl.biff.drawing.SheetDrawingWriter;
-import jxl.biff.formula.FormulaException;
+import jxl.biff.drawing.*;
 import jxl.format.Border;
 import jxl.format.BorderLineStyle;
 import jxl.format.Colour;
@@ -68,7 +64,7 @@ final class SheetWriter
   /**
    * A handle to the output file which the binary data is written to
    */
-  private File outputFile;
+  private final File outputFile;
 
   /**
    * The rows within this sheet
@@ -100,23 +96,23 @@ final class SheetWriter
   /**
    * The settings for the workbook
    */
-  private WorkbookSettings workbookSettings;
+  private final WorkbookSettings workbookSettings;
   /**
    * Array of row page breaks
    */
-  private ArrayList rowBreaks;
+  private ArrayList<Integer> rowBreaks;
   /**
    * Array of column page breaks
    */
-  private ArrayList columnBreaks;
+  private ArrayList<Integer> columnBreaks;
   /**
    * Array of hyperlinks
    */
-  private ArrayList hyperlinks;
+  private ArrayList<? extends HyperlinkRecord> hyperlinks;
   /**
    * Array of conditional formats
    */
-  private ArrayList conditionalFormats;
+  private ArrayList<ConditionalFormat> conditionalFormats;
   /**
    * The autofilter info
    */
@@ -124,7 +120,7 @@ final class SheetWriter
   /**
    * Array of validated cells
    */
-  private ArrayList validatedCells;
+  private ArrayList<WritableCell> validatedCells;
   /**
    * The data validation validations
    */
@@ -152,12 +148,12 @@ final class SheetWriter
   /** 
    * The column format overrides
    */
-  private TreeSet columnFormats;
+  private TreeSet<ColumnInfoRecord> columnFormats;
 
   /**
    * The list of drawings
    */
-  private SheetDrawingWriter drawingWriter;
+  private final SheetDrawingWriter drawingWriter;
 
   /**
    * Flag indicates that this sheet contains just a chart, and nothing
@@ -179,7 +175,7 @@ final class SheetWriter
    * A handle back to the writable sheet, in order for this class
    * to invoke the get accessor methods
    */
-  private WritableSheetImpl sheet;
+  private final WritableSheetImpl sheet;
 
 
   /**
@@ -187,7 +183,7 @@ final class SheetWriter
    *
    * @param of the output file
    */
-  public SheetWriter(File of,
+  SheetWriter(File of,
                      WritableSheetImpl wsi,
                      WorkbookSettings ws)
   {
@@ -304,7 +300,7 @@ final class SheetWriter
 
       for (int i = 0; i < rb.length; i++)
       {
-        rb[i] = ( (Integer) rowBreaks.get(i)).intValue();
+        rb[i] = rowBreaks.get(i);
       }
 
       HorizontalPageBreaksRecord hpbr = new HorizontalPageBreaksRecord(rb);
@@ -317,7 +313,7 @@ final class SheetWriter
 
       for (int i = 0; i < rb.length; i++)
       {
-        rb[i] = ( (Integer) columnBreaks.get(i)).intValue();
+        rb[i] = columnBreaks.get(i);
       }
 
       VerticalPageBreaksRecord hpbr = new VerticalPageBreaksRecord(rb);
@@ -409,9 +405,9 @@ final class SheetWriter
 
     // Write out all the column formats
     ColumnInfoRecord cir = null;
-    for (Iterator colit = columnFormats.iterator(); colit.hasNext() ; )
+    for (Iterator<ColumnInfoRecord> colit = columnFormats.iterator(); colit.hasNext() ; )
     {
-      cir = (ColumnInfoRecord) colit.next();
+      cir = colit.next();
 
       // Writing out the column info with index 0x100 causes excel to crash
       if (cir.getColumn() < 0x100)
@@ -426,17 +422,13 @@ final class SheetWriter
         // Make this the format for every cell in the column
         Cell[] cells = getColumn(cir.getColumn());
 
-        for (int i = 0; i < cells.length; i++)
-        {
-          if (cells[i] != null &&
-              (cells[i].getCellFormat() == normalStyle ||
-               cells[i].getCellFormat() == defaultDateFormat))
-          {
+        for (Cell cell : cells)
+          if (cell != null
+                  && (cell.getCellFormat() == normalStyle
+                  || cell.getCellFormat() == defaultDateFormat))
             // The cell has no overriding format specified, so
             // set it to the column default
-            ((WritableCell) cells[i]).setCellFormat(xfr);
-          }
-        }
+            ((WritableCell) cell).setCellFormat(xfr);
       }
     }
 
@@ -562,13 +554,8 @@ final class SheetWriter
     mergedCells.write(outputFile);
 
     // Write out all the hyperlinks
-    Iterator hi = hyperlinks.iterator();
-    WritableHyperlink hlr = null;
-    while (hi.hasNext())
-    {
-      hlr = (WritableHyperlink) hi.next();
-      outputFile.write(hlr);
-    }
+    for (HyperlinkRecord hi : hyperlinks)
+      outputFile.write(hi);
 
     if (buttonPropertySet != null)
     {
@@ -584,11 +571,8 @@ final class SheetWriter
     // Write out the conditional formats
     if (conditionalFormats != null && conditionalFormats.size() > 0)
     {
-      for (Iterator i = conditionalFormats.iterator() ; i.hasNext() ; )
-      {
-        ConditionalFormat cf = (ConditionalFormat) i.next();
+      for (ConditionalFormat cf : conditionalFormats)
         cf.write(outputFile);
-      }
     }
 
     EOFRecord eof = new EOFRecord();
@@ -626,11 +610,11 @@ final class SheetWriter
    * @param rws the rows in the spreadsheet
    */
   void setWriteData(RowRecord[] rws, 
-                    ArrayList   rb,
-                    ArrayList   cb,
-                    ArrayList   hl,
+                    ArrayList<Integer>   rb,
+                    ArrayList<Integer>   cb,
+                    ArrayList<? extends HyperlinkRecord>   hl,
                     MergedCells mc,
-                    TreeSet     cf,
+                    TreeSet<ColumnInfoRecord>     cf,
                     int         mrol,
                     int         mcol)
   {
@@ -708,7 +692,7 @@ final class SheetWriter
    * @param dr the list of drawings
    * @param mod a modified flag
    */
-  void setDrawings(ArrayList dr, boolean mod)
+  void setDrawings(ArrayList<DrawingGroupObject> dr, boolean mod)
   {
     drawingWriter.setDrawings(dr, mod);
   }
@@ -732,7 +716,7 @@ final class SheetWriter
   void checkMergedBorders()
   {
     Range[] mcells = mergedCells.getMergedCells();
-    ArrayList borderFormats = new ArrayList();
+    ArrayList<CellXFRecord> borderFormats = new ArrayList<>();
     for (int mci = 0 ; mci < mcells.length ; mci++)
     {
       Range range = mcells[mci];
@@ -773,7 +757,7 @@ final class SheetWriter
           int index = borderFormats.indexOf(cf1);
           if (index != -1)
           {
-            cf1 = (CellXFRecord) borderFormats.get(index);
+            cf1 = borderFormats.get(index);
           }
           else
           {
@@ -799,7 +783,7 @@ final class SheetWriter
               index = borderFormats.indexOf(cf2);
               if (index != -1)
               {
-                cf2 = (CellXFRecord) borderFormats.get(index);
+                cf2 = borderFormats.get(index);
               }
               else
               {
@@ -830,7 +814,7 @@ final class SheetWriter
               index = borderFormats.indexOf(cf3);
               if (index != -1)
               {
-                cf3 = (CellXFRecord) borderFormats.get(index);
+                cf3 = borderFormats.get(index);
               }
               else
               {
@@ -858,7 +842,7 @@ final class SheetWriter
               index = borderFormats.indexOf(cf6);
               if (index != -1)
               {
-                cf6 = (CellXFRecord) borderFormats.get(index);
+                cf6 = borderFormats.get(index);
               }
               else
               {
@@ -882,7 +866,7 @@ final class SheetWriter
               index = borderFormats.indexOf(cf7);
               if (index != -1)
               {
-                cf7 = (CellXFRecord) borderFormats.get(index);
+                cf7 = borderFormats.get(index);
               }
               else
               {
@@ -912,7 +896,7 @@ final class SheetWriter
               index = borderFormats.indexOf(cf8);
               if (index != -1)
               {
-                cf8 = (CellXFRecord) borderFormats.get(index);
+                cf8 = borderFormats.get(index);
               }
               else
               {
@@ -954,7 +938,7 @@ final class SheetWriter
             index = borderFormats.indexOf(cf4);
             if (index != -1)
             {
-              cf4 = (CellXFRecord) borderFormats.get(index);
+              cf4 = borderFormats.get(index);
             }
             else
             {
@@ -985,7 +969,7 @@ final class SheetWriter
               index = borderFormats.indexOf(cf5);
               if (index != -1)
               {
-                cf5 = (CellXFRecord) borderFormats.get(index);
+                cf5 = borderFormats.get(index);
               }
               else
               {
@@ -1074,7 +1058,7 @@ final class SheetWriter
    * @param dv the read-in list of data validations
    * @param vc the api manipulated set of data validations
    */
-  void setDataValidation(DataValidation dv, ArrayList vc)
+  void setDataValidation(DataValidation dv, ArrayList<WritableCell> vc)
   {
     dataValidation = dv;
     validatedCells = vc;
@@ -1085,7 +1069,7 @@ final class SheetWriter
    *
    * @param cf the conditonal formats
    */
-  void setConditionalFormats(ArrayList cf)
+  void setConditionalFormats(ArrayList<ConditionalFormat> cf)
   {
     conditionalFormats = cf;
   }
@@ -1105,7 +1089,7 @@ final class SheetWriter
    */
   private void writeDataValidation() throws IOException
   {
-    if (dataValidation != null && validatedCells.size() == 0)
+    if (dataValidation != null && validatedCells.isEmpty())
     {
       // the only data validations are those read in - this should
       // never be the case now that shared data validations add
@@ -1126,7 +1110,7 @@ final class SheetWriter
                                           workbookSettings);
     }
 
-    for (Iterator i = validatedCells.iterator(); i.hasNext(); )
+    for (Iterator<WritableCell> i = validatedCells.iterator(); i.hasNext(); )
     {
       CellValue cv = (CellValue) i.next();
       CellFeatures cf = cv.getCellFeatures();

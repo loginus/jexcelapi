@@ -19,8 +19,6 @@
 
 package jxl.read.biff;
 
-import jxl.common.Logger;
-
 import jxl.biff.IntegerHelper;
 import jxl.biff.RecordData;
 
@@ -29,22 +27,17 @@ import jxl.biff.RecordData;
  */
 class HorizontalPageBreaksRecord extends RecordData
 {
-  /**
-   * The logger
-   */
-  private final Logger logger = Logger.getLogger
-    (HorizontalPageBreaksRecord.class);
 
   /**
    * The row page breaks
    */
-  private int[] rowBreaks;
+  private final int[] rowBreaks;
 
   /**
    * Dummy indicators for overloading the constructor
    */
   private static class Biff7 {};
-  public static Biff7 biff7 = new Biff7();
+  public final static Biff7 biff7 = new Biff7();
 
   /**
    * Constructs the dimensions from the raw data

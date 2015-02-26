@@ -19,11 +19,7 @@
 
 package jxl.write.biff;
 
-import java.util.Arrays;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.TreeSet;
-import java.util.Iterator;
+import java.util.*;
 
 import jxl.common.Assert;
 import jxl.common.Logger;
@@ -31,16 +27,12 @@ import jxl.common.Logger;
 import jxl.BooleanCell;
 import jxl.Cell;
 import jxl.CellType;
-import jxl.CellView;
 import jxl.DateCell;
-import jxl.HeaderFooter;
 import jxl.Hyperlink;
-import jxl.Image;
 import jxl.LabelCell;
 import jxl.NumberCell;
 import jxl.Range;
 import jxl.Sheet;
-import jxl.SheetSettings;
 import jxl.WorkbookSettings;
 import jxl.biff.AutoFilter;
 import jxl.biff.CellReferenceHelper;
@@ -48,14 +40,11 @@ import jxl.biff.ConditionalFormat;
 import jxl.biff.DataValidation;
 import jxl.biff.FormattingRecords;
 import jxl.biff.FormulaData;
-import jxl.biff.IndexMapping;
 import jxl.biff.NumFormatRecordsException;
 import jxl.biff.SheetRangeImpl;
 import jxl.biff.XFRecord;
 import jxl.biff.drawing.Chart;
-import jxl.biff.drawing.CheckBox;
 import jxl.biff.drawing.ComboBox;
-import jxl.biff.drawing.Drawing;
 import jxl.biff.drawing.DrawingGroupObject;
 import jxl.format.CellFormat;
 import jxl.biff.formula.FormulaException;
@@ -70,7 +59,6 @@ import jxl.write.Label;
 import jxl.write.Number;
 import jxl.write.WritableCell;
 import jxl.write.WritableCellFormat;
-import jxl.write.WritableFont;
 import jxl.write.WritableHyperlink;
 import jxl.write.WritableImage;
 import jxl.write.WritableSheet;
@@ -84,24 +72,24 @@ import jxl.write.WriteException;
  */
 class SheetCopier
 {
-  private static Logger logger = Logger.getLogger(SheetCopier.class);
+  private static final Logger logger = Logger.getLogger(SheetCopier.class);
 
-  private SheetImpl fromSheet;
-  private WritableSheetImpl toSheet;
-  private WorkbookSettings workbookSettings;
+  private final SheetImpl fromSheet;
+  private final WritableSheetImpl toSheet;
+  private final WorkbookSettings workbookSettings;
 
   // Objects used by the sheet
-  private TreeSet columnFormats;
+  private TreeSet<ColumnInfoRecord> columnFormats;
   private FormattingRecords formatRecords;
-  private ArrayList hyperlinks;
+  private ArrayList<WritableHyperlink> hyperlinks;
   private MergedCells mergedCells;
-  private ArrayList rowBreaks;
-  private ArrayList columnBreaks;
+  private ArrayList<Integer> rowBreaks;
+  private ArrayList<Integer> columnBreaks;
   private SheetWriter sheetWriter;
-  private ArrayList drawings;
-  private ArrayList images;
-  private ArrayList conditionalFormats;
-  private ArrayList validatedCells;
+  private ArrayList<DrawingGroupObject> drawings;
+  private ArrayList<WritableImage> images;
+  private ArrayList<ConditionalFormat> conditionalFormats;
+  private ArrayList<WritableCell> validatedCells;
   private AutoFilter autoFilter;
   private DataValidation dataValidation;
   private ComboBox comboBox;
@@ -113,9 +101,9 @@ class SheetCopier
   private int maxColumnOutlineLevel;
 
   // Objects used to maintain state during the copy process
-  private HashMap xfRecords;
-  private HashMap fonts;
-  private HashMap formats;
+  private HashMap<Integer, WritableCellFormat> xfRecords;
+  private HashMap<Integer, Integer> fonts;
+  private HashMap<Integer, Integer> formats;
 
   public SheetCopier(Sheet f, WritableSheet t)
   {
@@ -125,7 +113,7 @@ class SheetCopier
     chartOnly = false;
   }
 
-  void setColumnFormats(TreeSet cf)
+  void setColumnFormats(TreeSet<ColumnInfoRecord> cf)
   {
     columnFormats = cf;
   }
@@ -135,7 +123,7 @@ class SheetCopier
     formatRecords = fr;
   }
 
-  void setHyperlinks(ArrayList h)
+  void setHyperlinks(ArrayList<WritableHyperlink> h)
   {
     hyperlinks = h;
   }
@@ -145,12 +133,12 @@ class SheetCopier
     mergedCells = mc;
   }
 
-  void setRowBreaks(ArrayList rb)
+  void setRowBreaks(ArrayList<Integer> rb)
   {
     rowBreaks = rb;
   }
 
-  void setColumnBreaks(ArrayList cb)
+  void setColumnBreaks(ArrayList<Integer> cb)
   {
     columnBreaks = cb;
   }
@@ -160,22 +148,22 @@ class SheetCopier
     sheetWriter = sw;
   }
 
-  void setDrawings(ArrayList d)
+  void setDrawings(ArrayList<DrawingGroupObject> d)
   {
     drawings = d;
   }
 
-  void setImages(ArrayList i)
+  void setImages(ArrayList<WritableImage> i)
   {
     images = i;
   }
 
-  void setConditionalFormats(ArrayList cf)
+  void setConditionalFormats(ArrayList<ConditionalFormat> cf)
   {
     conditionalFormats = cf;
   }
 
-  void setValidatedCells(ArrayList vc)
+  void setValidatedCells(ArrayList<WritableCell> vc)
   {
     validatedCells = vc;
   }
@@ -221,52 +209,41 @@ class SheetCopier
     // Copy the column info records
     jxl.read.biff.ColumnInfoRecord[] readCirs = fromSheet.getColumnInfos();
 
-    for (int i = 0 ; i < readCirs.length; i++)
-    {
-      jxl.read.biff.ColumnInfoRecord rcir = readCirs[i];
+    for (jxl.read.biff.ColumnInfoRecord rcir : readCirs)
       for (int j = rcir.getStartColumn(); j <= rcir.getEndColumn() ; j++) 
       {
-        ColumnInfoRecord cir = new ColumnInfoRecord(rcir, j, 
-                                                    formatRecords);
+        ColumnInfoRecord cir = new ColumnInfoRecord(rcir, j,
+                formatRecords);
         cir.setHidden(rcir.getHidden());
         columnFormats.add(cir);
       }
-    }
 
     // Copy the hyperlinks
-    Hyperlink[] hls = fromSheet.getHyperlinks();
-    for (int i = 0 ; i < hls.length; i++)
-    {
-      WritableHyperlink hr = new WritableHyperlink
-        (hls[i], toSheet);
+    for (Hyperlink hl : fromSheet.getHyperlinks()) {
+      WritableHyperlink hr = new WritableHyperlink(hl, toSheet);
       hyperlinks.add(hr);
     }
 
     // Copy the merged cells
-    Range[] merged = fromSheet.getMergedCells();
-
-    for (int i = 0; i < merged.length; i++)
-    {
-      mergedCells.add(new SheetRangeImpl((SheetRangeImpl)merged[i], toSheet));
-    }
+    for (Range range : fromSheet.getMergedCells())
+      mergedCells.add(new SheetRangeImpl((SheetRangeImpl) range, toSheet));
 
     // Copy the row properties
     try
     {
       jxl.read.biff.RowRecord[] rowprops  = fromSheet.getRowProperties();
 
-      for (int i = 0; i < rowprops.length; i++)
-      {
-        RowRecord rr = toSheet.getRowRecord(rowprops[i].getRowNumber());
-        XFRecord format = rowprops[i].hasDefaultFormat() ? 
-          formatRecords.getXFRecord(rowprops[i].getXFIndex()) : null;
-        rr.setRowDetails(rowprops[i].getRowHeight(), 
-                         rowprops[i].matchesDefaultFontHeight(),
-                         rowprops[i].isCollapsed(),
-                         rowprops[i].getOutlineLevel(),
-                         rowprops[i].getGroupStart(),
+      for (jxl.read.biff.RowRecord rowprop : rowprops) {
+        RowRecord rr = toSheet.getRowRecord(rowprop.getRowNumber());
+        XFRecord format = rowprop.hasDefaultFormat() ? 
+          formatRecords.getXFRecord(rowprop.getXFIndex()) : null;
+        rr.setRowDetails(rowprop.getRowHeight(), 
+                         rowprop.matchesDefaultFontHeight(),
+                         rowprop.isCollapsed(),
+                         rowprop.getOutlineLevel(),
+                         rowprop.getGroupStart(),
                          format);
-        numRows = Math.max(numRows, rowprops[i].getRowNumber() + 1);
+        numRows = Math.max(numRows, rowprop.getRowNumber() + 1);
       }
     }
     catch (RowsExceededException e)
@@ -287,7 +264,7 @@ class SheetCopier
     {
       for (int i = 0; i < rowbreaks.length; i++)
       {
-        rowBreaks.add(new Integer(rowbreaks[i]));
+        rowBreaks.add(rowbreaks[i]);
       }
     }
 
@@ -297,7 +274,7 @@ class SheetCopier
     {
       for (int i = 0; i < columnbreaks.length; i++)
       {
-        columnBreaks.add(new Integer(columnbreaks[i]));
+        columnBreaks.add(columnbreaks[i]);
       }
     }
 
@@ -306,58 +283,49 @@ class SheetCopier
 
     // Copy the drawings
     DrawingGroupObject[] dr = fromSheet.getDrawings();
-    for (int i = 0 ; i < dr.length ; i++)
-    {
-      if (dr[i] instanceof jxl.biff.drawing.Drawing)
-      {
+    for (DrawingGroupObject dgo : dr)
+      if (dgo instanceof jxl.biff.drawing.Drawing) {
         WritableImage wi = new WritableImage
-          (dr[i], toSheet.getWorkbook().getDrawingGroup());
+          (dgo, toSheet.getWorkbook().getDrawingGroup());
         drawings.add(wi);
         images.add(wi);
       }
-      else if (dr[i] instanceof jxl.biff.drawing.Comment)
-      {
-        jxl.biff.drawing.Comment c = 
-          new jxl.biff.drawing.Comment(dr[i], 
-                                       toSheet.getWorkbook().getDrawingGroup(),
-                                       workbookSettings);
+      else if (dgo instanceof jxl.biff.drawing.Comment) {
+        jxl.biff.drawing.Comment c =
+                new jxl.biff.drawing.Comment(dgo,
+                                             toSheet.getWorkbook().getDrawingGroup(),
+                                             workbookSettings);
         drawings.add(c);
-        
         // Set up the reference on the cell value
-        CellValue cv = (CellValue) toSheet.getWritableCell(c.getColumn(), 
-                                                           c.getRow());
+        CellValue cv = (CellValue) toSheet.getWritableCell(c.getColumn(),
+                c.getRow());
         Assert.verify(cv.getCellFeatures() != null);
         cv.getWritableCellFeatures().setCommentDrawing(c);
       }
-      else if (dr[i] instanceof jxl.biff.drawing.Button)
-      {
-        jxl.biff.drawing.Button b = 
-          new jxl.biff.drawing.Button
-          (dr[i], 
-           toSheet.getWorkbook().getDrawingGroup(),
-           workbookSettings);
+      else if (dgo instanceof jxl.biff.drawing.Button) {
+        jxl.biff.drawing.Button b =
+                new jxl.biff.drawing.Button
+                (dgo,
+                 toSheet.getWorkbook().getDrawingGroup(),
+                 workbookSettings);
         drawings.add(b);
       }
-      else if (dr[i] instanceof jxl.biff.drawing.ComboBox)
-      {
-        jxl.biff.drawing.ComboBox cb = 
-          new jxl.biff.drawing.ComboBox
-          (dr[i], 
-           toSheet.getWorkbook().getDrawingGroup(), 
-           workbookSettings);
+      else if (dgo instanceof jxl.biff.drawing.ComboBox) {
+        jxl.biff.drawing.ComboBox cb =
+                new jxl.biff.drawing.ComboBox
+                (dgo,
+                 toSheet.getWorkbook().getDrawingGroup(),
+                 workbookSettings);
         drawings.add(cb);
       }
-      else if (dr[i] instanceof jxl.biff.drawing.CheckBox)
-      {
-        jxl.biff.drawing.CheckBox cb = 
-          new jxl.biff.drawing.CheckBox
-          (dr[i], 
-           toSheet.getWorkbook().getDrawingGroup(), 
-           workbookSettings);
+      else if (dgo instanceof jxl.biff.drawing.CheckBox) {
+        jxl.biff.drawing.CheckBox cb =
+                new jxl.biff.drawing.CheckBox
+                (dgo,
+                toSheet.getWorkbook().getDrawingGroup(),
+                workbookSettings);
         drawings.add(cb);
       }
-
-    }
 
     // Copy the data validations
     DataValidation rdv = fromSheet.getDataValidation();
@@ -379,10 +347,7 @@ class SheetCopier
     ConditionalFormat[] cf = fromSheet.getConditionalFormats();
     if (cf.length > 0)
     {
-      for (int i = 0; i < cf.length ; i++)
-      {
-        conditionalFormats.add(cf[i]);
-      }
+      conditionalFormats.addAll(Arrays.asList(cf));
     }
 
     // Get the autofilter
@@ -535,23 +500,21 @@ class SheetCopier
    */
   public void importSheet()
   {
-    xfRecords = new HashMap();
-    fonts = new HashMap();
-    formats = new HashMap();
+    xfRecords = new HashMap<>();
+    fonts = new HashMap<>();
+    formats = new HashMap<>();
 
     deepCopyCells();
 
     // Copy the column info records
     jxl.read.biff.ColumnInfoRecord[] readCirs = fromSheet.getColumnInfos();
 
-    for (int i = 0 ; i < readCirs.length; i++)
-    {
-      jxl.read.biff.ColumnInfoRecord rcir = readCirs[i];
+    for (jxl.read.biff.ColumnInfoRecord rcir : readCirs)
       for (int j = rcir.getStartColumn(); j <= rcir.getEndColumn() ; j++) 
       {
         ColumnInfoRecord cir = new ColumnInfoRecord(rcir, j);
         int xfIndex = cir.getXfIndex();
-        XFRecord cf = (WritableCellFormat) xfRecords.get(new Integer(xfIndex));
+        XFRecord cf = xfRecords.get(xfIndex);
 
         if (cf == null)
         {
@@ -563,39 +526,29 @@ class SheetCopier
         cir.setHidden(rcir.getHidden());
         columnFormats.add(cir);
       }
-    }
 
     // Copy the hyperlinks
-    Hyperlink[] hls = fromSheet.getHyperlinks();
-    for (int i = 0 ; i < hls.length; i++)
-    {
-      WritableHyperlink hr = new WritableHyperlink
-        (hls[i], toSheet);
+    for (Hyperlink hl : fromSheet.getHyperlinks()) {
+      WritableHyperlink hr = new WritableHyperlink(hl, toSheet);
       hyperlinks.add(hr);
     }
 
     // Copy the merged cells
-    Range[] merged = fromSheet.getMergedCells();
-
-    for (int i = 0; i < merged.length; i++)
-    {
-      mergedCells.add(new SheetRangeImpl((SheetRangeImpl)merged[i], toSheet));
-    }
+    for (Range range : fromSheet.getMergedCells())
+      mergedCells.add(new SheetRangeImpl((SheetRangeImpl) range, toSheet));
 
     // Copy the row properties
     try
     {
       jxl.read.biff.RowRecord[] rowprops  = fromSheet.getRowProperties();
 
-      for (int i = 0; i < rowprops.length; i++)
-      {
-        RowRecord rr = toSheet.getRowRecord(rowprops[i].getRowNumber());
+      for (jxl.read.biff.RowRecord rowprop : rowprops) {
+        RowRecord rr = toSheet.getRowRecord(rowprop.getRowNumber());
         XFRecord format = null;
-        jxl.read.biff.RowRecord rowrec = rowprops[i];
+        jxl.read.biff.RowRecord rowrec = rowprop;
         if (rowrec.hasDefaultFormat())
         {
-          format = (WritableCellFormat) 
-            xfRecords.get(new Integer(rowrec.getXFIndex()));
+          format = xfRecords.get(rowrec.getXFIndex());
 
           if (format == null)
           {
@@ -604,14 +557,13 @@ class SheetCopier
             WritableCellFormat wcf = copyCellFormat(readFormat);
           }
         }
-
-        rr.setRowDetails(rowrec.getRowHeight(), 
-                         rowrec.matchesDefaultFontHeight(),
-                         rowrec.isCollapsed(),
-                         rowrec.getOutlineLevel(),
-                         rowrec.getGroupStart(),
-                         format);
-        numRows = Math.max(numRows, rowprops[i].getRowNumber() + 1);
+        rr.setRowDetails(rowrec.getRowHeight(),
+                rowrec.matchesDefaultFontHeight(),
+                rowrec.isCollapsed(),
+                rowrec.getOutlineLevel(),
+                rowrec.getGroupStart(),
+                format);
+        numRows = Math.max(numRows, rowprop.getRowNumber() + 1);
       }
     }
     catch (RowsExceededException e)
@@ -632,7 +584,7 @@ class SheetCopier
     {
       for (int i = 0; i < rowbreaks.length; i++)
       {
-        rowBreaks.add(new Integer(rowbreaks[i]));
+        rowBreaks.add(rowbreaks[i]);
       }
     }
 
@@ -642,7 +594,7 @@ class SheetCopier
     {
       for (int i = 0; i < columnbreaks.length; i++)
       {
-        columnBreaks.add(new Integer(columnbreaks[i]));
+        columnBreaks.add(columnbreaks[i]);
       }
     }
 
@@ -697,51 +649,30 @@ class SheetCopier
       toSheet.getWorkbook().createDrawingGroup();
     }
 
-    for (int i = 0 ; i < dr.length ; i++)
-    {
-      if (dr[i] instanceof jxl.biff.drawing.Drawing)
-      {
-        WritableImage wi = new WritableImage
-          (dr[i].getX(), dr[i].getY(), 
-           dr[i].getWidth(), dr[i].getHeight(),
-           dr[i].getImageData());
+    for (DrawingGroupObject dgo : dr)
+      if (dgo instanceof jxl.biff.drawing.Drawing) {
+        WritableImage wi = new WritableImage(dgo.getX(), dgo.getY(), dgo.getWidth(), dgo.getHeight(), dgo.getImageData());
         toSheet.getWorkbook().addDrawing(wi);
         drawings.add(wi);
         images.add(wi);
       }
-      else if (dr[i] instanceof jxl.biff.drawing.Comment)
-      {
-        jxl.biff.drawing.Comment c = 
-          new jxl.biff.drawing.Comment(dr[i], 
-                                       toSheet.getWorkbook().getDrawingGroup(),
-                                       workbookSettings);
+      else if (dgo instanceof jxl.biff.drawing.Comment) {
+        jxl.biff.drawing.Comment c = new jxl.biff.drawing.Comment(dgo, toSheet.getWorkbook().getDrawingGroup(), workbookSettings);
         drawings.add(c);
-        
         // Set up the reference on the cell value
-        CellValue cv = (CellValue) toSheet.getWritableCell(c.getColumn(), 
-                                                           c.getRow());
+        CellValue cv = (CellValue) toSheet.getWritableCell(c.getColumn(),
+                c.getRow());
         Assert.verify(cv.getCellFeatures() != null);
         cv.getWritableCellFeatures().setCommentDrawing(c);
       }
-      else if (dr[i] instanceof jxl.biff.drawing.Button)
-      {
-        jxl.biff.drawing.Button b = 
-          new jxl.biff.drawing.Button
-          (dr[i], 
-           toSheet.getWorkbook().getDrawingGroup(),
-           workbookSettings);
+      else if (dgo instanceof jxl.biff.drawing.Button) {
+        jxl.biff.drawing.Button b = new jxl.biff.drawing.Button(dgo, toSheet.getWorkbook().getDrawingGroup(), workbookSettings);
         drawings.add(b);
       }
-      else if (dr[i] instanceof jxl.biff.drawing.ComboBox)
-      {
-        jxl.biff.drawing.ComboBox cb = 
-          new jxl.biff.drawing.ComboBox
-          (dr[i], 
-           toSheet.getWorkbook().getDrawingGroup(), 
-           workbookSettings);
+      else if (dgo instanceof jxl.biff.drawing.ComboBox) {
+        jxl.biff.drawing.ComboBox cb = new jxl.biff.drawing.ComboBox(dgo, toSheet.getWorkbook().getDrawingGroup(), workbookSettings);
         drawings.add(cb);
       }
-    }
 
     // Copy the data validations
     DataValidation rdv = fromSheet.getDataValidation();
@@ -902,8 +833,7 @@ class SheetCopier
     // Copy the cell format
     CellFormat cf = c.getCellFormat();
     int index = ( (XFRecord) cf).getXFIndex();
-    WritableCellFormat wcf = (WritableCellFormat) 
-      xfRecords.get(new Integer(index));
+    WritableCellFormat wcf = xfRecords.get(index);
 
     if (wcf == null)
     {
@@ -922,17 +852,12 @@ class SheetCopier
   {
     // Copy the cells
     int cells = fromSheet.getRows();
-    Cell[] row = null;
-    Cell cell = null;
     for (int i = 0;  i < cells; i++)
     {
-      row = fromSheet.getRow(i);
+      Cell[] row = fromSheet.getRow(i);
 
-      for (int j = 0; j < row.length; j++)
-      {
-        cell = row[j];
+      for (Cell cell : row) {
         WritableCell c = shallowCopyCell(cell);
-
         // Encase the calls to addCell in a try-catch block
         // These should not generate any errors, because we are
         // copying from an existing spreadsheet.  In the event of
@@ -947,7 +872,7 @@ class SheetCopier
             // Cell.setCellFeatures short circuits when the cell is copied,
             // so make sure the copy logic handles the validated cells        
             if (c.getCellFeatures() != null &&
-                c.getCellFeatures().hasDataValidation())
+                    c.getCellFeatures().hasDataValidation())
             {
               validatedCells.add(c);
             }
@@ -993,7 +918,7 @@ class SheetCopier
 
             // Cell.setCellFeatures short circuits when the cell is copied,
             // so make sure the copy logic handles the validated cells
-            if (c.getCellFeatures() != null &
+            if (c.getCellFeatures() != null &&
                 c.getCellFeatures().hasDataValidation())
             {
               validatedCells.add(c);
@@ -1027,13 +952,13 @@ class SheetCopier
 
       // Maintain the local list of formats
       int xfIndex = xfr.getXFIndex();
-      xfRecords.put(new Integer(xfIndex), f);
+      xfRecords.put(xfIndex, f);
 
       int fontIndex = xfr.getFontIndex();
-      fonts.put(new Integer(fontIndex), new Integer(f.getFontIndex()));
+      fonts.put(fontIndex, f.getFontIndex());
 
       int formatIndex = xfr.getFormatRecord();
-      formats.put(new Integer(formatIndex), new Integer(f.getFormatRecord()));
+      formats.put(formatIndex, f.getFormatRecord());
 
       return f;
     }
