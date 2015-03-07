@@ -20,9 +20,7 @@
 package jxl.write.biff;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.TreeSet;
+import java.util.*;
 
 import jxl.common.Assert;
 import jxl.common.Logger;
@@ -42,6 +40,8 @@ import jxl.biff.drawing.*;
 import jxl.format.Border;
 import jxl.format.BorderLineStyle;
 import jxl.format.Colour;
+import jxl.read.biff.HorizontalPageBreaksRecord.RowIndex;
+import jxl.read.biff.VerticalPageBreaksRecord.ColumnIndex;
 import jxl.write.Blank;
 import jxl.write.WritableCell;
 import jxl.write.WritableCellFormat;
@@ -100,11 +100,11 @@ final class SheetWriter
   /**
    * Array of row page breaks
    */
-  private ArrayList<Integer> rowBreaks;
+  private List<RowIndex> rowBreaks;
   /**
    * Array of column page breaks
    */
-  private ArrayList<Integer> columnBreaks;
+  private List<ColumnIndex> columnBreaks;
   /**
    * Array of hyperlinks
    */
@@ -294,29 +294,15 @@ final class SheetWriter
     workspaceOptions.setFitToPages(settings.getFitToPages());
     outputFile.write(workspaceOptions);
 
-    if (rowBreaks.size() > 0)
+    if (! rowBreaks.isEmpty())
     {
-      int[] rb = new int[rowBreaks.size()];
-
-      for (int i = 0; i < rb.length; i++)
-      {
-        rb[i] = rowBreaks.get(i);
-      }
-
-      HorizontalPageBreaksRecord hpbr = new HorizontalPageBreaksRecord(rb);
+      HorizontalPageBreaksRecord hpbr = new HorizontalPageBreaksRecord(rowBreaks);
       outputFile.write(hpbr);
     }
 
-    if (columnBreaks.size() > 0)
+    if (! columnBreaks.isEmpty())
     {
-      int[] rb = new int[columnBreaks.size()];
-
-      for (int i = 0; i < rb.length; i++)
-      {
-        rb[i] = columnBreaks.get(i);
-      }
-
-      VerticalPageBreaksRecord hpbr = new VerticalPageBreaksRecord(rb);
+      VerticalPageBreaksRecord hpbr = new VerticalPageBreaksRecord(columnBreaks);
       outputFile.write(hpbr);
     }
 
@@ -610,8 +596,8 @@ final class SheetWriter
    * @param rws the rows in the spreadsheet
    */
   void setWriteData(RowRecord[] rws, 
-                    ArrayList<Integer>   rb,
-                    ArrayList<Integer>   cb,
+                    List<RowIndex>   rb,
+                    List<ColumnIndex>   cb,
                     ArrayList<? extends HyperlinkRecord>   hl,
                     MergedCells mc,
                     TreeSet<ColumnInfoRecord>     cf,

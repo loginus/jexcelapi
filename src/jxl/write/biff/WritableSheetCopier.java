@@ -19,11 +19,7 @@
 
 package jxl.write.biff;
 
-import java.util.Arrays;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.TreeSet;
-import java.util.Iterator;
+import java.util.*;
 
 import jxl.common.Assert;
 import jxl.common.Logger;
@@ -59,6 +55,7 @@ import jxl.biff.drawing.Drawing;
 import jxl.biff.drawing.DrawingGroupObject;
 import jxl.format.CellFormat;
 import jxl.biff.formula.FormulaException;
+import jxl.read.biff.HorizontalPageBreaksRecord.RowIndex;
 import jxl.read.biff.SheetImpl;
 import jxl.read.biff.NameRecord;
 import jxl.read.biff.WorkbookParser;
@@ -96,9 +93,9 @@ class WritableSheetCopier
   private MergedCells fromMergedCells;
   private MergedCells toMergedCells;
   private RowRecord[] fromRows;
-  private ArrayList fromRowBreaks;
+  private List<RowIndex> fromRowBreaks;
   private ArrayList fromColumnBreaks;
-  private ArrayList toRowBreaks;
+  private List<RowIndex> toRowBreaks;
   private ArrayList toColumnBreaks;
   private DataValidation fromDataValidation;
   private DataValidation toDataValidation;
@@ -159,7 +156,7 @@ class WritableSheetCopier
     validatedCells = vc;
   }
 
-  void setRowBreaks(ArrayList frb, ArrayList trb)
+  void setRowBreaks(List<RowIndex> frb, List<RowIndex> trb)
   {
     fromRowBreaks = frb;
     toRowBreaks = trb;

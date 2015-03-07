@@ -19,8 +19,7 @@
 
 package jxl.read.biff;
 
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import jxl.*;
@@ -28,6 +27,8 @@ import jxl.biff.*;
 import jxl.biff.CellReferenceHelper;
 import jxl.biff.drawing.*;
 import jxl.format.CellFormat;
+import jxl.read.biff.HorizontalPageBreaksRecord.RowIndex;
+import jxl.read.biff.VerticalPageBreaksRecord.ColumnIndex;
 
 /**
  * Represents a sheet within a workbook.  Provides a handle to the individual
@@ -188,12 +189,12 @@ public class SheetImpl implements Sheet
   /**
    * The horizontal page breaks contained on this sheet
    */
-  private int[] rowBreaks;
+  private HorizontalPageBreaksRecord rowBreaks;
 
   /**
    * The vertical page breaks contained on this sheet
    */
-  private int[] columnBreaks;
+  private List<ColumnIndex> columnBreaks;
 
   /**
    * The maximum row outline level
@@ -841,7 +842,7 @@ public class SheetImpl implements Sheet
    * @return the explicit row breaks
    */
   @Override
-  public final int[] getRowPageBreaks()
+  public final HorizontalPageBreaksRecord getRowPageBreaks()
   {
     return rowBreaks;
   }
@@ -852,7 +853,7 @@ public class SheetImpl implements Sheet
    * @return the explicit row breaks
    */
   @Override
-  public final int[] getColumnPageBreaks()
+  public final List<ColumnIndex> getColumnPageBreaks()
   {
     return columnBreaks;
   }

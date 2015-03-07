@@ -19,19 +19,42 @@
 
 package jxl.read.biff;
 
-import jxl.biff.IntegerHelper;
-import jxl.biff.RecordData;
+import java.util.*;
+import jxl.biff.*;
 
 /**
  * Contains the cell dimensions of this worksheet
  */
-class HorizontalPageBreaksRecord extends RecordData
-{
+public class HorizontalPageBreaksRecord extends RecordData {
+  public static class RowIndex {
+    private final int firstRowBelowBreak;
+    private final int firstColumn;
+    private final int lastColumn;
+    
+    public RowIndex(int firstRowBelowBreak, int firstColumn, int lastColumn) {
+      this.firstRowBelowBreak = firstRowBelowBreak;
+      this.firstColumn = firstColumn;
+      this.lastColumn = lastColumn;
+    }
+
+    public int getFirstRowBelowBreak() {
+      return firstRowBelowBreak;
+    }
+
+    public int getFirstColumn() {
+      return firstColumn;
+    }
+
+    public int getLastColumn() {
+      return lastColumn;
+    }
+    
+  }
 
   /**
    * The row page breaks
    */
-  private final int[] rowBreaks;
+  private final List<RowIndex> rowBreaks = new ArrayList<>();
 
   /**
    * Dummy indicators for overloading the constructor
@@ -49,14 +72,15 @@ class HorizontalPageBreaksRecord extends RecordData
     super(t);
 
     byte[] data = t.getData();
-
     int numbreaks = IntegerHelper.getInt(data[0], data[1]);
     int pos = 2;
-    rowBreaks = new int[numbreaks];
 
     for (int i = 0; i < numbreaks; i++)
     {
-      rowBreaks[i] = IntegerHelper.getInt(data[pos], data[pos + 1]);
+      rowBreaks.add(new RowIndex(
+              IntegerHelper.getInt(data[pos], data[pos + 1]),
+              IntegerHelper.getInt(data[pos + 2], data[pos + 3]),
+              IntegerHelper.getInt(data[pos + 4], data[pos + 5])));
       pos += 6;
     }
   }
@@ -74,10 +98,12 @@ class HorizontalPageBreaksRecord extends RecordData
     byte[] data = t.getData();
     int numbreaks = IntegerHelper.getInt(data[0], data[1]);
     int pos = 2;
-    rowBreaks = new int[numbreaks];
     for (int i = 0; i < numbreaks; i++)
     {
-      rowBreaks[i] = IntegerHelper.getInt(data[pos], data[pos + 1]);
+      rowBreaks.add(new RowIndex(
+              IntegerHelper.getInt(data[pos], data[pos + 1]),
+              0,
+              0xffff));
       pos += 2;
     }
   }
@@ -87,10 +113,11 @@ class HorizontalPageBreaksRecord extends RecordData
    *
    * @return the row breaks on the current sheet
    */
-  public int[] getRowBreaks()
+  private List<RowIndex> getRowBreaks()
   {
-    return rowBreaks;
+    return Collections.unmodifiableList(rowBreaks);
   }
+  
 }
 
 

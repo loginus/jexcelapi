@@ -19,9 +19,11 @@
 
 package jxl.write.biff;
 
+import java.util.List;
 import jxl.biff.IntegerHelper;
 import jxl.biff.Type;
 import jxl.biff.WritableRecordData;
+import jxl.read.biff.VerticalPageBreaksRecord.ColumnIndex;
 
 /**
  * Contains the list of explicit horizontal page breaks on the current sheet
@@ -31,14 +33,14 @@ class VerticalPageBreaksRecord extends WritableRecordData
   /**
    * The row breaks
    */
-  private int[] columnBreaks;
+  private List<ColumnIndex> columnBreaks;
   
   /**
    * Constructor
    * 
    * @param break the row breaks
    */
-  public VerticalPageBreaksRecord(int[] breaks)
+  public VerticalPageBreaksRecord(List<ColumnIndex> breaks)
   {
     super(Type.VERTICALPAGEBREAKS);
 
@@ -52,16 +54,16 @@ class VerticalPageBreaksRecord extends WritableRecordData
    */
   public byte[] getData()
   {
-    byte[] data = new byte[columnBreaks.length * 6 + 2];
+    byte[] data = new byte[columnBreaks.size() * 6 + 2];
 
     // The number of breaks on the list
-    IntegerHelper.getTwoBytes(columnBreaks.length, data, 0);
+    IntegerHelper.getTwoBytes(columnBreaks.size(), data, 0);
     int pos = 2;
 
-    for (int i = 0; i < columnBreaks.length; i++)
-    {
-      IntegerHelper.getTwoBytes(columnBreaks[i], data, pos);
-      IntegerHelper.getTwoBytes(0xff, data, pos+4);
+    for (ColumnIndex cb : columnBreaks) {
+      IntegerHelper.getTwoBytes(cb.getFirstColumnFollowingBreak(), data, pos);
+      IntegerHelper.getTwoBytes(cb.getFirstRow(), data, pos+2);
+      IntegerHelper.getTwoBytes(cb.getLastRow(), data, pos+4);
       pos += 6;
     }
 

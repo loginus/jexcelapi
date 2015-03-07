@@ -44,6 +44,8 @@ import jxl.biff.formula.FormulaException;
 import jxl.format.PageOrder;
 import jxl.format.PageOrientation;
 import jxl.format.PaperSize;
+import jxl.read.biff.HorizontalPageBreaksRecord.RowIndex;
+import jxl.read.biff.VerticalPageBreaksRecord.ColumnIndex;
 
 /**
  * Reads the sheet.  This functionality was originally part of the
@@ -186,12 +188,12 @@ final class SheetReader
   /**
    * The horizontal page breaks contained on this sheet
    */
-  private int[] rowBreaks;
+  private HorizontalPageBreaksRecord rowBreaks;
 
   /**
    * The vertical page breaks contained on this sheet
    */
-  private int[] columnBreaks;
+  private List<ColumnIndex> columnBreaks;
 
   /**
    * The maximum row outline level
@@ -876,12 +878,10 @@ final class SheetReader
       }
       else if (type == Type.HORIZONTALPAGEBREAKS)
       {
-        HorizontalPageBreaksRecord dr = workbookBof.isBiff8()
+        rowBreaks = workbookBof.isBiff8()
                 ? new HorizontalPageBreaksRecord(r)
                 : new HorizontalPageBreaksRecord
             (r, HorizontalPageBreaksRecord.biff7);
-
-        rowBreaks = dr.getRowBreaks();
       }
       else if (type == Type.VERTICALPAGEBREAKS)
       {
@@ -890,7 +890,8 @@ final class SheetReader
                 : new VerticalPageBreaksRecord
             (r, VerticalPageBreaksRecord.biff7);
 
-        columnBreaks = dr.getColumnBreaks();
+        columnBreaks.clear();
+        columnBreaks.addAll(dr.getColumnBreaks());
       }
       else if (type == Type.PLS)
       {
@@ -1352,7 +1353,7 @@ final class SheetReader
    *
    * @return the row breaks
    */
-  final int[] getRowBreaks()
+  final HorizontalPageBreaksRecord getRowBreaks()
   {
     return rowBreaks;
   }
@@ -1362,9 +1363,9 @@ final class SheetReader
    *
    * @return the column breaks
    */
-  final int[] getColumnBreaks()
+  final List<ColumnIndex> getColumnBreaks()
   {
-    return columnBreaks;
+    return Collections.unmodifiableList(columnBreaks);
   }
 
   /**

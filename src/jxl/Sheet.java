@@ -19,8 +19,11 @@
 
 package jxl;
 
+import java.util.List;
 import java.util.regex.Pattern;
 import jxl.format.CellFormat;
+import jxl.read.biff.HorizontalPageBreaksRecord;
+import jxl.read.biff.VerticalPageBreaksRecord.ColumnIndex;
 
 /**
  * Represents a sheet within a workbook.  Provides a handle to the individual
@@ -260,14 +263,14 @@ public interface Sheet
    *
    * @return the page breaks on this sheet
    */
-  public int[] getRowPageBreaks();
+  public HorizontalPageBreaksRecord getRowPageBreaks();
 
   /**
    * Accessor for the page breaks on this sheet
    *
    * @return the page breaks on this sheet
    */
-  public int[] getColumnPageBreaks();
+  public List<ColumnIndex> getColumnPageBreaks();
 
 }
 

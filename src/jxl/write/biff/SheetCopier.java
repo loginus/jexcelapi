@@ -48,8 +48,10 @@ import jxl.biff.drawing.ComboBox;
 import jxl.biff.drawing.DrawingGroupObject;
 import jxl.format.CellFormat;
 import jxl.biff.formula.FormulaException;
-import jxl.read.biff.SheetImpl;
+import jxl.read.biff.HorizontalPageBreaksRecord.RowIndex;
 import jxl.read.biff.NameRecord;
+import jxl.read.biff.SheetImpl;
+import jxl.read.biff.VerticalPageBreaksRecord.ColumnIndex;
 import jxl.read.biff.WorkbookParser;
 import jxl.write.Blank;
 import jxl.write.Boolean;
@@ -64,6 +66,11 @@ import jxl.write.WritableImage;
 import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
+import jxl.write.biff.ButtonPropertySetRecord;
+import jxl.write.biff.CellValue;
+import jxl.write.biff.ColumnInfoRecord;
+import jxl.write.biff.PLSRecord;
+import jxl.write.biff.RowRecord;
 
 /**
  * A transient utility object used to copy sheets.   This 
@@ -83,8 +90,8 @@ class SheetCopier
   private FormattingRecords formatRecords;
   private ArrayList<WritableHyperlink> hyperlinks;
   private MergedCells mergedCells;
-  private ArrayList<Integer> rowBreaks;
-  private ArrayList<Integer> columnBreaks;
+  private jxl.read.biff.HorizontalPageBreaksRecord rowBreaks;
+  private List<ColumnIndex> columnBreaks = new ArrayList<>();
   private SheetWriter sheetWriter;
   private ArrayList<DrawingGroupObject> drawings;
   private ArrayList<WritableImage> images;
@@ -133,12 +140,12 @@ class SheetCopier
     mergedCells = mc;
   }
 
-  void setRowBreaks(ArrayList<Integer> rb)
+  void setRowBreaks(List<RowIndex> rb)
   {
     rowBreaks = rb;
   }
 
-  void setColumnBreaks(ArrayList<Integer> cb)
+  void setColumnBreaks(List<ColumnIndex> cb)
   {
     columnBreaks = cb;
   }
@@ -258,25 +265,8 @@ class SheetCopier
     //    sheetWriter.setFooter(new FooterRecord(si.getFooter()));
 
     // Copy the page breaks
-    int[] rowbreaks = fromSheet.getRowPageBreaks();
-
-    if (rowbreaks != null)
-    {
-      for (int i = 0; i < rowbreaks.length; i++)
-      {
-        rowBreaks.add(rowbreaks[i]);
-      }
-    }
-
-    int[] columnbreaks = fromSheet.getColumnPageBreaks();
-
-    if (columnbreaks != null)
-    {
-      for (int i = 0; i < columnbreaks.length; i++)
-      {
-        columnBreaks.add(columnbreaks[i]);
-      }
-    }
+    takeOverRowBreakes(fromSheet.getRowPageBreaks());
+    takeOverColumnBreakes(fromSheet.getColumnPageBreaks());
 
     // Copy the charts
     sheetWriter.setCharts(fromSheet.getCharts());
@@ -388,6 +378,16 @@ class SheetCopier
     maxColumnOutlineLevel = fromSheet.getMaxColumnOutlineLevel();
   }
 
+  private void takeOverRowBreakes(List<RowIndex> rowPageBreaks) {
+    rowBreaks.clear();
+    rowBreaks.addAll(rowPageBreaks);
+  }
+
+  private void takeOverColumnBreakes(List<ColumnIndex> columnPageBreaks) {
+    columnBreaks.clear();
+    columnBreaks.addAll(columnPageBreaks);
+  }
+  
   /**
    * Copies a sheet from a read-only version to the writable version.
    * Performs shallow copies
@@ -578,25 +578,8 @@ class SheetCopier
     //    sheetWriter.setFooter(new FooterRecord(si.getFooter()));
 
     // Copy the page breaks
-    int[] rowbreaks = fromSheet.getRowPageBreaks();
-
-    if (rowbreaks != null)
-    {
-      for (int i = 0; i < rowbreaks.length; i++)
-      {
-        rowBreaks.add(rowbreaks[i]);
-      }
-    }
-
-    int[] columnbreaks = fromSheet.getColumnPageBreaks();
-
-    if (columnbreaks != null)
-    {
-      for (int i = 0; i < columnbreaks.length; i++)
-      {
-        columnBreaks.add(columnbreaks[i]);
-      }
-    }
+    takeOverRowBreakes(fromSheet.getRowPageBreaks());
+    takeOverColumnBreakes(fromSheet.getColumnPageBreaks());
 
     // Copy the charts
     Chart[] fromCharts = fromSheet.getCharts();

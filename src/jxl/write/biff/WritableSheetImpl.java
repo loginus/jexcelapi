@@ -20,10 +20,7 @@
 package jxl.write.biff;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import jxl.common.Assert;
@@ -62,6 +59,8 @@ import jxl.format.CellFormat;
 import jxl.format.Font;
 import jxl.format.PageOrientation;
 import jxl.format.PaperSize;
+import jxl.read.biff.HorizontalPageBreaksRecord.RowIndex;
+import jxl.read.biff.VerticalPageBreaksRecord.ColumnIndex;
 import jxl.write.Blank;
 import jxl.write.Label;
 import jxl.write.WritableCell;
@@ -159,12 +158,12 @@ class WritableSheetImpl implements WritableSheet
   /**
    * Array of row page breaks
    */
-  private ArrayList<Integer> rowBreaks;
+  private final List<RowIndex> rowBreaks;
 
   /**
    * Array of column page breaks
    */
-  private ArrayList<Integer> columnBreaks;
+  private ArrayList<ColumnIndex> columnBreaks;
 
   /**
    * The drawings on this sheet
@@ -2135,21 +2134,11 @@ class WritableSheetImpl implements WritableSheet
   public void addRowPageBreak(int row)
   {
     // First check that the row is not already present
-    Iterator<Integer> i = rowBreaks.iterator();
-    boolean found = false;
+    for (RowIndex rb : rowBreaks)
+      if (rb.getFirstRowBelowBreak() == row)
+        return;
 
-    while (i.hasNext() && !found)
-    {
-      if (i.next() == row)
-      {
-        found = true;
-      }
-    }
-
-    if (!found)
-    {
-      rowBreaks.add(row);
-    }
+    rowBreaks.add(new RowIndex(row, 0, 0xffff));
   }
 
   /**
@@ -2161,21 +2150,11 @@ class WritableSheetImpl implements WritableSheet
   public void addColumnPageBreak(int col)
   {
     // First check that the row is not already present
-    Iterator<Integer> i = columnBreaks.iterator();
-    boolean found = false;
+    for (ColumnIndex cb : columnBreaks)
+      if (cb.getFirstColumnFollowingBreak() == col)
+        return;
 
-    while (i.hasNext() && !found)
-    {
-      if (i.next() == col)
-      {
-        found = true;
-      }
-    }
-
-    if (!found)
-    {
-      columnBreaks.add(col);
-    }
+    columnBreaks.add(new ColumnIndex(col, 0, 0xffff));
   }
 
   /**
@@ -2574,15 +2553,9 @@ class WritableSheetImpl implements WritableSheet
    * @return the page breaks on this sheet
    */
   @Override
-  public int[] getRowPageBreaks()
+  public List<RowIndex> getRowPageBreaks()
   {
-    int[] rb = new int[rowBreaks.size()];
-    int pos = 0;
-    for (Iterator<Integer> i = rowBreaks.iterator(); i.hasNext() ; pos++)
-    {
-      rb[pos] = i.next();
-    }
-    return rb;
+    return Collections.unmodifiableList(rowBreaks);
   }
 
   /**
@@ -2591,15 +2564,9 @@ class WritableSheetImpl implements WritableSheet
    * @return the page breaks on this sheet
    */
   @Override
-  public int[] getColumnPageBreaks()
+  public List<ColumnIndex> getColumnPageBreaks()
   {
-    int[] rb = new int[columnBreaks.size()];
-    int pos = 0;
-    for (Iterator<Integer> i = columnBreaks.iterator(); i.hasNext() ; pos++)
-    {
-      rb[pos] = i.next();
-    }
-    return rb;
+    return Collections.unmodifiableList(columnBreaks);
   }
 
   /**
