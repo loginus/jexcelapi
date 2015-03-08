@@ -61,7 +61,7 @@ class VerticalPageBreaksRecord extends WritableRecordData
     for (int i = 0; i < columnBreaks.length; i++)
     {
       IntegerHelper.getTwoBytes(columnBreaks[i], data, pos);
-      IntegerHelper.getTwoBytes(0xff, data, pos+4);
+      IntegerHelper.getTwoBytes(0xffff, data, pos+4);
       pos += 6;
     }
 

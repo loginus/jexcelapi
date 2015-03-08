@@ -62,7 +62,7 @@ class HorizontalPageBreaksRecord extends WritableRecordData
     for (int i = 0; i < rowBreaks.length; i++)
     {
       IntegerHelper.getTwoBytes(rowBreaks[i], data, pos);
-      IntegerHelper.getTwoBytes(0xff, data, pos+4);
+      IntegerHelper.getTwoBytes(0xffff, data, pos+4);
       pos += 6;
     }
 
