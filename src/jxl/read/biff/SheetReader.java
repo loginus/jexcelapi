@@ -44,8 +44,6 @@ import jxl.biff.formula.FormulaException;
 import jxl.format.PageOrder;
 import jxl.format.PageOrientation;
 import jxl.format.PaperSize;
-import jxl.read.biff.HorizontalPageBreaksRecord.RowIndex;
-import jxl.read.biff.VerticalPageBreaksRecord.ColumnIndex;
 
 /**
  * Reads the sheet.  This functionality was originally part of the
@@ -193,7 +191,7 @@ final class SheetReader
   /**
    * The vertical page breaks contained on this sheet
    */
-  private List<ColumnIndex> columnBreaks;
+  private VerticalPageBreaksRecord columnBreaks;
 
   /**
    * The maximum row outline level
@@ -885,13 +883,10 @@ final class SheetReader
       }
       else if (type == Type.VERTICALPAGEBREAKS)
       {
-        VerticalPageBreaksRecord dr = workbookBof.isBiff8()
+        columnBreaks = workbookBof.isBiff8()
                 ? new VerticalPageBreaksRecord(r)
                 : new VerticalPageBreaksRecord
             (r, VerticalPageBreaksRecord.biff7);
-
-        columnBreaks.clear();
-        columnBreaks.addAll(dr.getColumnBreaks());
       }
       else if (type == Type.PLS)
       {
@@ -1363,9 +1358,9 @@ final class SheetReader
    *
    * @return the column breaks
    */
-  final List<ColumnIndex> getColumnBreaks()
+  final VerticalPageBreaksRecord getColumnBreaks()
   {
-    return Collections.unmodifiableList(columnBreaks);
+    return columnBreaks;
   }
 
   /**

@@ -20,12 +20,13 @@
 package jxl.read.biff;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import jxl.biff.*;
 
 /**
  * Contains the cell dimensions of this worksheet
  */
-public class HorizontalPageBreaksRecord extends RecordData {
+public class HorizontalPageBreaksRecord extends RecordData implements IHorizontalPageBreaks {
   public static class RowIndex {
     private final int firstRowBelowBreak;
     private final int firstColumn;
@@ -113,9 +114,12 @@ public class HorizontalPageBreaksRecord extends RecordData {
    *
    * @return the row breaks on the current sheet
    */
-  private List<RowIndex> getRowBreaks()
+  @Override
+  public List<Integer> getRowBreaks()
   {
-    return Collections.unmodifiableList(rowBreaks);
+    return rowBreaks.stream()
+            .map(RowIndex::getFirstRowBelowBreak)
+            .collect(Collectors.toList());
   }
   
 }

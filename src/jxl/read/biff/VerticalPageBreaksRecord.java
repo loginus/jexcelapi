@@ -20,13 +20,14 @@
 package jxl.read.biff;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import jxl.biff.IntegerHelper;
 import jxl.biff.RecordData;
 
 /**
  * Contains the cell dimensions of this worksheet
  */
-public class VerticalPageBreaksRecord extends RecordData {
+public class VerticalPageBreaksRecord extends RecordData implements IVerticalPageBreaks {
   public static class ColumnIndex {
     private final int firstColumnFollowingBreak;
     private final int firstRow;
@@ -115,9 +116,12 @@ public class VerticalPageBreaksRecord extends RecordData {
    *
    * @return the row breaks on the current sheet
    */
-  public List<ColumnIndex> getColumnBreaks()
+  @Override
+  public List<Integer> getColumnBreaks()
   {
-    return Collections.unmodifiableList(columnBreaks);
+    return columnBreaks.stream()
+            .map(ColumnIndex::getFirstColumnFollowingBreak)
+            .collect(Collectors.toList());
   }
 }
 

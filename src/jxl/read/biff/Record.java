@@ -20,22 +20,14 @@
 package jxl.read.biff;
 
 import java.util.ArrayList;
-
-import jxl.common.Logger;
-
-import jxl.biff.IntegerHelper;
-import jxl.biff.Type;
+import jxl.biff.*;
 
 
 /**
  * A container for the raw record data within a biff file
  */
-public final class Record
+public class Record
 {
-  /**
-   * The logger
-   */
-  private static final Logger logger = Logger.getLogger(Record.class);
 
   /**
    * The excel biff code
@@ -85,6 +77,15 @@ public final class Record
     type = Type.getType(code);
   }
 
+  protected Record(byte[] header, byte [] data) {
+    code = IntegerHelper.getInt(header[0], header[1]);
+    length = IntegerHelper.getInt(header[2], header[3]);
+    dataPos = 0;
+    file = null;
+    type = Type.getType(code);
+    this.data = data;
+  }
+  
   /**
    * Gets the biff type
    *
@@ -133,9 +134,7 @@ public final class Record
       byte[] d3 = new byte[data.length + size];
       System.arraycopy(data, 0, d3, 0, data.length);
       int pos = data.length;
-      for (int i = 0; i < contData.length; i++)
-      {
-        byte[] d2 = contData[i];
+      for (byte[] d2 : contData) {
         System.arraycopy(d2, 0, d3, pos, d2.length);
         pos += d2.length;
       }

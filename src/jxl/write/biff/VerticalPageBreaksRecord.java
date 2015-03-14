@@ -19,16 +19,15 @@
 
 package jxl.write.biff;
 
-import java.util.List;
-import jxl.biff.IntegerHelper;
-import jxl.biff.Type;
-import jxl.biff.WritableRecordData;
-import jxl.read.biff.VerticalPageBreaksRecord.ColumnIndex;
+import java.io.IOException;
+import java.util.*;
+import jxl.biff.*;
+import jxl.read.biff.IVerticalPageBreaks;
 
 /**
  * Contains the list of explicit horizontal page breaks on the current sheet
  */
-class VerticalPageBreaksRecord extends WritableRecordData
+class VerticalPageBreaksRecord extends WritableRecordData implements IVerticalPageBreaks
 {
   /**
    * The row breaks
@@ -40,11 +39,9 @@ class VerticalPageBreaksRecord extends WritableRecordData
    * 
    * @param break the row breaks
    */
-  public VerticalPageBreaksRecord(List<ColumnIndex> breaks)
+  VerticalPageBreaksRecord()
   {
     super(Type.VERTICALPAGEBREAKS);
-
-    columnBreaks = breaks;
   }
 
   /**
@@ -52,6 +49,7 @@ class VerticalPageBreaksRecord extends WritableRecordData
    * 
    * @return the binary data
    */
+  @Override
   public byte[] getData()
   {
     byte[] data = new byte[columnBreaks.size() * 6 + 2];
@@ -69,6 +67,57 @@ class VerticalPageBreaksRecord extends WritableRecordData
 
     return data;
   }
+
+  @Override
+  public List<Integer> getColumnBreaks() {
+    return Collections.unmodifiableList(columnBreaks);
+  }
+
+  void setColumnBreaks(IVerticalPageBreaks breaks) {
+    clear();
+    columnBreaks.addAll(breaks.getColumnBreaks());
+  }
+
+  void clear() {
+    columnBreaks.clear();
+  }
+
+  void addBreak(int col) {
+    // First check that the row is not already present
+    Iterator<Integer> i = columnBreaks.iterator();
+
+    while (i.hasNext())
+      if (i.next() == col)
+        return;
+
+    columnBreaks.add(col);
+  }
+
+  void insertColumn(int col) {
+    ListIterator<Integer> ri = columnBreaks.listIterator();
+    while (ri.hasNext())
+    {
+      int val = ri.next();
+      if (val >= col)
+        ri.set(val+1);
+    }
+  }
+
+  void removeColumn(int col) {
+    ListIterator<Integer> ri = columnBreaks.listIterator();
+    while (ri.hasNext())
+    {
+      int val = ri.next();
+      if (val == col)
+        ri.remove();
+      else if (val > col)
+        ri.set(val-1);
+    }
+  }
+
+  void write(File outputFile) throws IOException {
+    if (columnBreaks.size() > 0)
+      outputFile.write(this);
+  }
+ 
 }
-
-

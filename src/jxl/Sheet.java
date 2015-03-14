@@ -22,7 +22,7 @@ package jxl;
 import java.util.List;
 import java.util.regex.Pattern;
 import jxl.format.CellFormat;
-import jxl.read.biff.HorizontalPageBreaksRecord;
+import jxl.read.biff.*;
 import jxl.read.biff.VerticalPageBreaksRecord.ColumnIndex;
 
 /**
@@ -263,14 +263,14 @@ public interface Sheet
    *
    * @return the page breaks on this sheet
    */
-  public HorizontalPageBreaksRecord getRowPageBreaks();
+  public IHorizontalPageBreaks getRowPageBreaks();
 
   /**
    * Accessor for the page breaks on this sheet
    *
    * @return the page breaks on this sheet
    */
-  public List<ColumnIndex> getColumnPageBreaks();
+  public IVerticalPageBreaks getColumnPageBreaks();
 
 }
 

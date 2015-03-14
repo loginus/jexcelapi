@@ -55,7 +55,6 @@ import jxl.biff.drawing.Drawing;
 import jxl.biff.drawing.DrawingGroupObject;
 import jxl.format.CellFormat;
 import jxl.biff.formula.FormulaException;
-import jxl.read.biff.HorizontalPageBreaksRecord.RowIndex;
 import jxl.read.biff.SheetImpl;
 import jxl.read.biff.NameRecord;
 import jxl.read.biff.WorkbookParser;
@@ -93,10 +92,10 @@ class WritableSheetCopier
   private MergedCells fromMergedCells;
   private MergedCells toMergedCells;
   private RowRecord[] fromRows;
-  private List<RowIndex> fromRowBreaks;
-  private ArrayList fromColumnBreaks;
-  private List<RowIndex> toRowBreaks;
-  private ArrayList toColumnBreaks;
+  private HorizontalPageBreaksRecord fromRowBreaks;
+  private VerticalPageBreaksRecord fromColumnBreaks;
+  private HorizontalPageBreaksRecord toRowBreaks;
+  private VerticalPageBreaksRecord toColumnBreaks;
   private DataValidation fromDataValidation;
   private DataValidation toDataValidation;
   private SheetWriter sheetWriter;
@@ -156,13 +155,13 @@ class WritableSheetCopier
     validatedCells = vc;
   }
 
-  void setRowBreaks(List<RowIndex> frb, List<RowIndex> trb)
+  void setRowBreaks(HorizontalPageBreaksRecord frb, HorizontalPageBreaksRecord trb)
   {
     fromRowBreaks = frb;
     toRowBreaks = trb;
   }
 
-  void setColumnBreaks(ArrayList fcb, ArrayList tcb)
+  void setColumnBreaks(VerticalPageBreaksRecord fcb, VerticalPageBreaksRecord tcb)
   {
     fromColumnBreaks = fcb;
     toColumnBreaks = tcb;
@@ -283,10 +282,10 @@ class WritableSheetCopier
     }
 
     // Copy the horizontal page breaks
-    toRowBreaks = new ArrayList(fromRowBreaks);
+    toRowBreaks.setRowBreaks(fromRowBreaks);
 
     // Copy the vertical page breaks
-    toColumnBreaks = new ArrayList(fromColumnBreaks);
+    toColumnBreaks.setColumnBreaks(fromColumnBreaks);
 
     // Copy the data validations
     if (fromDataValidation != null)

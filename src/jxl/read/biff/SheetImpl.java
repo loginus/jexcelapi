@@ -27,8 +27,6 @@ import jxl.biff.*;
 import jxl.biff.CellReferenceHelper;
 import jxl.biff.drawing.*;
 import jxl.format.CellFormat;
-import jxl.read.biff.HorizontalPageBreaksRecord.RowIndex;
-import jxl.read.biff.VerticalPageBreaksRecord.ColumnIndex;
 
 /**
  * Represents a sheet within a workbook.  Provides a handle to the individual
@@ -194,7 +192,7 @@ public class SheetImpl implements Sheet
   /**
    * The vertical page breaks contained on this sheet
    */
-  private List<ColumnIndex> columnBreaks;
+  private VerticalPageBreaksRecord columnBreaks;
 
   /**
    * The maximum row outline level
@@ -842,7 +840,7 @@ public class SheetImpl implements Sheet
    * @return the explicit row breaks
    */
   @Override
-  public final HorizontalPageBreaksRecord getRowPageBreaks()
+  public final IHorizontalPageBreaks getRowPageBreaks()
   {
     return rowBreaks;
   }
@@ -853,7 +851,7 @@ public class SheetImpl implements Sheet
    * @return the explicit row breaks
    */
   @Override
-  public final List<ColumnIndex> getColumnPageBreaks()
+  public final IVerticalPageBreaks getColumnPageBreaks()
   {
     return columnBreaks;
   }

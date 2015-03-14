@@ -19,32 +19,58 @@
 
 package jxl.write.biff;
 
-import java.util.List;
-import jxl.biff.IntegerHelper;
-import jxl.biff.Type;
-import jxl.biff.WritableRecordData;
-import jxl.read.biff.HorizontalPageBreaksRecord.RowIndex;
+import java.io.IOException;
+import java.util.*;
+import java.util.stream.Collectors;
+import jxl.biff.*;
+import jxl.read.biff.IHorizontalPageBreaks;
 
 /**
  * Contains the list of explicit horizontal page breaks on the current sheet
  */
-class HorizontalPageBreaksRecord extends WritableRecordData
-{
+class HorizontalPageBreaksRecord extends WritableRecordData implements IHorizontalPageBreaks {
+  public static class RowIndex {
+    private int firstRowBelowBreak;
+    private final int firstColumn;
+    private final int lastColumn;
+    
+    public RowIndex(int firstRowBelowBreak, int firstColumn, int lastColumn) {
+      this.firstRowBelowBreak = firstRowBelowBreak;
+      this.firstColumn = firstColumn;
+      this.lastColumn = lastColumn;
+    }
+
+    public int getFirstRowBelowBreak() {
+      return firstRowBelowBreak;
+    }
+
+    public void setFirstRowBelowBreak(int firstRowBelowBreak) {
+      this.firstRowBelowBreak = firstRowBelowBreak;
+    }
+
+    public int getFirstColumn() {
+      return firstColumn;
+    }
+
+    public int getLastColumn() {
+      return lastColumn;
+    }
+    
+  }
+  
   /**
    * The row breaks
    */
-  private final List<RowIndex> rowBreaks;
+  private List<RowIndex> rowBreaks;
   
   /**
    * Constructor
    * 
    * @param break the row breaks
    */
-  public HorizontalPageBreaksRecord(List<RowIndex> breaks)
+  HorizontalPageBreaksRecord()
   {
     super(Type.HORIZONTALPAGEBREAKS);
-
-    rowBreaks = breaks;
   }
 
   /**
@@ -70,6 +96,60 @@ class HorizontalPageBreaksRecord extends WritableRecordData
 
     return data;
   }
-}
 
+  @Override
+  public List<Integer> getRowBreaks() {
+    return rowBreaks.stream()
+            .map(RowIndex::getFirstRowBelowBreak)
+            .collect(Collectors.toList());
+  }
+
+  void setRowBreaks(IHorizontalPageBreaks breaks) {
+    rowBreaks.clear();
+    rowBreaks.addAll(breaks.getRowBreaks());
+  }
+
+  void clear() {
+    rowBreaks.clear();
+  }
+
+  void addBreak(int row) {
+    // First check that the row is not already present
+    Iterator<Integer> i = rowBreaks.iterator();
+
+    while (i.hasNext())
+      if (i.next() == row)
+        return;
+
+    rowBreaks.add(row);
+  }
+
+  void insertRow(int row) {
+    ListIterator<Integer> ri = rowBreaks.listIterator();
+    while (ri.hasNext())
+    {
+      int val = ri.next();
+      if (val >= row)
+        ri.set(val+1);
+    }
+  }
+
+  void removeRow(int row) {
+    ListIterator<Integer> ri = rowBreaks.listIterator();
+    while (ri.hasNext())
+    {
+      int val = ri.next();
+      if (val == row)
+        ri.remove();
+      else if (val > row)
+        ri.set(val-1);
+    }
+  }
+
+  void write(File outputFile) throws IOException {
+    if (rowBreaks.size() > 0)
+      outputFile.write(this);
+  }
+  
+}
 

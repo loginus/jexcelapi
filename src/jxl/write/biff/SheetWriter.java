@@ -40,8 +40,6 @@ import jxl.biff.drawing.*;
 import jxl.format.Border;
 import jxl.format.BorderLineStyle;
 import jxl.format.Colour;
-import jxl.read.biff.HorizontalPageBreaksRecord.RowIndex;
-import jxl.read.biff.VerticalPageBreaksRecord.ColumnIndex;
 import jxl.write.Blank;
 import jxl.write.WritableCell;
 import jxl.write.WritableCellFormat;
@@ -100,11 +98,11 @@ final class SheetWriter
   /**
    * Array of row page breaks
    */
-  private List<RowIndex> rowBreaks;
+  private HorizontalPageBreaksRecord rowBreaks;
   /**
    * Array of column page breaks
    */
-  private List<ColumnIndex> columnBreaks;
+  private VerticalPageBreaksRecord columnBreaks;
   /**
    * Array of hyperlinks
    */
@@ -294,17 +292,8 @@ final class SheetWriter
     workspaceOptions.setFitToPages(settings.getFitToPages());
     outputFile.write(workspaceOptions);
 
-    if (! rowBreaks.isEmpty())
-    {
-      HorizontalPageBreaksRecord hpbr = new HorizontalPageBreaksRecord(rowBreaks);
-      outputFile.write(hpbr);
-    }
-
-    if (! columnBreaks.isEmpty())
-    {
-      VerticalPageBreaksRecord hpbr = new VerticalPageBreaksRecord(columnBreaks);
-      outputFile.write(hpbr);
-    }
+    rowBreaks.write(outputFile);
+    columnBreaks.write(outputFile);
 
     HeaderRecord header = new HeaderRecord(settings.getHeader().toString());
     outputFile.write(header);
@@ -596,8 +585,8 @@ final class SheetWriter
    * @param rws the rows in the spreadsheet
    */
   void setWriteData(RowRecord[] rws, 
-                    List<RowIndex>   rb,
-                    List<ColumnIndex>   cb,
+                    HorizontalPageBreaksRecord rb,
+                    VerticalPageBreaksRecord   cb,
                     ArrayList<? extends HyperlinkRecord>   hl,
                     MergedCells mc,
                     TreeSet<ColumnInfoRecord>     cf,
