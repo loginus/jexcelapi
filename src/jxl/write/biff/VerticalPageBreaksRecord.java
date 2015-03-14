@@ -39,7 +39,7 @@ class VerticalPageBreaksRecord extends WritableRecordData implements IVerticalPa
    * 
    * @param break the row breaks
    */
-  public VerticalPageBreaksRecord()
+  VerticalPageBreaksRecord()
   {
     super(Type.VERTICALPAGEBREAKS);
   }
@@ -58,9 +58,8 @@ class VerticalPageBreaksRecord extends WritableRecordData implements IVerticalPa
     IntegerHelper.getTwoBytes(columnBreaks.size(), data, 0);
     int pos = 2;
 
-    for (int i = 0; i < columnBreaks.size(); i++)
-    {
-      IntegerHelper.getTwoBytes(columnBreaks.get(i), data, pos);
+    for (Integer columnBreak : columnBreaks) {
+      IntegerHelper.getTwoBytes(columnBreak, data, pos);
       IntegerHelper.getTwoBytes(0xffff, data, pos+4);
       pos += 6;
     }
@@ -85,20 +84,12 @@ class VerticalPageBreaksRecord extends WritableRecordData implements IVerticalPa
   void addBreak(int col) {
     // First check that the row is not already present
     Iterator<Integer> i = columnBreaks.iterator();
-    boolean found = false;
 
-    while (i.hasNext() && !found)
-    {
+    while (i.hasNext())
       if (i.next() == col)
-      {
-        found = true;
-      }
-    }
+        return;
 
-    if (!found)
-    {
-      columnBreaks.add(col);
-    }
+    columnBreaks.add(col);
   }
 
   void insertColumn(int col) {

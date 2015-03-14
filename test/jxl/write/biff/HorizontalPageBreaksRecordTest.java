@@ -64,6 +64,8 @@ public class HorizontalPageBreaksRecordTest {
     assertArrayEquals(new Integer[] {5,7}, w.getRowPageBreaks().getRowBreaks().toArray());
     w.removeRow(6);
     assertArrayEquals(new Integer[] {5,6}, w.getRowPageBreaks().getRowBreaks().toArray());
+    w.removeRow(6);
+    assertArrayEquals(new Integer[] {5}, w.getRowPageBreaks().getRowBreaks().toArray());
   }
   
 }

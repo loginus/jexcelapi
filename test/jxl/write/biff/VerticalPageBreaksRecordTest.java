@@ -63,6 +63,8 @@ public class VerticalPageBreaksRecordTest {
     assertArrayEquals(new Integer[] {5,7}, w.getColumnPageBreaks().getColumnBreaks().toArray());
     w.removeColumn(6);
     assertArrayEquals(new Integer[] {5,6}, w.getColumnPageBreaks().getColumnBreaks().toArray());
+    w.removeColumn(6);
+    assertArrayEquals(new Integer[] {5}, w.getColumnPageBreaks().getColumnBreaks().toArray());
   }
   
 }
