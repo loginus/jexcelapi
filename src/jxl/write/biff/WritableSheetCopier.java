@@ -19,11 +19,7 @@
 
 package jxl.write.biff;
 
-import java.util.Arrays;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.TreeSet;
-import java.util.Iterator;
+import java.util.*;
 
 import jxl.common.Assert;
 import jxl.common.Logger;

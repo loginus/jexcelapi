@@ -20,9 +20,7 @@
 package jxl.write.biff;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.TreeSet;
+import java.util.*;
 
 import jxl.common.Assert;
 import jxl.common.Logger;

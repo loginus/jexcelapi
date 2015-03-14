@@ -90,6 +90,7 @@ public class HorizontalPageBreaksRecord extends RecordData implements IHorizonta
   {
     return Collections.unmodifiableList(rowBreaks);
   }
+
 }
 
 
