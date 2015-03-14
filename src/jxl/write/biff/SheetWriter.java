@@ -100,11 +100,11 @@ final class SheetWriter
   /**
    * Array of row page breaks
    */
-  private ArrayList<Integer> rowBreaks;
+  private HorizontalPageBreaksRecord rowBreaks;
   /**
    * Array of column page breaks
    */
-  private ArrayList<Integer> columnBreaks;
+  private VerticalPageBreaksRecord columnBreaks;
   /**
    * Array of hyperlinks
    */
@@ -294,17 +294,8 @@ final class SheetWriter
     workspaceOptions.setFitToPages(settings.getFitToPages());
     outputFile.write(workspaceOptions);
 
-    if (rowBreaks.size() > 0)
-    {
-      HorizontalPageBreaksRecord hpbr = new HorizontalPageBreaksRecord(rowBreaks);
-      outputFile.write(hpbr);
-    }
-
-    if (columnBreaks.size() > 0)
-    {
-      VerticalPageBreaksRecord hpbr = new VerticalPageBreaksRecord(columnBreaks);
-      outputFile.write(hpbr);
-    }
+    rowBreaks.write(outputFile);
+    columnBreaks.write(outputFile);
 
     HeaderRecord header = new HeaderRecord(settings.getHeader().toString());
     outputFile.write(header);
@@ -596,8 +587,8 @@ final class SheetWriter
    * @param rws the rows in the spreadsheet
    */
   void setWriteData(RowRecord[] rws, 
-                    ArrayList<Integer>   rb,
-                    ArrayList<Integer>   cb,
+                    HorizontalPageBreaksRecord rb,
+                    VerticalPageBreaksRecord   cb,
                     ArrayList<? extends HyperlinkRecord>   hl,
                     MergedCells mc,
                     TreeSet<ColumnInfoRecord>     cf,

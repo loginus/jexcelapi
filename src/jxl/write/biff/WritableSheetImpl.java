@@ -22,53 +22,17 @@ package jxl.write.biff;
 import java.io.IOException;
 import java.util.*;
 import java.util.regex.Pattern;
-
-import jxl.common.Assert;
-import jxl.common.Logger;
-
-import jxl.Cell;
-import jxl.CellFeatures;
+import jxl.*;
 import jxl.CellReferenceHelper;
-import jxl.CellType;
-import jxl.CellView;
 import jxl.HeaderFooter;
-import jxl.Hyperlink;
-import jxl.Image;
-import jxl.LabelCell;
-import jxl.Range;
-import jxl.Sheet;
-import jxl.SheetSettings;
-import jxl.WorkbookSettings;
-import jxl.biff.AutoFilter;
-import jxl.biff.CellFinder;
-import jxl.biff.ConditionalFormat;
-import jxl.biff.DataValidation;
-import jxl.biff.DVParser;
-import jxl.biff.EmptyCell;
-import jxl.biff.FormattingRecords;
-import jxl.biff.IndexMapping;
-import jxl.biff.NumFormatRecordsException;
-import jxl.biff.SheetRangeImpl;
-import jxl.biff.WorkspaceInformationRecord;
-import jxl.biff.XFRecord;
-import jxl.biff.drawing.Chart;
-import jxl.biff.drawing.ComboBox;
-import jxl.biff.drawing.Drawing;
-import jxl.biff.drawing.DrawingGroupObject;
+import jxl.biff.*;
+import jxl.biff.drawing.*;
+import jxl.common.*;
+import jxl.format.*;
 import jxl.format.CellFormat;
 import jxl.format.Font;
-import jxl.format.PageOrientation;
-import jxl.format.PaperSize;
-import jxl.write.Blank;
-import jxl.write.Label;
-import jxl.write.WritableCell;
-import jxl.write.WritableCellFeatures;
-import jxl.write.WritableCellFormat;
-import jxl.write.WritableHyperlink;
-import jxl.write.WritableImage;
-import jxl.write.WritableSheet;
-import jxl.write.WritableWorkbook;
-import jxl.write.WriteException;
+import jxl.read.biff.*;
+import jxl.write.*;
 
 /**
  * A writable sheet.  This class contains implementation of all the
@@ -156,12 +120,12 @@ class WritableSheetImpl implements WritableSheet
   /**
    * Array of row page breaks
    */
-  private ArrayList<Integer> rowBreaks;
+  private HorizontalPageBreaksRecord rowBreaks;
 
   /**
    * Array of column page breaks
    */
-  private ArrayList<Integer> columnBreaks;
+  private VerticalPageBreaksRecord columnBreaks;
 
   /**
    * The drawings on this sheet
@@ -331,8 +295,8 @@ class WritableSheetImpl implements WritableSheet
     autosizedColumns   = new TreeSet<>();
     hyperlinks         = new ArrayList<>();
     mergedCells        = new MergedCells(this);
-    rowBreaks          = new ArrayList<>();
-    columnBreaks       = new ArrayList<>();
+    rowBreaks          = new HorizontalPageBreaksRecord();
+    columnBreaks       = new VerticalPageBreaksRecord();
     drawings           = new ArrayList<>();
     images             = new ArrayList<>();
     conditionalFormats = new ArrayList<>();
@@ -685,19 +649,7 @@ class WritableSheetImpl implements WritableSheet
     mergedCells.insertRow(row);
 
     // Adjust any page breaks
-    ArrayList<Integer> newRowBreaks = new ArrayList<>();
-    Iterator<Integer> ri = rowBreaks.iterator();
-    while (ri.hasNext())
-    {
-      int val = ri.next();
-      if (val >= row)
-      {
-        val++;
-      }
-
-      newRowBreaks.add(val);
-    }
-    rowBreaks = newRowBreaks;
+    rowBreaks.insertRow(row);
 
     // Adjust any conditional formats
     for (ConditionalFormat cf : conditionalFormats)
@@ -797,19 +749,7 @@ class WritableSheetImpl implements WritableSheet
     mergedCells.insertColumn(col);
 
     // Adjust any page breaks
-    ArrayList<Integer> newColumnBreaks = new ArrayList<>();
-    Iterator<Integer> ri = columnBreaks.iterator();
-    while (ri.hasNext())
-    {
-      int val = ri.next();
-      if (val >= col)
-      {
-        val++;
-      }
-
-      newColumnBreaks.add(val);
-    }
-    columnBreaks = newColumnBreaks;
+    columnBreaks.insertColumn(col);
 
     // Adjust any conditional formats
     for (ConditionalFormat cf : conditionalFormats)
@@ -889,25 +829,7 @@ class WritableSheetImpl implements WritableSheet
     mergedCells.removeColumn(col);
 
     // Adjust any page breaks
-    ArrayList<Integer> newColumnBreaks = new ArrayList<>();
-    Iterator<Integer> ri = columnBreaks.iterator();
-    while (ri.hasNext())
-    {
-      int val = ri.next();
-
-      if (val != col)
-      {
-        if (val > col)
-        {
-          val--;
-        }
-        
-        newColumnBreaks.add(val);
-      }
-    }
-
-    columnBreaks = newColumnBreaks;
-
+    columnBreaks.removeColumn(col);
 
     {
       // Iterate through the column views, decrementing the column number
@@ -1051,24 +973,7 @@ class WritableSheetImpl implements WritableSheet
     mergedCells.removeRow(row);
 
     // Adjust any page breaks
-    ArrayList<Integer> newRowBreaks = new ArrayList<>();
-    Iterator<Integer> ri = rowBreaks.iterator();
-    while (ri.hasNext())
-    {
-      int val = ri.next();
-
-      if (val != row)
-      {
-        if (val > row)
-        {
-          val--;
-        }
-        
-        newRowBreaks.add(val);
-      }
-    }
-
-    rowBreaks = newRowBreaks;
+    rowBreaks.removeRow(row);
 
     // Adjust any conditional formats
     for (ConditionalFormat cf : conditionalFormats)
@@ -2131,22 +2036,7 @@ class WritableSheetImpl implements WritableSheet
   @Override
   public void addRowPageBreak(int row)
   {
-    // First check that the row is not already present
-    Iterator<Integer> i = rowBreaks.iterator();
-    boolean found = false;
-
-    while (i.hasNext() && !found)
-    {
-      if (i.next() == row)
-      {
-        found = true;
-      }
-    }
-
-    if (!found)
-    {
-      rowBreaks.add(row);
-    }
+    rowBreaks.addBreak(row);
   }
 
   /**
@@ -2157,22 +2047,7 @@ class WritableSheetImpl implements WritableSheet
   @Override
   public void addColumnPageBreak(int col)
   {
-    // First check that the row is not already present
-    Iterator<Integer> i = columnBreaks.iterator();
-    boolean found = false;
-
-    while (i.hasNext() && !found)
-    {
-      if (i.next() == col)
-      {
-        found = true;
-      }
-    }
-
-    if (!found)
-    {
-      columnBreaks.add(col);
-    }
+    columnBreaks.addBreak(col);
   }
 
   /**
@@ -2571,9 +2446,9 @@ class WritableSheetImpl implements WritableSheet
    * @return the page breaks on this sheet
    */
   @Override
-  public List<Integer> getRowPageBreaks()
+  public IHorizontalPageBreaks getRowPageBreaks()
   {
-    return Collections.unmodifiableList(rowBreaks);
+    return rowBreaks;
   }
 
   /**
@@ -2582,9 +2457,9 @@ class WritableSheetImpl implements WritableSheet
    * @return the page breaks on this sheet
    */
   @Override
-  public List<Integer> getColumnPageBreaks()
+  public IVerticalPageBreaks getColumnPageBreaks()
   {
-    return Collections.unmodifiableList(columnBreaks);
+    return columnBreaks;
   }
 
   /**

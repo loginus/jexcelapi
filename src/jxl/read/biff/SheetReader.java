@@ -186,12 +186,12 @@ final class SheetReader
   /**
    * The horizontal page breaks contained on this sheet
    */
-  private List<Integer> rowBreaks;
+  private HorizontalPageBreaksRecord rowBreaks;
 
   /**
    * The vertical page breaks contained on this sheet
    */
-  private List<Integer> columnBreaks;
+  private VerticalPageBreaksRecord columnBreaks;
 
   /**
    * The maximum row outline level
@@ -876,21 +876,17 @@ final class SheetReader
       }
       else if (type == Type.HORIZONTALPAGEBREAKS)
       {
-        HorizontalPageBreaksRecord dr = workbookBof.isBiff8()
+        rowBreaks = workbookBof.isBiff8()
                 ? new HorizontalPageBreaksRecord(r)
                 : new HorizontalPageBreaksRecord
             (r, HorizontalPageBreaksRecord.biff7);
-
-        rowBreaks = dr.getRowBreaks();
       }
       else if (type == Type.VERTICALPAGEBREAKS)
       {
-        VerticalPageBreaksRecord dr = workbookBof.isBiff8()
+        columnBreaks = workbookBof.isBiff8()
                 ? new VerticalPageBreaksRecord(r)
                 : new VerticalPageBreaksRecord
             (r, VerticalPageBreaksRecord.biff7);
-
-        columnBreaks = dr.getColumnBreaks();
       }
       else if (type == Type.PLS)
       {
@@ -1352,7 +1348,7 @@ final class SheetReader
    *
    * @return the row breaks
    */
-  final List<Integer> getRowBreaks()
+  final HorizontalPageBreaksRecord getRowBreaks()
   {
     return rowBreaks;
   }
@@ -1362,7 +1358,7 @@ final class SheetReader
    *
    * @return the column breaks
    */
-  final List<Integer> getColumnBreaks()
+  final VerticalPageBreaksRecord getColumnBreaks()
   {
     return columnBreaks;
   }

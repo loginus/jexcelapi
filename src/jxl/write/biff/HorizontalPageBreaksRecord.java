@@ -19,6 +19,7 @@
 
 package jxl.write.biff;
 
+import java.io.IOException;
 import java.util.*;
 import jxl.biff.*;
 import jxl.read.biff.IHorizontalPageBreaks;
@@ -38,10 +39,9 @@ class HorizontalPageBreaksRecord extends WritableRecordData implements IHorizont
    * 
    * @param break the row breaks
    */
-  HorizontalPageBreaksRecord(List<Integer> breaks)
+  HorizontalPageBreaksRecord()
   {
     super(Type.HORIZONTALPAGEBREAKS);
-    rowBreaks.addAll(breaks);
   }
 
   /**
@@ -72,4 +72,59 @@ class HorizontalPageBreaksRecord extends WritableRecordData implements IHorizont
     return Collections.unmodifiableList(rowBreaks);
   }
 
+  void setRowBreaks(IHorizontalPageBreaks breaks) {
+    rowBreaks.clear();
+    rowBreaks.addAll(breaks.getRowBreaks());
+  }
+
+  void clear() {
+    rowBreaks.clear();
+  }
+
+  void addBreak(int row) {
+    // First check that the row is not already present
+    Iterator<Integer> i = rowBreaks.iterator();
+    boolean found = false;
+
+    while (i.hasNext() && !found)
+    {
+      if (i.next() == row)
+      {
+        found = true;
+      }
+    }
+
+    if (!found)
+    {
+      rowBreaks.add(row);
+    }
+  }
+
+  void insertRow(int row) {
+    ListIterator<Integer> ri = rowBreaks.listIterator();
+    while (ri.hasNext())
+    {
+      int val = ri.next();
+      if (val >= row)
+        ri.set(val+1);
+    }
+  }
+
+  void removeRow(int row) {
+    ListIterator<Integer> ri = rowBreaks.listIterator();
+    while (ri.hasNext())
+    {
+      int val = ri.next();
+      if (val == row)
+        ri.remove();
+      else if (val > row)
+        ri.set(val-1);
+    }
+  }
+
+  void write(File outputFile) throws IOException {
+    if (rowBreaks.size() > 0)
+      outputFile.write(this);
+  }
+  
 }

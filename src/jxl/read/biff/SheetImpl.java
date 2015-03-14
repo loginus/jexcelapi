@@ -187,12 +187,12 @@ public class SheetImpl implements Sheet
   /**
    * The horizontal page breaks contained on this sheet
    */
-  private List<Integer> rowBreaks;
+  private HorizontalPageBreaksRecord rowBreaks;
 
   /**
    * The vertical page breaks contained on this sheet
    */
-  private List<Integer> columnBreaks;
+  private VerticalPageBreaksRecord columnBreaks;
 
   /**
    * The maximum row outline level
@@ -840,7 +840,7 @@ public class SheetImpl implements Sheet
    * @return the explicit row breaks
    */
   @Override
-  public final List<Integer> getRowPageBreaks()
+  public final IHorizontalPageBreaks getRowPageBreaks()
   {
     return rowBreaks;
   }
@@ -851,7 +851,7 @@ public class SheetImpl implements Sheet
    * @return the explicit row breaks
    */
   @Override
-  public final List<Integer> getColumnPageBreaks()
+  public final IVerticalPageBreaks getColumnPageBreaks()
   {
     return columnBreaks;
   }

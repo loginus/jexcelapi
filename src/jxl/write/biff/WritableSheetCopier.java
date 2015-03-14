@@ -96,10 +96,10 @@ class WritableSheetCopier
   private MergedCells fromMergedCells;
   private MergedCells toMergedCells;
   private RowRecord[] fromRows;
-  private ArrayList fromRowBreaks;
-  private ArrayList fromColumnBreaks;
-  private ArrayList toRowBreaks;
-  private ArrayList toColumnBreaks;
+  private HorizontalPageBreaksRecord fromRowBreaks;
+  private VerticalPageBreaksRecord fromColumnBreaks;
+  private HorizontalPageBreaksRecord toRowBreaks;
+  private VerticalPageBreaksRecord toColumnBreaks;
   private DataValidation fromDataValidation;
   private DataValidation toDataValidation;
   private SheetWriter sheetWriter;
@@ -159,13 +159,13 @@ class WritableSheetCopier
     validatedCells = vc;
   }
 
-  void setRowBreaks(ArrayList frb, ArrayList trb)
+  void setRowBreaks(HorizontalPageBreaksRecord frb, HorizontalPageBreaksRecord trb)
   {
     fromRowBreaks = frb;
     toRowBreaks = trb;
   }
 
-  void setColumnBreaks(ArrayList fcb, ArrayList tcb)
+  void setColumnBreaks(VerticalPageBreaksRecord fcb, VerticalPageBreaksRecord tcb)
   {
     fromColumnBreaks = fcb;
     toColumnBreaks = tcb;
@@ -286,10 +286,10 @@ class WritableSheetCopier
     }
 
     // Copy the horizontal page breaks
-    toRowBreaks = new ArrayList(fromRowBreaks);
+    toRowBreaks.setRowBreaks(fromRowBreaks);
 
     // Copy the vertical page breaks
-    toColumnBreaks = new ArrayList(fromColumnBreaks);
+    toColumnBreaks.setColumnBreaks(fromColumnBreaks);
 
     // Copy the data validations
     if (fromDataValidation != null)

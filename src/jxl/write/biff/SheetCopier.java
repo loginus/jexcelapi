@@ -83,8 +83,8 @@ class SheetCopier
   private FormattingRecords formatRecords;
   private ArrayList<WritableHyperlink> hyperlinks;
   private MergedCells mergedCells;
-  private ArrayList<Integer> rowBreaks;
-  private ArrayList<Integer> columnBreaks;
+  private final HorizontalPageBreaksRecord rowBreaks = new HorizontalPageBreaksRecord();
+  private final VerticalPageBreaksRecord columnBreaks = new VerticalPageBreaksRecord();
   private SheetWriter sheetWriter;
   private ArrayList<DrawingGroupObject> drawings;
   private ArrayList<WritableImage> images;
@@ -133,14 +133,18 @@ class SheetCopier
     mergedCells = mc;
   }
 
-  void setRowBreaks(ArrayList<Integer> rb)
+  void setRowBreaks(HorizontalPageBreaksRecord rb)
   {
-    rowBreaks = rb;
+    rowBreaks.clear();
+    for (int i : rb.getRowBreaks())
+      rowBreaks.addBreak(i);
   }
 
-  void setColumnBreaks(ArrayList<Integer> cb)
+  void setColumnBreaks(VerticalPageBreaksRecord cb)
   {
-    columnBreaks = cb;
+    columnBreaks.clear();
+    for (int i : cb.getColumnBreaks())
+      columnBreaks.addBreak(i);
   }
 
   void setSheetWriter(SheetWriter sw)
@@ -258,8 +262,8 @@ class SheetCopier
     //    sheetWriter.setFooter(new FooterRecord(si.getFooter()));
 
     // Copy the page breaks
-    rowBreaks.addAll(fromSheet.getRowPageBreaks());
-    columnBreaks.addAll(fromSheet.getColumnPageBreaks());
+    rowBreaks.setRowBreaks(fromSheet.getRowPageBreaks());
+    columnBreaks.setColumnBreaks(fromSheet.getColumnPageBreaks());
 
     // Copy the charts
     sheetWriter.setCharts(fromSheet.getCharts());
@@ -561,8 +565,8 @@ class SheetCopier
     //    sheetWriter.setFooter(new FooterRecord(si.getFooter()));
 
     // Copy the page breaks
-    rowBreaks.addAll(fromSheet.getRowPageBreaks());
-    columnBreaks.addAll(fromSheet.getColumnPageBreaks());
+    rowBreaks.setRowBreaks(fromSheet.getRowPageBreaks());
+    columnBreaks.setColumnBreaks(fromSheet.getColumnPageBreaks());
 
     // Copy the charts
     Chart[] fromCharts = fromSheet.getCharts();
