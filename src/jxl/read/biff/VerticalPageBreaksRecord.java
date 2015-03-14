@@ -20,18 +20,43 @@
 package jxl.read.biff;
 
 import java.util.*;
-import jxl.biff.*;
+import java.util.stream.Collectors;
+import jxl.biff.IntegerHelper;
+import jxl.biff.RecordData;
 
 /**
  * Contains the cell dimensions of this worksheet
  */
-public class VerticalPageBreaksRecord extends RecordData implements IVerticalPageBreaks
-{
+public class VerticalPageBreaksRecord extends RecordData implements IVerticalPageBreaks {
+  public static class ColumnIndex {
+    private final int firstColumnFollowingBreak;
+    private final int firstRow;
+    private final int lastRow;
+    
+    public ColumnIndex(int firstRowBelowBreak, int firstRow, int lastRow) {
+      this.firstColumnFollowingBreak = firstRowBelowBreak;
+      this.firstRow = firstRow;
+      this.lastRow = lastRow;
+    }
+
+    public int getFirstColumnFollowingBreak() {
+      return firstColumnFollowingBreak;
+    }
+
+    public int getFirstRow() {
+      return firstRow;
+    }
+
+    public int getLastRow() {
+      return lastRow;
+    }
+    
+  }
 
   /**
    * The row page breaks
    */
-  private final List<Integer> columnBreaks = new ArrayList<>();
+  private final List<ColumnIndex> columnBreaks = new ArrayList<>();
 
   /**
    * Dummy indicators for overloading the constructor
@@ -55,7 +80,10 @@ public class VerticalPageBreaksRecord extends RecordData implements IVerticalPag
 
     for (int i = 0; i < numbreaks; i++)
     {
-      columnBreaks.add(IntegerHelper.getInt(data[pos], data[pos + 1]));
+      columnBreaks.add(new ColumnIndex(
+              IntegerHelper.getInt(data[pos], data[pos + 1]),
+              IntegerHelper.getInt(data[pos + 2], data[pos + 3]),
+              IntegerHelper.getInt(data[pos + 4], data[pos + 5])));
       pos += 6;
     }
   }
@@ -75,7 +103,10 @@ public class VerticalPageBreaksRecord extends RecordData implements IVerticalPag
     int pos = 2;
     for (int i = 0; i < numbreaks; i++)
     {
-      columnBreaks.add(IntegerHelper.getInt(data[pos], data[pos + 1]));
+      columnBreaks.add(new ColumnIndex(
+              IntegerHelper.getInt(data[pos], data[pos + 1]),
+              0,
+              0xffff));
       pos += 2;
     }
   }
@@ -88,7 +119,9 @@ public class VerticalPageBreaksRecord extends RecordData implements IVerticalPag
   @Override
   public List<Integer> getColumnBreaks()
   {
-    return Collections.unmodifiableList(columnBreaks);
+    return columnBreaks.stream()
+            .map(ColumnIndex::getFirstColumnFollowingBreak)
+            .collect(Collectors.toList());
   }
 }
 

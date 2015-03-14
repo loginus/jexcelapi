@@ -21,18 +21,51 @@ package jxl.write.biff;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 import jxl.biff.*;
 import jxl.read.biff.IHorizontalPageBreaks;
 
 /**
  * Contains the list of explicit horizontal page breaks on the current sheet
  */
-class HorizontalPageBreaksRecord extends WritableRecordData implements IHorizontalPageBreaks
-{
+class HorizontalPageBreaksRecord extends WritableRecordData implements IHorizontalPageBreaks {
+  public static class RowIndex {
+    private int firstRowBelowBreak;
+    private final int firstColumn;
+    private final int lastColumn;
+    
+    public RowIndex(int firstRowBelowBreak, int firstColumn, int lastColumn) {
+      this.firstRowBelowBreak = firstRowBelowBreak;
+      this.firstColumn = firstColumn;
+      this.lastColumn = lastColumn;
+    }
+
+    public int getFirstRowBelowBreak() {
+      return firstRowBelowBreak;
+    }
+
+    public void setFirstRowBelowBreak(int firstRowBelowBreak) {
+      this.firstRowBelowBreak = firstRowBelowBreak;
+    }
+
+    public int getFirstColumn() {
+      return firstColumn;
+    }
+
+    public int getLastColumn() {
+      return lastColumn;
+    }
+
+    private RowIndex withFirstRowBelowBreak(int i) {
+      return new RowIndex(i, firstColumn, lastColumn);
+    }
+    
+  }
+  
   /**
    * The row breaks
    */
-  private final List<Integer> rowBreaks = new ArrayList<>();
+  private List<RowIndex> rowBreaks = new ArrayList<>();
   
   /**
    * Constructor
@@ -58,9 +91,10 @@ class HorizontalPageBreaksRecord extends WritableRecordData implements IHorizont
     IntegerHelper.getTwoBytes(rowBreaks.size(), data, 0);
     int pos = 2;
 
-    for (Integer rowBreak : rowBreaks) {
-      IntegerHelper.getTwoBytes(rowBreak, data, pos);
-      IntegerHelper.getTwoBytes(0xffff, data, pos+4);
+    for (RowIndex rb : rowBreaks) {
+      IntegerHelper.getTwoBytes(rb.getFirstRowBelowBreak(), data, pos);
+      IntegerHelper.getTwoBytes(rb.getFirstColumn(), data, pos+2);
+      IntegerHelper.getTwoBytes(rb.getLastColumn(), data, pos+4);
       pos += 6;
     }
 
@@ -69,12 +103,15 @@ class HorizontalPageBreaksRecord extends WritableRecordData implements IHorizont
 
   @Override
   public List<Integer> getRowBreaks() {
-    return Collections.unmodifiableList(rowBreaks);
+    return rowBreaks.stream()
+            .map(RowIndex::getFirstRowBelowBreak)
+            .collect(Collectors.toList());
   }
 
   void setRowBreaks(IHorizontalPageBreaks breaks) {
-    rowBreaks.clear();
-    rowBreaks.addAll(breaks.getRowBreaks());
+    rowBreaks = breaks.getRowBreaks().stream()
+            .map(i -> rowToRowIndex(i))
+            .collect(Collectors.toList());
   }
 
   void clear() {
@@ -83,34 +120,38 @@ class HorizontalPageBreaksRecord extends WritableRecordData implements IHorizont
 
   void addBreak(int row) {
     // First check that the row is not already present
-    Iterator<Integer> i = rowBreaks.iterator();
+    Iterator<RowIndex> i = rowBreaks.iterator();
 
     while (i.hasNext())
-      if (i.next() == row)
+      if (i.next().getFirstRowBelowBreak() == row)
         return;
 
-    rowBreaks.add(row);
+    rowBreaks.add(rowToRowIndex(row));
   }
 
+  private RowIndex rowToRowIndex(int col) {
+    return new RowIndex(col, 0, 0xffff);
+  }
+  
   void insertRow(int row) {
-    ListIterator<Integer> ri = rowBreaks.listIterator();
+    ListIterator<RowIndex> ri = rowBreaks.listIterator();
     while (ri.hasNext())
     {
-      int val = ri.next();
-      if (val >= row)
-        ri.set(val+1);
+      RowIndex val = ri.next();
+      if (val.getFirstRowBelowBreak() >= row)
+        ri.set(val.withFirstRowBelowBreak(val.getFirstRowBelowBreak()+1));
     }
   }
 
   void removeRow(int row) {
-    ListIterator<Integer> ri = rowBreaks.listIterator();
+    ListIterator<RowIndex> ri = rowBreaks.listIterator();
     while (ri.hasNext())
     {
-      int val = ri.next();
-      if (val == row)
+      RowIndex val = ri.next();
+      if (val.getFirstRowBelowBreak() == row)
         ri.remove();
-      else if (val > row)
-        ri.set(val-1);
+      else if (val.getFirstRowBelowBreak() > row)
+        ri.set(val.withFirstRowBelowBreak(val.getFirstRowBelowBreak()-1));
     }
   }
 

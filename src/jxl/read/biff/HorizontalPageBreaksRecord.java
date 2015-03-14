@@ -20,18 +20,42 @@
 package jxl.read.biff;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import jxl.biff.*;
 
 /**
  * Contains the cell dimensions of this worksheet
  */
-public class HorizontalPageBreaksRecord extends RecordData implements IHorizontalPageBreaks
-{
+public class HorizontalPageBreaksRecord extends RecordData implements IHorizontalPageBreaks {
+  public static class RowIndex {
+    private final int firstRowBelowBreak;
+    private final int firstColumn;
+    private final int lastColumn;
+    
+    public RowIndex(int firstRowBelowBreak, int firstColumn, int lastColumn) {
+      this.firstRowBelowBreak = firstRowBelowBreak;
+      this.firstColumn = firstColumn;
+      this.lastColumn = lastColumn;
+    }
+
+    public int getFirstRowBelowBreak() {
+      return firstRowBelowBreak;
+    }
+
+    public int getFirstColumn() {
+      return firstColumn;
+    }
+
+    public int getLastColumn() {
+      return lastColumn;
+    }
+    
+  }
 
   /**
    * The row page breaks
    */
-  private final List<Integer> rowBreaks = new ArrayList<>();
+  private final List<RowIndex> rowBreaks = new ArrayList<>();
 
   /**
    * Dummy indicators for overloading the constructor
@@ -49,13 +73,15 @@ public class HorizontalPageBreaksRecord extends RecordData implements IHorizonta
     super(t);
 
     byte[] data = t.getData();
-
     int numbreaks = IntegerHelper.getInt(data[0], data[1]);
     int pos = 2;
 
     for (int i = 0; i < numbreaks; i++)
     {
-      rowBreaks.add(IntegerHelper.getInt(data[pos], data[pos + 1]));
+      rowBreaks.add(new RowIndex(
+              IntegerHelper.getInt(data[pos], data[pos + 1]),
+              IntegerHelper.getInt(data[pos + 2], data[pos + 3]),
+              IntegerHelper.getInt(data[pos + 4], data[pos + 5])));
       pos += 6;
     }
   }
@@ -75,7 +101,10 @@ public class HorizontalPageBreaksRecord extends RecordData implements IHorizonta
     int pos = 2;
     for (int i = 0; i < numbreaks; i++)
     {
-      rowBreaks.add(IntegerHelper.getInt(data[pos], data[pos + 1]));
+      rowBreaks.add(new RowIndex(
+              IntegerHelper.getInt(data[pos], data[pos + 1]),
+              0,
+              0xffff));
       pos += 2;
     }
   }
@@ -88,9 +117,11 @@ public class HorizontalPageBreaksRecord extends RecordData implements IHorizonta
   @Override
   public List<Integer> getRowBreaks()
   {
-    return Collections.unmodifiableList(rowBreaks);
+    return rowBreaks.stream()
+            .map(RowIndex::getFirstRowBelowBreak)
+            .collect(Collectors.toList());
   }
-
+  
 }
 
 

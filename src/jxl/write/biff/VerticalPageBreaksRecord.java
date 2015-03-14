@@ -21,18 +21,48 @@ package jxl.write.biff;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 import jxl.biff.*;
 import jxl.read.biff.IVerticalPageBreaks;
 
 /**
  * Contains the list of explicit horizontal page breaks on the current sheet
  */
-class VerticalPageBreaksRecord extends WritableRecordData implements IVerticalPageBreaks
-{
+class VerticalPageBreaksRecord extends WritableRecordData implements IVerticalPageBreaks {
+  
+  public static class ColumnIndex {
+    private final int firstColumnFollowingBreak;
+    private final int firstRow;
+    private final int lastRow;
+    
+    public ColumnIndex(int firstRowBelowBreak, int firstRow, int lastRow) {
+      this.firstColumnFollowingBreak = firstRowBelowBreak;
+      this.firstRow = firstRow;
+      this.lastRow = lastRow;
+    }
+
+    public int getFirstColumnFollowingBreak() {
+      return firstColumnFollowingBreak;
+    }
+
+    public int getFirstRow() {
+      return firstRow;
+    }
+
+    public int getLastRow() {
+      return lastRow;
+    }
+
+    private ColumnIndex withFirstColumnFollowingBreak(int i) {
+      return new ColumnIndex(i, firstRow, lastRow);
+    }
+    
+  }
+
   /**
    * The row breaks
    */
-  private final List<Integer> columnBreaks = new ArrayList<>();
+  private List<ColumnIndex> columnBreaks = new ArrayList<>();
   
   /**
    * Constructor
@@ -58,9 +88,10 @@ class VerticalPageBreaksRecord extends WritableRecordData implements IVerticalPa
     IntegerHelper.getTwoBytes(columnBreaks.size(), data, 0);
     int pos = 2;
 
-    for (Integer columnBreak : columnBreaks) {
-      IntegerHelper.getTwoBytes(columnBreak, data, pos);
-      IntegerHelper.getTwoBytes(0xffff, data, pos+4);
+    for (ColumnIndex cb : columnBreaks) {
+      IntegerHelper.getTwoBytes(cb.getFirstColumnFollowingBreak(), data, pos);
+      IntegerHelper.getTwoBytes(cb.getFirstRow(), data, pos+2);
+      IntegerHelper.getTwoBytes(cb.getLastRow(), data, pos+4);
       pos += 6;
     }
 
@@ -69,48 +100,55 @@ class VerticalPageBreaksRecord extends WritableRecordData implements IVerticalPa
 
   @Override
   public List<Integer> getColumnBreaks() {
-    return Collections.unmodifiableList(columnBreaks);
+    return columnBreaks.stream()
+            .map(ColumnIndex::getFirstColumnFollowingBreak)
+            .collect(Collectors.toList());
   }
 
   void setColumnBreaks(IVerticalPageBreaks breaks) {
-    clear();
-    columnBreaks.addAll(breaks.getColumnBreaks());
+    columnBreaks = breaks.getColumnBreaks().stream()
+            .map(i -> colToColumnIndex(i))
+            .collect(Collectors.toList());
   }
 
   void clear() {
     columnBreaks.clear();
   }
-  
+
   void addBreak(int col) {
     // First check that the row is not already present
-    Iterator<Integer> i = columnBreaks.iterator();
+    Iterator<ColumnIndex> i = columnBreaks.iterator();
 
     while (i.hasNext())
-      if (i.next() == col)
+      if (i.next().getFirstColumnFollowingBreak() == col)
         return;
 
-    columnBreaks.add(col);
+    columnBreaks.add(colToColumnIndex(col));
+  }
+
+  private ColumnIndex colToColumnIndex(int col) {
+    return new ColumnIndex(col, 0, 0xffff);
   }
 
   void insertColumn(int col) {
-    ListIterator<Integer> ri = columnBreaks.listIterator();
+    ListIterator<ColumnIndex> ri = columnBreaks.listIterator();
     while (ri.hasNext())
     {
-      int val = ri.next();
-      if (val >= col)
-        ri.set(val+1);
+      ColumnIndex val = ri.next();
+      if (val.getFirstColumnFollowingBreak() >= col)
+        ri.set(val.withFirstColumnFollowingBreak(val.getFirstColumnFollowingBreak()+1));
     }
   }
 
   void removeColumn(int col) {
-    ListIterator<Integer> ri = columnBreaks.listIterator();
+    ListIterator<ColumnIndex> ri = columnBreaks.listIterator();
     while (ri.hasNext())
     {
-      int val = ri.next();
-      if (val == col)
+      ColumnIndex val = ri.next();
+      if (val.getFirstColumnFollowingBreak() == col)
         ri.remove();
-      else if (val > col)
-        ri.set(val-1);
+      else if (val.getFirstColumnFollowingBreak() > col)
+        ri.set(val.withFirstColumnFollowingBreak(val.getFirstColumnFollowingBreak()-1));
     }
   }
 

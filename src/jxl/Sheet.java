@@ -19,6 +19,7 @@
 
 package jxl;
 
+import java.util.List;
 import java.util.regex.Pattern;
 import jxl.format.CellFormat;
 import jxl.read.biff.*;
