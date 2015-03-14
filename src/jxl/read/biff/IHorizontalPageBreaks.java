@@ -8,6 +8,39 @@ import java.util.List;
  */
 public interface IHorizontalPageBreaks {
 
+  public static class RowIndex {
+    private int firstRowBelowBreak;
+    private final int firstColumn;
+    private final int lastColumn;
+    
+    public RowIndex(int firstRowBelowBreak, int firstColumn, int lastColumn) {
+      this.firstRowBelowBreak = firstRowBelowBreak;
+      this.firstColumn = firstColumn;
+      this.lastColumn = lastColumn;
+    }
+
+    public int getFirstRowBelowBreak() {
+      return firstRowBelowBreak;
+    }
+
+    public void setFirstRowBelowBreak(int firstRowBelowBreak) {
+      this.firstRowBelowBreak = firstRowBelowBreak;
+    }
+
+    public int getFirstColumn() {
+      return firstColumn;
+    }
+
+    public int getLastColumn() {
+      return lastColumn;
+    }
+
+    public RowIndex withFirstRowBelowBreak(int i) {
+      return new RowIndex(i, firstColumn, lastColumn);
+    }
+    
+  }
+  
   /**
    * Gets the row breaks
    *

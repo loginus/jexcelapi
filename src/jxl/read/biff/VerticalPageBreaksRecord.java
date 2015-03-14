@@ -21,37 +21,12 @@ package jxl.read.biff;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import jxl.biff.IntegerHelper;
-import jxl.biff.RecordData;
+import jxl.biff.*;
 
 /**
  * Contains the cell dimensions of this worksheet
  */
 public class VerticalPageBreaksRecord extends RecordData implements IVerticalPageBreaks {
-  public static class ColumnIndex {
-    private final int firstColumnFollowingBreak;
-    private final int firstRow;
-    private final int lastRow;
-    
-    public ColumnIndex(int firstRowBelowBreak, int firstRow, int lastRow) {
-      this.firstColumnFollowingBreak = firstRowBelowBreak;
-      this.firstRow = firstRow;
-      this.lastRow = lastRow;
-    }
-
-    public int getFirstColumnFollowingBreak() {
-      return firstColumnFollowingBreak;
-    }
-
-    public int getFirstRow() {
-      return firstRow;
-    }
-
-    public int getLastRow() {
-      return lastRow;
-    }
-    
-  }
 
   /**
    * The row page breaks
@@ -123,11 +98,5 @@ public class VerticalPageBreaksRecord extends RecordData implements IVerticalPag
             .map(ColumnIndex::getFirstColumnFollowingBreak)
             .collect(Collectors.toList());
   }
+
 }
-
-
-
-
-
-
-

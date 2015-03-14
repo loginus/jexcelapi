@@ -27,30 +27,6 @@ import jxl.biff.*;
  * Contains the cell dimensions of this worksheet
  */
 public class HorizontalPageBreaksRecord extends RecordData implements IHorizontalPageBreaks {
-  public static class RowIndex {
-    private final int firstRowBelowBreak;
-    private final int firstColumn;
-    private final int lastColumn;
-    
-    public RowIndex(int firstRowBelowBreak, int firstColumn, int lastColumn) {
-      this.firstRowBelowBreak = firstRowBelowBreak;
-      this.firstColumn = firstColumn;
-      this.lastColumn = lastColumn;
-    }
-
-    public int getFirstRowBelowBreak() {
-      return firstRowBelowBreak;
-    }
-
-    public int getFirstColumn() {
-      return firstColumn;
-    }
-
-    public int getLastColumn() {
-      return lastColumn;
-    }
-    
-  }
 
   /**
    * The row page breaks
@@ -123,10 +99,3 @@ public class HorizontalPageBreaksRecord extends RecordData implements IHorizonta
   }
   
 }
-
-
-
-
-
-
-

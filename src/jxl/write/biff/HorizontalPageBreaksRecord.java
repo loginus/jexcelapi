@@ -29,38 +29,6 @@ import jxl.read.biff.IHorizontalPageBreaks;
  * Contains the list of explicit horizontal page breaks on the current sheet
  */
 class HorizontalPageBreaksRecord extends WritableRecordData implements IHorizontalPageBreaks {
-  public static class RowIndex {
-    private int firstRowBelowBreak;
-    private final int firstColumn;
-    private final int lastColumn;
-    
-    public RowIndex(int firstRowBelowBreak, int firstColumn, int lastColumn) {
-      this.firstRowBelowBreak = firstRowBelowBreak;
-      this.firstColumn = firstColumn;
-      this.lastColumn = lastColumn;
-    }
-
-    public int getFirstRowBelowBreak() {
-      return firstRowBelowBreak;
-    }
-
-    public void setFirstRowBelowBreak(int firstRowBelowBreak) {
-      this.firstRowBelowBreak = firstRowBelowBreak;
-    }
-
-    public int getFirstColumn() {
-      return firstColumn;
-    }
-
-    public int getLastColumn() {
-      return lastColumn;
-    }
-
-    private RowIndex withFirstRowBelowBreak(int i) {
-      return new RowIndex(i, firstColumn, lastColumn);
-    }
-    
-  }
   
   /**
    * The row breaks
