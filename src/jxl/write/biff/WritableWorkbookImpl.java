@@ -20,6 +20,7 @@
 package jxl.write.biff;
 
 import java.io.*;
+import java.nio.file.*;
 import java.util.*;
 
 import jxl.common.*;
@@ -456,9 +457,9 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * @exception IOException
    */
   @Override
-  public void setOutputFile(java.io.File fileName) throws IOException
+  public void setOutputFile(Path fileName) throws IOException
   {
-    FileOutputStream fos = new FileOutputStream(fileName);
+    OutputStream fos = Files.newOutputStream(fileName);
     outputFile.setOutputFile(fos);
   }
 

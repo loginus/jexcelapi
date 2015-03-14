@@ -22,6 +22,7 @@ package jxl.write.biff;
 import java.io.File;
 import java.net.URL;
 import java.net.MalformedURLException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 
 import jxl.common.Assert;
@@ -78,7 +79,7 @@ public class HyperlinkRecord extends WritableRecordData
   /**
    * The local file referred to by this hyperlink
    */
-  private File file;
+  private Path file;
 
   /**
    * The location in this workbook referred to by this hyperlink
@@ -216,7 +217,7 @@ public class HyperlinkRecord extends WritableRecordData
     
     if (h.file != null)
     {
-      file = new File(h.file.getPath());
+      file = h.file;
     }
 
     location = h.location;
@@ -272,7 +273,7 @@ public class HyperlinkRecord extends WritableRecordData
    * @param desc the description
    */
   protected HyperlinkRecord(int col, int row, int lastcol, int lastrow, 
-                            File file, String desc)
+                            Path file, String desc)
   {
     super(Type.HLINK);
 
@@ -285,7 +286,7 @@ public class HyperlinkRecord extends WritableRecordData
 
     this.file = file;
 
-    if (file.getPath().startsWith("\\\\"))
+    if (file.toString().startsWith("\\\\"))
     {
       linkType = uncLink;
     }
@@ -429,7 +430,7 @@ public class HyperlinkRecord extends WritableRecordData
    *
    * @return the file, or NULL if this hyperlink is not a file
    */
-  public File getFile()
+  public Path getFile()
   {
     return file;
   }
@@ -617,7 +618,7 @@ public class HyperlinkRecord extends WritableRecordData
    * 
    * @param file the file
    */
-  public void setFile(File file)
+  public void setFile(Path file)
   {
     linkType = fileLink;
     url = null;
@@ -943,7 +944,7 @@ public class HyperlinkRecord extends WritableRecordData
    */
   private byte[] getUNCData(byte[] cd)
   {
-    String uncString = file.getPath();
+    String uncString = file.toString();
 
     byte[] d = new byte[cd.length + uncString.length() * 2 + 2 + 4];
     System.arraycopy(cd, 0, d, 0, cd.length);
@@ -969,12 +970,12 @@ public class HyperlinkRecord extends WritableRecordData
   private byte[] getFileData(byte[] cd)
   {
     // Build up the directory hierarchy in reverse order
-    ArrayList path = new ArrayList();
-    ArrayList shortFileName = new ArrayList();
-    path.add(file.getName());
-    shortFileName.add(getShortName(file.getName()));
+    ArrayList<String> path = new ArrayList<>();
+    ArrayList<String> shortFileName = new ArrayList<>();
+    path.add(file.toFile().getName());
+    shortFileName.add(getShortName(file.toFile().getName()));
 
-    File parent = file.getParentFile();
+    File parent = file.toFile().getParentFile();
     while (parent != null)
     {
       path.add(parent.getName());
@@ -990,7 +991,7 @@ public class HyperlinkRecord extends WritableRecordData
 
     while (upDir)
     {
-      String s = (String) path.get(pos);
+      String s = path.get(pos);
       if (s.equals(".."))
       {
         upLevelCount++;
@@ -1005,12 +1006,12 @@ public class HyperlinkRecord extends WritableRecordData
       pos--;
     }
 
-    StringBuffer filePathSB = new StringBuffer();
-    StringBuffer shortFilePathSB = new StringBuffer();
+    StringBuilder filePathSB = new StringBuilder();
+    StringBuilder shortFilePathSB = new StringBuilder();
 
-    if (file.getPath().charAt(1)==':')
+    if (file.toFile().getPath().charAt(1)==':')
     {
-      char driveLetter = file.getPath().charAt(0);
+      char driveLetter = file.toFile().getPath().charAt(0);
       if (driveLetter != 'C' && driveLetter != 'c')
       {
         filePathSB.append(driveLetter);
@@ -1022,8 +1023,8 @@ public class HyperlinkRecord extends WritableRecordData
 
     for (int i = path.size() - 1; i >= 0 ; i--)
     {
-      filePathSB.append((String)path.get(i));
-      shortFilePathSB.append((String)shortFileName.get(i));
+      filePathSB.append(path.get(i));
+      shortFilePathSB.append(shortFileName.get(i));
 
       if (i != 0)
       {

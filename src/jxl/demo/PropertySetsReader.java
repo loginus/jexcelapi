@@ -19,11 +19,8 @@
 
 package jxl.demo;
 
-import java.io.BufferedWriter;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
+import java.io.*;
+import java.nio.file.*;
 
 import jxl.WorkbookSettings;
 import jxl.biff.BaseCompoundFile;
@@ -48,12 +45,12 @@ class PropertySetsReader
    * @exception IOException 
    * @exception BiffException
    */
-  public PropertySetsReader(java.io.File file, String propertySet, 
+  public PropertySetsReader(Path file, String propertySet, 
                             OutputStream os) 
     throws IOException, BiffException
   {
     writer = new BufferedWriter(new OutputStreamWriter(os));
-    FileInputStream fis = new FileInputStream(file);
+    InputStream fis = Files.newInputStream(file);
 
     int initialFileSize = 1024*1024; // 1mb
     int arrayGrowSize = 1024*1024;// 1mb

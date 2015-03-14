@@ -20,11 +20,9 @@
 package jxl;
 
 import java.io.*;
-
-import jxl.read.biff.BiffException;
+import java.nio.file.*;
+import jxl.read.biff.*;
 import jxl.read.biff.File;
-import jxl.read.biff.PasswordException;
-import jxl.read.biff.WorkbookParser;
 import jxl.write.WritableWorkbook;
 import jxl.write.biff.WritableWorkbookImpl;
 
@@ -189,7 +187,7 @@ public abstract class Workbook implements Closeable
    * @param file the excel 97 spreadsheet to parse
    * @return a workbook instance
    */
-  public static Workbook getWorkbook(java.io.File file)
+  public static Workbook getWorkbook(Path file)
     throws IOException, BiffException
   {
     return getWorkbook(file, new WorkbookSettings());
@@ -204,9 +202,9 @@ public abstract class Workbook implements Closeable
    * @param ws the settings for the workbook
    * @return a workbook instance
    */
-  public static Workbook getWorkbook(java.io.File file, WorkbookSettings ws)
+  public static Workbook getWorkbook(Path file, WorkbookSettings ws)
     throws IOException, BiffException {
-    try (FileInputStream fis = new FileInputStream(file)) {
+    try (InputStream fis = Files.newInputStream(file)) {
       File dataFile = new File(fis, ws);
       Workbook workbook = new WorkbookParser(dataFile, ws);
       workbook.parse();
@@ -256,7 +254,7 @@ public abstract class Workbook implements Closeable
    * @return a writable workbook
    * @exception IOException
    */
-  public static WritableWorkbook createWorkbook(java.io.File file)
+  public static WritableWorkbook createWorkbook(Path file)
     throws IOException
   {
     return createWorkbook(file, new WorkbookSettings());
@@ -270,11 +268,11 @@ public abstract class Workbook implements Closeable
    * @return a writable workbook
    * @exception IOException
    */
-  public static WritableWorkbook createWorkbook(java.io.File file,
+  public static WritableWorkbook createWorkbook(Path file,
                                                 WorkbookSettings ws)
     throws IOException
   {
-    FileOutputStream fos = new FileOutputStream(file);
+    OutputStream fos = Files.newOutputStream(file);
     WritableWorkbook w = new WritableWorkbookImpl(fos, true, ws);
     return w;
   }
@@ -289,7 +287,7 @@ public abstract class Workbook implements Closeable
    * @return a writable workbook
    * @exception IOException
    */
-  public static WritableWorkbook createWorkbook(java.io.File file,
+  public static WritableWorkbook createWorkbook(Path file,
                                                 Workbook in)
     throws IOException
   {
@@ -307,12 +305,12 @@ public abstract class Workbook implements Closeable
    * @return a writable workbook
    * @throws IOException  
    */
-  public static WritableWorkbook createWorkbook(java.io.File file,
+  public static WritableWorkbook createWorkbook(Path file,
                                                 Workbook in,
                                                 WorkbookSettings ws)
     throws IOException
   {
-    FileOutputStream fos = new FileOutputStream(file);
+    OutputStream fos = Files.newOutputStream(file);
     WritableWorkbook w = new WritableWorkbookImpl(fos, in, true, ws);
     return w;
   }
@@ -389,8 +387,3 @@ public abstract class Workbook implements Closeable
     return w;
   }
 }
-
-
-
-
-

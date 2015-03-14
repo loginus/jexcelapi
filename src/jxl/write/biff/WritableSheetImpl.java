@@ -20,6 +20,7 @@
 package jxl.write.biff;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.regex.Pattern;
 import jxl.*;
@@ -43,7 +44,7 @@ class WritableSheetImpl implements WritableSheet
   /**
    * The logger
    */
-  private static Logger logger = Logger.getLogger(WritableSheetImpl.class);
+  private static final Logger logger = Logger.getLogger(WritableSheetImpl.class);
     
   /**
    * The name of this sheet
@@ -120,12 +121,12 @@ class WritableSheetImpl implements WritableSheet
   /**
    * Array of row page breaks
    */
-  private HorizontalPageBreaksRecord rowBreaks;
+  private final HorizontalPageBreaksRecord rowBreaks = new HorizontalPageBreaksRecord();
 
   /**
    * Array of column page breaks
    */
-  private VerticalPageBreaksRecord columnBreaks;
+  private final VerticalPageBreaksRecord columnBreaks = new VerticalPageBreaksRecord();
 
   /**
    * The drawings on this sheet
@@ -182,7 +183,7 @@ class WritableSheetImpl implements WritableSheet
   /**
    * The sheet writer engine
    */
-  private SheetWriter sheetWriter;
+  private final SheetWriter sheetWriter;
 
   /**
    * The settings for the workbook
@@ -272,7 +273,7 @@ class WritableSheetImpl implements WritableSheet
    * @param ss the shared strings used by the workbook
    * @param ws the workbook settings
    */
-  public WritableSheetImpl(String n, 
+  WritableSheetImpl(String n, 
                            File of, 
                            FormattingRecords fr, 
                            SharedStrings ss,
@@ -295,8 +296,6 @@ class WritableSheetImpl implements WritableSheet
     autosizedColumns   = new TreeSet<>();
     hyperlinks         = new ArrayList<>();
     mergedCells        = new MergedCells(this);
-    rowBreaks          = new HorizontalPageBreaksRecord();
-    columnBreaks       = new VerticalPageBreaksRecord();
     drawings           = new ArrayList<>();
     images             = new ArrayList<>();
     conditionalFormats = new ArrayList<>();
@@ -739,9 +738,7 @@ class WritableSheetImpl implements WritableSheet
       for (WritableCell cv : validatedCells) {
         CellFeatures cf = cv.getCellFeatures();
         if (cf.getDVParser() != null)
-        {
           cf.getDVParser().insertColumn(col);
-        }
       }
     }
 
@@ -819,9 +816,7 @@ class WritableSheetImpl implements WritableSheet
       for (WritableCell cv : validatedCells) {
         CellFeatures cf = cv.getCellFeatures();
         if (cf.getDVParser() != null)
-        {
           cf.getDVParser().removeColumn(col);
-        }
       }
     }
 
@@ -840,19 +835,13 @@ class WritableSheetImpl implements WritableSheet
         ColumnInfoRecord cir = i.next();
 
         if (cir.getColumn() == col)
-        {
           removeColumn = cir;
-        }
         else if (cir.getColumn() > col)
-        {
           cir.decrementColumn();
-        }
       }
 
       if (removeColumn != null)
-      {
         columnFormats.remove(removeColumn);
-      }
     }
 
     // Iterate through the autosized columns, decrementing the column number
@@ -869,13 +858,9 @@ class WritableSheetImpl implements WritableSheet
           // do nothing
         }
         else if (colnumber > col)
-        {
           newAutosized.add(colnumber - 1);
-        }
         else
-        {
           newAutosized.add(colnumber);
-        }
       }
       autosizedColumns = newAutosized;
     }
@@ -906,9 +891,7 @@ class WritableSheetImpl implements WritableSheet
     {
       // Call rowRemoved anyway, to adjust the named cells
       if (workbookSettings.getFormulaAdjust())
-      {
         workbook.rowRemoved(this, row);
-      }
 
       return;
     }
@@ -941,15 +924,11 @@ class WritableSheetImpl implements WritableSheet
 
       if (hr.getRow()      == row &&
           hr.getLastRow()  == row)
-      {
         // The row with the hyperlink on has been removed, so get
         // rid of it from the list
         i.remove();
-      }
       else
-      {
         hr.removeRow(row);
-      }
     }
 
     // Adjust any data validations
@@ -963,9 +942,7 @@ class WritableSheetImpl implements WritableSheet
       for (WritableCell cv : validatedCells) {
         CellFeatures cf = cv.getCellFeatures();
         if (cf.getDVParser() != null)
-        {
           cf.getDVParser().removeRow(row);
-        }
       }
     }
 
@@ -1023,21 +1000,15 @@ class WritableSheetImpl implements WritableSheet
     throws WriteException, RowsExceededException
   {
     if (cell.getType() == CellType.EMPTY)
-    {
       if (cell.getCellFormat() == null)
-      {
         // return if it's a blank cell with no particular cell formatting
         // information
         return;
-      }
-    }
     
     CellValue cv = (CellValue) cell;
 
     if (cv.isReferenced())
-    {
       throw new JxlWriteException(JxlWriteException.cellReferenced);
-    }
 
     int row = cell.getRow();
     RowRecord rowrec = getRowRecord(row);
@@ -1160,15 +1131,11 @@ class WritableSheetImpl implements WritableSheet
       cir = i.next();
 
       if (cir.getColumn() >= c)
-      {
         stop = true;    
-      }
     }
 
     if (!stop)
-    {
       return null;
-    }
 
     return cir.getColumn() == c ? cir : null;
   }
@@ -1295,14 +1262,10 @@ class WritableSheetImpl implements WritableSheet
                                                   xfr);
 
       if (view.isHidden())
-      {
         cir.setHidden(true);
-      }
 
       if (!columnFormats.contains(cir))
-      {
         columnFormats.add(cir);
-      }
       else
       {
         columnFormats.remove(cir);
@@ -1317,9 +1280,7 @@ class WritableSheetImpl implements WritableSheet
       ColumnInfoRecord cir = new ColumnInfoRecord
         (col, view.getDimension()*256, WritableWorkbook.NORMAL_STYLE);
       if (!columnFormats.contains(cir))
-      {
         columnFormats.add(cir);
-      }
     }
   }
 
@@ -1570,9 +1531,7 @@ class WritableSheetImpl implements WritableSheet
     Hyperlink[] hl = new Hyperlink[hyperlinks.size()];
 
     for (int i = 0; i < hyperlinks.size(); i++)
-    {
       hl[i] = hyperlinks.get(i);
-    }
 
     return hl;
   }
@@ -1599,9 +1558,7 @@ class WritableSheetImpl implements WritableSheet
     WritableHyperlink[] hl = new WritableHyperlink[hyperlinks.size()];
 
     for (int i = 0; i < hyperlinks.size(); i++)
-    {
       hl[i] = hyperlinks.get(i);
-    }
 
     return hl;
   }
@@ -1672,30 +1629,20 @@ class WritableSheetImpl implements WritableSheet
     {
       String cnts = ( (HyperlinkRecord) h).getContents();
       if (cnts == null)
-      {
-        contents = h.getFile().getPath();
-      }
+        contents = h.getFile().toString();
       else
-      {
         contents = cnts;
-      }
     }
     else if (h.isURL())
     {
       String cnts = ( (HyperlinkRecord) h).getContents();
       if (cnts == null)
-      {
         contents = h.getURL().toString();
-      }
       else
-      {
         contents=cnts;
-      }
     }
     else if (h.isLocation())
-    {
       contents = ( (HyperlinkRecord) h).getContents();
-    }
 
     // If the cell type is a label, then preserve the cell contents
     // and most of the format (apart from the font)
@@ -1718,19 +1665,11 @@ class WritableSheetImpl implements WritableSheet
     
     // Set all other cells within range to be empty
     for (int i = h.getRow(); i <= h.getLastRow(); i++)
-    {
       for (int j = h.getColumn(); j <= h.getLastColumn(); j++)
-      {
         if (i != h.getRow() && j != h.getColumn())
-        {
           // Set the cell to be empty
           if (rows.length < h.getLastColumn() && rows[i] != null)
-          {
             rows[i].removeCell(j);
-          }
-        }
-      }
-    }
 
     ((HyperlinkRecord) h).initialize(this);
     hyperlinks.add(h);
@@ -2209,9 +2148,7 @@ class WritableSheetImpl implements WritableSheet
         cv.setSize(settings.getDefaultRowHeight());
       }
       else if (rr.isCollapsed())
-      {
         cv.setHidden(true);
-      }
       else
       {
         cv.setDimension(rr.getRowHeight());
@@ -2266,12 +2203,12 @@ class WritableSheetImpl implements WritableSheet
   public void addImage(WritableImage image)
   {
     boolean supported = false;
-    java.io.File imageFile = image.getImageFile();
+    Path imageFile = image.getImageFile();
     String fileType = "?";
 
     if (imageFile != null)
     {
-      String fileName = imageFile.getName();
+      String fileName = imageFile.getFileName().toString();
       int fileTypeIndex = fileName.lastIndexOf('.');
       fileType = fileTypeIndex != -1 ? 
         fileName.substring(fileTypeIndex+1) : "";

@@ -19,12 +19,9 @@
 
 package jxl.write;
 
-import jxl.CellView;
-import jxl.Range;
-import jxl.Sheet;
+import jxl.*;
+import jxl.format.*;
 import jxl.format.CellFormat;
-import jxl.format.PageOrientation;
-import jxl.format.PaperSize;
 import jxl.write.biff.RowsExceededException;
 
 /**
@@ -386,6 +383,7 @@ public interface WritableSheet extends Sheet
    *
    * @return the number of images on this sheet
    */
+  @Override
   public int getNumberOfImages();
 
   /**

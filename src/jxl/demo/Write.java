@@ -19,51 +19,20 @@
 
 package jxl.demo;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.io.*;
+import java.net.*;
+import java.nio.file.*;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
-import java.util.TimeZone;
-
-import jxl.CellReferenceHelper;
-import jxl.CellView;
-import jxl.HeaderFooter;
-import jxl.Range;
-import jxl.Workbook;
-import jxl.WorkbookSettings;
+import java.util.*;
+import jxl.*;
+import jxl.format.*;
 import jxl.format.Alignment;
 import jxl.format.Border;
 import jxl.format.BorderLineStyle;
 import jxl.format.Colour;
-import jxl.format.Orientation;
-import jxl.format.PageOrder;
-import jxl.format.PageOrientation;
-import jxl.format.PaperSize;
-import jxl.format.ScriptStyle;
-import jxl.format.UnderlineStyle;
-import jxl.write.Blank;
+import jxl.write.*;
 import jxl.write.Boolean;
-import jxl.write.DateFormat;
-import jxl.write.DateFormats;
-import jxl.write.DateTime;
-import jxl.write.Formula;
-import jxl.write.Label;
 import jxl.write.Number;
-import jxl.write.NumberFormat;
-import jxl.write.NumberFormats;
-import jxl.write.WritableCellFeatures;
-import jxl.write.WritableCellFormat;
-import jxl.write.WritableFont;
-import jxl.write.WritableHyperlink;
-import jxl.write.WritableImage;
-import jxl.write.WritableSheet;
-import jxl.write.WritableWorkbook;
-import jxl.write.WriteException;
 
 
 /**
@@ -103,7 +72,7 @@ public class Write
   {
     WorkbookSettings ws = new WorkbookSettings();
     ws.setLocale(new Locale("en", "EN"));
-    workbook = Workbook.createWorkbook(new File(filename), ws);
+    workbook = Workbook.createWorkbook(Paths.get(filename), ws);
 
 
     WritableSheet s2 = workbook.createSheet("Number Formats", 0);
@@ -1063,7 +1032,7 @@ public class Write
       l = new Label(4, 2, "File hyperlink to documentation");
       s1.addCell(l);
 
-      File file = new File("../jexcelapi/docs/index.html");
+      Path file = Paths.get("../jexcelapi/docs/index.html");
       wh = new WritableHyperlink(0, 32, 8, 32, file, 
                                  "JExcelApi Documentation");
       s1.addHyperlink(wh);
@@ -1075,7 +1044,7 @@ public class Write
                                  0, 180, 1, 181);
       s1.addHyperlink(wh);
 
-      file = new File("\\\\localhost\\file.txt");
+      file = Paths.get("\\\\localhost\\file.txt");
       wh = new WritableHyperlink(0, 36, 8, 36, file);
       s1.addHyperlink(wh);
 
@@ -1723,14 +1692,14 @@ public class Write
     ws.addCell(l);
 
     WritableImage wi = new WritableImage
-      (0, 3, 5, 7, new File("resources/wealdanddownland.png"));
+      (0, 3, 5, 7, Paths.get("resources/wealdanddownland.png"));
     ws.addImage(wi);
 
     l = new Label(0, 12, "Merchant Adventurers Hall, York");
     ws.addCell(l);
 
     wi = new WritableImage(5, 12, 4, 10, 
-                           new File("resources/merchantadventurers.png"));
+                           Paths.get("resources/merchantadventurers.png"));
     ws.addImage(wi);
 
     // An unsupported file type

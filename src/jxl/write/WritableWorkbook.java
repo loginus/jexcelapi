@@ -20,6 +20,7 @@
 package jxl.write;
 
 import java.io.*;
+import java.nio.file.Path;
 
 import jxl.*;
 import jxl.format.Colour;
@@ -303,6 +304,6 @@ public abstract class WritableWorkbook implements Closeable
    * @param fileName the file name
    * @exception IOException
    */
-  public abstract void setOutputFile(java.io.File fileName)
+  public abstract void setOutputFile(Path fileName)
     throws IOException;
 }

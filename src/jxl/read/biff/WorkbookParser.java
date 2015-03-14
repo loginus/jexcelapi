@@ -19,6 +19,7 @@
 
 package jxl.read.biff;
 
+import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -421,12 +422,12 @@ public class WorkbookParser extends Workbook
     else if (sr.getType() == SupbookRecord.EXTERNAL)
     {
       // External reference - get the sheet name from the supbook record
-      StringBuffer sb = new StringBuffer();
-      java.io.File fl = new java.io.File(sr.getFileName());
+      StringBuilder sb = new StringBuilder();
+      Path fl = Paths.get(sr.getFileName());
       sb.append("'");
-      sb.append(fl.getAbsolutePath());
+      sb.append(fl.toAbsolutePath().getParent().toString());
       sb.append("[");
-      sb.append(fl.getName());
+      sb.append(fl.getFileName());
       sb.append("]");
       sb.append((firstTab == 65535) ? "#REF" : sr.getSheetName(firstTab));
       if (lastTab != firstTab)
@@ -480,12 +481,12 @@ public class WorkbookParser extends Workbook
     else if (sr.getType() == SupbookRecord.EXTERNAL)
     {
       // External reference - get the sheet name from the supbook record
-      StringBuffer sb = new StringBuffer();
-      java.io.File fl = new java.io.File(sr.getFileName());
+      StringBuilder sb = new StringBuilder();
+      Path fl = Paths.get(sr.getFileName());
       sb.append("'");
-      sb.append(fl.getAbsolutePath());
+      sb.append(fl.toAbsolutePath().getParent().toString());
       sb.append("[");
-      sb.append(fl.getName());
+      sb.append(fl.getFileName());
       sb.append("]");
       sb.append((lastTab == 65535) ? "#REF" : sr.getSheetName(lastTab));
       sb.append("'");

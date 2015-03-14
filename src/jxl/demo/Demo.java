@@ -19,15 +19,10 @@
 
 package jxl.demo;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
-
+import java.io.*;
+import java.nio.file.Paths;
+import jxl.*;
 import jxl.common.Logger;
-
-import jxl.Cell;
-import jxl.Range;
-import jxl.Workbook;
 
 /**
  * The main demo class which interprets the command line switches in order
@@ -230,35 +225,35 @@ public class Demo
       }
       else if (formulas)
       {
-        Workbook w = Workbook.getWorkbook(new File(file));
+        Workbook w = Workbook.getWorkbook(Paths.get(file));
         Formulas f = new Formulas(w, System.out, encoding);
         w.close();
       }
       else if (features)
       {
-        Workbook w = Workbook.getWorkbook(new File(file));
+        Workbook w = Workbook.getWorkbook(Paths.get(file));
         Features f = new Features(w, System.out, encoding);
         w.close();
       }
       else if (escher)
       {
-        Workbook w = Workbook.getWorkbook(new File(file));
+        Workbook w = Workbook.getWorkbook(Paths.get(file));
         Escher f = new Escher(w, System.out, encoding);
         w.close();
       }
       else if (escherdg)
       {
-        Workbook w = Workbook.getWorkbook(new File(file));
+        Workbook w = Workbook.getWorkbook(Paths.get(file));
         EscherDrawingGroup f = new EscherDrawingGroup(w, System.out, encoding);
         w.close();
       }
       else if (biffdump)
       {
-        BiffDump bd = new BiffDump(new File(file), System.out);
+        BiffDump bd = new BiffDump(Paths.get(file), System.out);
       }
       else if (jxlversion)
       {
-        WriteAccess bd = new WriteAccess(new File(file));
+        WriteAccess bd = new WriteAccess(Paths.get(file));
       }
       else if (propertysets)
       {
@@ -267,13 +262,13 @@ public class Demo
         {
           os = new FileOutputStream(outputFile);
         }
-        PropertySetsReader psr = new PropertySetsReader(new File(file),
+        PropertySetsReader psr = new PropertySetsReader(Paths.get(file),
                                                         propertySet,
                                                         os);
       }
       else
       {
-        Workbook w = Workbook.getWorkbook(new File(file));
+        Workbook w = Workbook.getWorkbook(Paths.get(file));
         
         //        findTest(w);
 

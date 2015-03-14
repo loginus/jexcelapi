@@ -41,26 +41,26 @@ public class SheetImpl implements Sheet
   /**
    * The excel file
    */
-  private File excelFile;
+  private final File excelFile;
   /**
    * A handle to the shared string table
    */
-  private SSTRecord sharedStrings;
+  private final SSTRecord sharedStrings;
 
   /**
    * A handle to the sheet BOF record, which indicates the stream type
    */
-  private BOFRecord sheetBof;
+  private final BOFRecord sheetBof;
 
   /**
    * A handle to the workbook BOF record, which indicates the stream type
    */
-  private BOFRecord workbookBof;
+  private final BOFRecord workbookBof;
 
   /**
    * A handle to the formatting records
    */
-  private FormattingRecords formattingRecords;
+  private final FormattingRecords formattingRecords;
 
   /**
    * The name of this sheet
@@ -111,7 +111,7 @@ public class SheetImpl implements Sheet
   /**
    * A list of shared formula groups
    */
-  private ArrayList sharedFormulas;
+  private final ArrayList sharedFormulas;
 
   /**
    * A list of hyperlinks on this page
@@ -157,7 +157,7 @@ public class SheetImpl implements Sheet
   /**
    * Indicates whether or not the dates are based around the 1904 date system
    */
-  private boolean nineteenFour;
+  private final boolean nineteenFour;
 
   /**
    * The workspace options
@@ -223,12 +223,12 @@ public class SheetImpl implements Sheet
    * A handle to the workbook which contains this sheet.  Some of the records
    * need this in order to reference external sheets
    */
-  private WorkbookParser workbook;
+  private final WorkbookParser workbook;
 
   /**
    * A handle to the workbook settings
    */
-  private WorkbookSettings workbookSettings;
+  private final WorkbookSettings workbookSettings;
 
   /**
    * Constructor
@@ -746,20 +746,17 @@ public class SheetImpl implements Sheet
           //  possible column)
           // Column entries have hardwired row entries (first and last 
           // possible row)
-          for (int i = 0 ; i < nr.getRanges().length ; i++)
-          {
-            NameRecord.NameRange rng = nr.getRanges()[i];
+          for (NameRecord.NameRange rng : nr.getRanges())
             if (rng.getFirstColumn() == 0 && rng.getLastColumn() == 255)
             {
               settings.setPrintTitlesRow(rng.getFirstRow(),
-                                         rng.getLastRow());
+                      rng.getLastRow());
             }
             else
             {
               settings.setPrintTitlesCol(rng.getFirstColumn(),
-                                         rng.getLastColumn());
+                      rng.getLastColumn());
             }
-          }
         }
       }
     }
@@ -1113,11 +1110,9 @@ public class SheetImpl implements Sheet
     images = new ArrayList<>();
     DrawingGroupObject[] dgos = getDrawings();
 
-    for (int i = 0; i < dgos.length; i++)
-    {
-      if (dgos[i] instanceof Drawing)
-        images.add((Drawing) dgos[i]);
-    }
+    for (DrawingGroupObject dgo : dgos)
+      if (dgo instanceof Drawing)
+        images.add((Image) dgo);
   }
 
   /**

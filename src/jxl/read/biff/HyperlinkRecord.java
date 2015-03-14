@@ -19,21 +19,12 @@
 
 package jxl.read.biff;
 
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
-
-import jxl.common.Logger;
-
+import java.net.*;
+import java.nio.file.*;
+import jxl.*;
 import jxl.CellReferenceHelper;
-import jxl.Hyperlink;
-import jxl.Range;
-import jxl.Sheet;
-import jxl.WorkbookSettings;
-import jxl.biff.IntegerHelper;
-import jxl.biff.RecordData;
-import jxl.biff.SheetRangeImpl;
-import jxl.biff.StringHelper;
+import jxl.biff.*;
+import jxl.common.Logger;
 
 /**
  * A number record.  This is stored as 8 bytes, as opposed to the
@@ -71,7 +62,7 @@ public class HyperlinkRecord extends RecordData implements Hyperlink
   /**
    * The local file referred to by this hyperlink
    */
-  private File file;
+  private Path file;
 
   /**
    * The location in this workbook referred to by this hyperlink
@@ -198,7 +189,7 @@ public class HyperlinkRecord extends RecordData implements Hyperlink
         try
         {
           linkType = fileLink;
-          file = new File(urlString);
+          file = Paths.get(urlString);
         }
         catch (Exception e3)
         {
@@ -263,13 +254,13 @@ public class HyperlinkRecord extends RecordData implements Hyperlink
 
         sb.append(fileName);
 
-        file = new File(sb.toString());
+        file = Paths.get(sb.toString());
       }
       catch (Throwable e)
       {
         logger.warn("Exception when parsing file " + 
                     e.getClass().getName() + ".");
-        file = new File(".");
+        file = Paths.get(".");
       }
     }
     else if (linkType == workbookLink)
@@ -370,7 +361,7 @@ public class HyperlinkRecord extends RecordData implements Hyperlink
    *
    * @return the file, or NULL if this hyperlink is not a file
    */
-  public File getFile()
+  public Path getFile()
   {
     return file;
   }

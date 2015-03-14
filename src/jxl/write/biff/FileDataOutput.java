@@ -19,11 +19,8 @@
 
 package jxl.write.biff;
 
-import java.io.OutputStream;
-import java.io.IOException;
-import java.io.File;
-import java.io.RandomAccessFile;
-
+import java.io.*;
+import java.nio.file.*;
 import jxl.common.Logger;
 
 /**
@@ -32,18 +29,16 @@ import jxl.common.Logger;
  */
 class FileDataOutput implements ExcelDataOutput
 {
-  // The logger
-  private static Logger logger = Logger.getLogger(FileDataOutput.class);
 
   /** 
    * The temporary file
    */
-  private File temporaryFile;
+  private final Path temporaryFile;
 
   /**
    * The excel data
    */
-  private RandomAccessFile data;
+  private final RandomAccessFile data;
 
   /**
    * Constructor
@@ -51,11 +46,11 @@ class FileDataOutput implements ExcelDataOutput
    * @param tmpdir the temporary directory used to write files.  If this is
    *               NULL then the sytem temporary directory will be used
    */
-  public FileDataOutput(File tmpdir) throws IOException
+  public FileDataOutput(Path tmpdir) throws IOException
   {
-    temporaryFile = File.createTempFile("jxl",".tmp", tmpdir);
-    temporaryFile.deleteOnExit();
-    data = new RandomAccessFile(temporaryFile, "rw");
+    temporaryFile = Files.createTempFile(tmpdir,"jxl",".tmp");
+    temporaryFile.toFile().deleteOnExit();
+    data = new RandomAccessFile(temporaryFile.toFile(), "rw");
   }
 
   /**
@@ -74,6 +69,7 @@ class FileDataOutput implements ExcelDataOutput
    *
    * @return the position within the file
    */
+  @Override
   public int getPosition() throws IOException
   {
     // As all excel data structures are four bytes anyway, it's ok to 
@@ -98,6 +94,7 @@ class FileDataOutput implements ExcelDataOutput
   /** 
    * Writes the data to the output stream
    */
+  @Override
   public void writeData(OutputStream out) throws IOException
   {
 		byte[] buffer = new byte[1024];
@@ -112,12 +109,13 @@ class FileDataOutput implements ExcelDataOutput
   /**
    * Called when the final compound file has been written
    */
+  @Override
   public void close() throws IOException
   {
     data.close();
 
     // Explicitly delete the temporary file, since sometimes it is the case
     // that a single process may be generating multiple different excel files
-    temporaryFile.delete();
+    Files.delete(temporaryFile);
   }
 }

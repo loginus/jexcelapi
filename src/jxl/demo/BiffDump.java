@@ -20,11 +20,8 @@
 package jxl.demo;
 
 
-import java.io.BufferedWriter;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
+import java.io.*;
+import java.nio.file.*;
 
 import java.util.HashMap;
 
@@ -43,7 +40,7 @@ class BiffDump
   private BufferedWriter writer;
   private BiffRecordReader reader;
 
-  private HashMap recordNames;
+  private HashMap<Type, String> recordNames;
 
   private int xfIndex;
   private int fontIndex;
@@ -59,20 +56,20 @@ class BiffDump
    * @exception IOException 
    * @exception BiffException
    */
-  public BiffDump(java.io.File file, OutputStream os) 
+  public BiffDump(Path file, OutputStream os) 
     throws IOException, BiffException
   {
     writer = new BufferedWriter(new OutputStreamWriter(os));
-    FileInputStream fis = new FileInputStream(file);
-    File f = new File(fis, new WorkbookSettings());
-    reader = new BiffRecordReader(f);
-
-    buildNameHash();
-    dump();
-
-    writer.flush();
-    writer.close();
-    fis.close();
+    try (InputStream fis = Files.newInputStream(file)) {
+      File f = new File(fis, new WorkbookSettings());
+      reader = new BiffRecordReader(f);
+      
+      buildNameHash();
+      dump();
+      
+      writer.flush();
+      writer.close();
+    }
   }
 
   /**
@@ -80,7 +77,7 @@ class BiffDump
    */
   private void buildNameHash()
   {
-    recordNames = new HashMap(50);
+    recordNames = new HashMap<>(50);
 
     recordNames.put(Type.BOF, "BOF");
     recordNames.put(Type.EOF, "EOF");
@@ -204,11 +201,10 @@ class BiffDump
    */
   private void dump() throws IOException
   {
-    Record r = null;
     boolean cont = true;
     while (reader.hasNext() && cont)
     {
-      r = reader.next();
+      Record r = reader.next();
       cont = writeRecord(r);
     }
   }

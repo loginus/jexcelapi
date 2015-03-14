@@ -19,10 +19,10 @@
 
 package jxl.demo;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -75,11 +75,11 @@ public class ReadWrite
   /**
    * The spreadsheet to read in
    */
-  private File inputWorkbook;
+  private Path inputWorkbook;
   /**
    * The spreadsheet to output
    */
-  private File outputWorkbook;
+  private Path outputWorkbook;
 
   /**
    * Constructor
@@ -89,8 +89,8 @@ public class ReadWrite
    */
   public ReadWrite(String input, String output)
   {
-    inputWorkbook = new File(input);
-    outputWorkbook = new File(output);
+    inputWorkbook = Paths.get(input);
+    outputWorkbook = Paths.get(output);
     logger.setSuppressWarnings(Boolean.getBoolean("jxl.nowarnings"));
     logger.info("Input file:  " + input);    
     logger.info("Output file:  " + output);
@@ -108,15 +108,12 @@ public class ReadWrite
     Workbook w1 = Workbook.getWorkbook(inputWorkbook);
 
     logger.info("Copying...");
-    WritableWorkbook w2 = Workbook.createWorkbook(outputWorkbook, w1);
-
-    if (inputWorkbook.getName().equals("jxlrwtest.xls"))
-    {
-      modify(w2);
+    try (WritableWorkbook w2 = Workbook.createWorkbook(outputWorkbook, w1)) {
+      if (inputWorkbook.getFileName().toString().equals("jxlrwtest.xls"))
+        modify(w2);
+      
+      w2.write();
     }
-
-    w2.write();
-    w2.close();
     logger.info("Done");
   }
 
@@ -278,11 +275,11 @@ public class ReadWrite
       }
       else if (wh.getColumn() == 1 && wh.getRow() == 40)
       {
-        wh.setFile(new File("../jexcelapi/docs/overview-summary.html"));
+        wh.setFile(Paths.get("../jexcelapi/docs/overview-summary.html"));
       }
       else if (wh.getColumn() == 1 && wh.getRow() == 41)
       {
-        wh.setFile(new File("d:/home/jexcelapi/docs/jxl/package-summary.html"));
+        wh.setFile(Paths.get("d:/home/jexcelapi/docs/jxl/package-summary.html"));
       }
       else if (wh.getColumn() == 1 && wh.getRow() == 44)
       {
@@ -390,7 +387,7 @@ public class ReadWrite
     sheet.removeImage(wi);
 
     wi = new WritableImage(1, 116, 2, 9, 
-                           new File("resources/littlemoretonhall.png"));
+                           Paths.get("resources/littlemoretonhall.png"));
     sheet.addImage(wi);
 
     // Add a list data validations

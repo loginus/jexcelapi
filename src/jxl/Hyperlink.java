@@ -19,8 +19,8 @@
 
 package jxl;
 
-import java.io.File;
 import java.net.URL;
+import java.nio.file.Path;
 
 /**
  * Hyperlink information.  Only URLs or file links are supported
@@ -102,6 +102,6 @@ public interface Hyperlink
    *
    * @return the file, or NULL if this hyperlink is not a file
    */
-  public File getFile();
+  public Path getFile();
 }
 

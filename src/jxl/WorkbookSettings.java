@@ -19,14 +19,11 @@
 
 package jxl;
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.Locale;
-
-import jxl.common.Logger;
-
+import java.nio.file.*;
+import java.util.*;
 import jxl.biff.CountryCode;
 import jxl.biff.formula.FunctionNames;
+import jxl.common.Logger;
 
 /**
  * This is a bean which client applications may use to set various advanced
@@ -138,7 +135,7 @@ public final class WorkbookSettings
    * The directory for used for the temporary file during write.  If this
    * is NULL, the default system directory is used
    */
-  private File temporaryFileDuringWriteDirectory;
+  private Path temporaryFileDuringWriteDirectory;
 
   /**
    * The locale.  Normally this is the same as the system locale, but there
@@ -291,9 +288,7 @@ public final class WorkbookSettings
         System.getProperty("jxl.temporaryfileduringwritedirectory");
 
       if (tempdir != null)
-      {
-        temporaryFileDuringWriteDirectory = new File(tempdir);
-      }
+        temporaryFileDuringWriteDirectory = Paths.get(tempdir);
 
       encoding = System.getProperty("file.encoding");
     }
@@ -759,7 +754,7 @@ public final class WorkbookSettings
    *
    * @param dir the directory to which temporary files should be written
    */
-  public void setTemporaryFileDuringWriteDirectory(File dir)
+  public void setTemporaryFileDuringWriteDirectory(Path dir)
   {
     temporaryFileDuringWriteDirectory = dir;
   }
@@ -773,7 +768,7 @@ public final class WorkbookSettings
    * @return the temporary directory used during write, or NULL if it is
    *         not set
    */
-  public File getTemporaryFileDuringWriteDirectory()
+  public Path getTemporaryFileDuringWriteDirectory()
   {
     return temporaryFileDuringWriteDirectory;
   }
