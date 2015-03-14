@@ -20,10 +20,7 @@
 package jxl.write.biff;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import jxl.common.Assert;
@@ -2574,15 +2571,9 @@ class WritableSheetImpl implements WritableSheet
    * @return the page breaks on this sheet
    */
   @Override
-  public int[] getRowPageBreaks()
+  public List<Integer> getRowPageBreaks()
   {
-    int[] rb = new int[rowBreaks.size()];
-    int pos = 0;
-    for (Iterator<Integer> i = rowBreaks.iterator(); i.hasNext() ; pos++)
-    {
-      rb[pos] = i.next();
-    }
-    return rb;
+    return Collections.unmodifiableList(rowBreaks);
   }
 
   /**
@@ -2591,15 +2582,9 @@ class WritableSheetImpl implements WritableSheet
    * @return the page breaks on this sheet
    */
   @Override
-  public int[] getColumnPageBreaks()
+  public List<Integer> getColumnPageBreaks()
   {
-    int[] rb = new int[columnBreaks.size()];
-    int pos = 0;
-    for (Iterator<Integer> i = columnBreaks.iterator(); i.hasNext() ; pos++)
-    {
-      rb[pos] = i.next();
-    }
-    return rb;
+    return Collections.unmodifiableList(columnBreaks);
   }
 
   /**

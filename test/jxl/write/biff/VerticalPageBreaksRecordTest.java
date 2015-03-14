@@ -2,9 +2,11 @@ package jxl.write.biff;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Arrays;
 import jxl.WorkbookSettings;
 import jxl.biff.FormattingRecords;
 import static jxl.biff.Type.VERTICALPAGEBREAKS;
+import static jxl.read.biff.VerticalPageBreaksRecordTest.biff8pb;
 import jxl.write.*;
 import static org.junit.Assert.*;
 import org.junit.Test;
@@ -17,8 +19,8 @@ public class VerticalPageBreaksRecordTest {
   
   @Test
   public void testCreationOfBiff8() {
-    int [] pageBreaks = new int[] {2, 8};
-    VerticalPageBreaksRecord wpb = new VerticalPageBreaksRecord(pageBreaks);
+    Integer [] pageBreaks = new Integer[] {2, 8};
+    VerticalPageBreaksRecord wpb = new VerticalPageBreaksRecord(Arrays.asList(pageBreaks));
     assertArrayEquals(new byte[]{(byte) VERTICALPAGEBREAKS.value, 0, 14, 0, 2, 0, 2, 0, 0, 0, (byte) 255, (byte) 255, 8, 0, 0, 0, (byte) 255, (byte) 255},
             wpb.getBytes());
   }
@@ -26,17 +28,18 @@ public class VerticalPageBreaksRecordTest {
   @Test
   public void testInsertionOfColumnBreaks() {
     WritableSheetImpl w = new WritableSheetImpl("a", null, null, null, null, null);
-    assertArrayEquals(new int[] {}, w.getColumnPageBreaks());
+    assertTrue(w.getColumnPageBreaks().isEmpty());
     w.addColumnPageBreak(5);
-    assertArrayEquals(new int[] {5}, w.getColumnPageBreaks());
+    assertEquals(5, (int) w.getColumnPageBreaks().get(0));
   }
   
   @Test
   public void testDoubleInsertionOfColumnBreaks() {
     WritableSheetImpl w = new WritableSheetImpl("a", null, null, null, null, null);
     w.addColumnPageBreak(5);
+    assertEquals(1, w.getColumnPageBreaks().size());
     w.addColumnPageBreak(5);
-    assertArrayEquals(new int[] {5}, w.getColumnPageBreaks());
+    assertEquals(1, w.getColumnPageBreaks().size());
   }
   
   @Test
@@ -46,9 +49,9 @@ public class VerticalPageBreaksRecordTest {
     w.addColumnPageBreak(5);
     w.addColumnPageBreak(6);
     w.insertColumn(6);
-    assertArrayEquals(new int[] {5,7}, w.getColumnPageBreaks());
+    assertArrayEquals(new Integer[] {5,7}, w.getColumnPageBreaks().toArray());
     w.insertColumn(0);
-    assertArrayEquals(new int[] {6,8}, w.getColumnPageBreaks());
+    assertArrayEquals(new Integer[] {6,8}, w.getColumnPageBreaks().toArray());
   }
   
   @Test
@@ -58,9 +61,9 @@ public class VerticalPageBreaksRecordTest {
     w.addColumnPageBreak(6);
     w.addColumnPageBreak(8);
     w.removeColumn(0);
-    assertArrayEquals(new int[] {5,7}, w.getColumnPageBreaks());
+    assertArrayEquals(new Integer[] {5,7}, w.getColumnPageBreaks().toArray());
     w.removeColumn(6);
-    assertArrayEquals(new int[] {5,6}, w.getColumnPageBreaks());
+    assertArrayEquals(new Integer[] {5,6}, w.getColumnPageBreaks().toArray());
   }
   
 }

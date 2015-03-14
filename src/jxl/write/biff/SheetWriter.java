@@ -296,27 +296,13 @@ final class SheetWriter
 
     if (rowBreaks.size() > 0)
     {
-      int[] rb = new int[rowBreaks.size()];
-
-      for (int i = 0; i < rb.length; i++)
-      {
-        rb[i] = rowBreaks.get(i);
-      }
-
-      HorizontalPageBreaksRecord hpbr = new HorizontalPageBreaksRecord(rb);
+      HorizontalPageBreaksRecord hpbr = new HorizontalPageBreaksRecord(rowBreaks);
       outputFile.write(hpbr);
     }
 
     if (columnBreaks.size() > 0)
     {
-      int[] rb = new int[columnBreaks.size()];
-
-      for (int i = 0; i < rb.length; i++)
-      {
-        rb[i] = columnBreaks.get(i);
-      }
-
-      VerticalPageBreaksRecord hpbr = new VerticalPageBreaksRecord(rb);
+      VerticalPageBreaksRecord hpbr = new VerticalPageBreaksRecord(columnBreaks);
       outputFile.write(hpbr);
     }
 

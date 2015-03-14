@@ -19,19 +19,20 @@
 
 package jxl.read.biff;
 
+import java.util.*;
 import jxl.biff.IntegerHelper;
 import jxl.biff.RecordData;
 
 /**
  * Contains the cell dimensions of this worksheet
  */
-class HorizontalPageBreaksRecord extends RecordData
+public class HorizontalPageBreaksRecord extends RecordData
 {
 
   /**
    * The row page breaks
    */
-  private final int[] rowBreaks;
+  private final List<Integer> rowBreaks = new ArrayList<>();
 
   /**
    * Dummy indicators for overloading the constructor
@@ -52,11 +53,10 @@ class HorizontalPageBreaksRecord extends RecordData
 
     int numbreaks = IntegerHelper.getInt(data[0], data[1]);
     int pos = 2;
-    rowBreaks = new int[numbreaks];
 
     for (int i = 0; i < numbreaks; i++)
     {
-      rowBreaks[i] = IntegerHelper.getInt(data[pos], data[pos + 1]);
+      rowBreaks.add(IntegerHelper.getInt(data[pos], data[pos + 1]));
       pos += 6;
     }
   }
@@ -74,10 +74,9 @@ class HorizontalPageBreaksRecord extends RecordData
     byte[] data = t.getData();
     int numbreaks = IntegerHelper.getInt(data[0], data[1]);
     int pos = 2;
-    rowBreaks = new int[numbreaks];
     for (int i = 0; i < numbreaks; i++)
     {
-      rowBreaks[i] = IntegerHelper.getInt(data[pos], data[pos + 1]);
+      rowBreaks.add(IntegerHelper.getInt(data[pos], data[pos + 1]));
       pos += 2;
     }
   }
@@ -87,9 +86,9 @@ class HorizontalPageBreaksRecord extends RecordData
    *
    * @return the row breaks on the current sheet
    */
-  public int[] getRowBreaks()
+  public List<Integer> getRowBreaks()
   {
-    return rowBreaks;
+    return Collections.unmodifiableList(rowBreaks);
   }
 }
 

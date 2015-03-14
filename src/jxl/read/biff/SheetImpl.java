@@ -19,8 +19,7 @@
 
 package jxl.read.biff;
 
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import jxl.*;
@@ -188,12 +187,12 @@ public class SheetImpl implements Sheet
   /**
    * The horizontal page breaks contained on this sheet
    */
-  private int[] rowBreaks;
+  private List<Integer> rowBreaks;
 
   /**
    * The vertical page breaks contained on this sheet
    */
-  private int[] columnBreaks;
+  private List<Integer> columnBreaks;
 
   /**
    * The maximum row outline level
@@ -841,7 +840,7 @@ public class SheetImpl implements Sheet
    * @return the explicit row breaks
    */
   @Override
-  public final int[] getRowPageBreaks()
+  public final List<Integer> getRowPageBreaks()
   {
     return rowBreaks;
   }
@@ -852,7 +851,7 @@ public class SheetImpl implements Sheet
    * @return the explicit row breaks
    */
   @Override
-  public final int[] getColumnPageBreaks()
+  public final List<Integer> getColumnPageBreaks()
   {
     return columnBreaks;
   }

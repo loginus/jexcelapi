@@ -19,6 +19,7 @@
 
 package jxl.read.biff;
 
+import java.util.*;
 import jxl.common.Logger;
 
 import jxl.biff.IntegerHelper;
@@ -27,24 +28,19 @@ import jxl.biff.RecordData;
 /**
  * Contains the cell dimensions of this worksheet
  */
-class VerticalPageBreaksRecord extends RecordData
+public class VerticalPageBreaksRecord extends RecordData
 {
-  /**
-   * The logger
-   */
-  private final Logger logger = Logger.getLogger
-    (VerticalPageBreaksRecord.class);
 
   /**
    * The row page breaks
    */
-  private int[] columnBreaks;
+  private final List<Integer> columnBreaks = new ArrayList<>();
 
   /**
    * Dummy indicators for overloading the constructor
    */
   private static class Biff7 {};
-  public static Biff7 biff7 = new Biff7();
+  public static final Biff7 biff7 = new Biff7();
 
   /**
    * Constructs the dimensions from the raw data
@@ -59,11 +55,10 @@ class VerticalPageBreaksRecord extends RecordData
 
     int numbreaks = IntegerHelper.getInt(data[0], data[1]);
     int pos = 2;
-    columnBreaks = new int[numbreaks];
 
     for (int i = 0; i < numbreaks; i++)
     {
-      columnBreaks[i] = IntegerHelper.getInt(data[pos], data[pos + 1]);
+      columnBreaks.add(IntegerHelper.getInt(data[pos], data[pos + 1]));
       pos += 6;
     }
   }
@@ -81,10 +76,9 @@ class VerticalPageBreaksRecord extends RecordData
     byte[] data = t.getData();
     int numbreaks = IntegerHelper.getInt(data[0], data[1]);
     int pos = 2;
-    columnBreaks = new int[numbreaks];
     for (int i = 0; i < numbreaks; i++)
     {
-      columnBreaks[i] = IntegerHelper.getInt(data[pos], data[pos + 1]);
+      columnBreaks.add(IntegerHelper.getInt(data[pos], data[pos + 1]));
       pos += 2;
     }
   }
@@ -94,9 +88,9 @@ class VerticalPageBreaksRecord extends RecordData
    *
    * @return the row breaks on the current sheet
    */
-  public int[] getColumnBreaks()
+  public List<Integer> getColumnBreaks()
   {
-    return columnBreaks;
+    return Collections.unmodifiableList(columnBreaks);
   }
 }
 

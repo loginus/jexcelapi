@@ -258,25 +258,8 @@ class SheetCopier
     //    sheetWriter.setFooter(new FooterRecord(si.getFooter()));
 
     // Copy the page breaks
-    int[] rowbreaks = fromSheet.getRowPageBreaks();
-
-    if (rowbreaks != null)
-    {
-      for (int i = 0; i < rowbreaks.length; i++)
-      {
-        rowBreaks.add(rowbreaks[i]);
-      }
-    }
-
-    int[] columnbreaks = fromSheet.getColumnPageBreaks();
-
-    if (columnbreaks != null)
-    {
-      for (int i = 0; i < columnbreaks.length; i++)
-      {
-        columnBreaks.add(columnbreaks[i]);
-      }
-    }
+    rowBreaks.addAll(fromSheet.getRowPageBreaks());
+    columnBreaks.addAll(fromSheet.getColumnPageBreaks());
 
     // Copy the charts
     sheetWriter.setCharts(fromSheet.getCharts());
@@ -578,25 +561,8 @@ class SheetCopier
     //    sheetWriter.setFooter(new FooterRecord(si.getFooter()));
 
     // Copy the page breaks
-    int[] rowbreaks = fromSheet.getRowPageBreaks();
-
-    if (rowbreaks != null)
-    {
-      for (int i = 0; i < rowbreaks.length; i++)
-      {
-        rowBreaks.add(rowbreaks[i]);
-      }
-    }
-
-    int[] columnbreaks = fromSheet.getColumnPageBreaks();
-
-    if (columnbreaks != null)
-    {
-      for (int i = 0; i < columnbreaks.length; i++)
-      {
-        columnBreaks.add(columnbreaks[i]);
-      }
-    }
+    rowBreaks.addAll(fromSheet.getRowPageBreaks());
+    columnBreaks.addAll(fromSheet.getColumnPageBreaks());
 
     // Copy the charts
     Chart[] fromCharts = fromSheet.getCharts();

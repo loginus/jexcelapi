@@ -186,12 +186,12 @@ final class SheetReader
   /**
    * The horizontal page breaks contained on this sheet
    */
-  private int[] rowBreaks;
+  private List<Integer> rowBreaks;
 
   /**
    * The vertical page breaks contained on this sheet
    */
-  private int[] columnBreaks;
+  private List<Integer> columnBreaks;
 
   /**
    * The maximum row outline level
@@ -1352,7 +1352,7 @@ final class SheetReader
    *
    * @return the row breaks
    */
-  final int[] getRowBreaks()
+  final List<Integer> getRowBreaks()
   {
     return rowBreaks;
   }
@@ -1362,7 +1362,7 @@ final class SheetReader
    *
    * @return the column breaks
    */
-  final int[] getColumnBreaks()
+  final List<Integer> getColumnBreaks()
   {
     return columnBreaks;
   }
