@@ -21,11 +21,12 @@ package jxl.write.biff;
 
 import java.util.*;
 import jxl.biff.*;
+import jxl.read.biff.IVerticalPageBreaks;
 
 /**
  * Contains the list of explicit horizontal page breaks on the current sheet
  */
-class VerticalPageBreaksRecord extends WritableRecordData
+class VerticalPageBreaksRecord extends WritableRecordData implements IVerticalPageBreaks
 {
   /**
    * The row breaks
@@ -48,6 +49,7 @@ class VerticalPageBreaksRecord extends WritableRecordData
    * 
    * @return the binary data
    */
+  @Override
   public byte[] getData()
   {
     byte[] data = new byte[columnBreaks.size() * 6 + 2];
@@ -65,4 +67,10 @@ class VerticalPageBreaksRecord extends WritableRecordData
 
     return data;
   }
+
+  @Override
+  public List<Integer> getColumnBreaks() {
+    return Collections.unmodifiableList(columnBreaks);
+  }
+
 }
