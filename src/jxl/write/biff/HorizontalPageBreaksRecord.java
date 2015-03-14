@@ -84,20 +84,12 @@ class HorizontalPageBreaksRecord extends WritableRecordData implements IHorizont
   void addBreak(int row) {
     // First check that the row is not already present
     Iterator<Integer> i = rowBreaks.iterator();
-    boolean found = false;
 
-    while (i.hasNext() && !found)
-    {
+    while (i.hasNext())
       if (i.next() == row)
-      {
-        found = true;
-      }
-    }
+        return;
 
-    if (!found)
-    {
-      rowBreaks.add(row);
-    }
+    rowBreaks.add(row);
   }
 
   void insertRow(int row) {
