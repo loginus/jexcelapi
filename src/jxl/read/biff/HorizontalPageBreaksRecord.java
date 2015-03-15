@@ -39,6 +39,10 @@ public class HorizontalPageBreaksRecord extends RecordData implements IHorizonta
   private static class Biff7 {};
   public final static Biff7 biff7 = new Biff7();
 
+  public HorizontalPageBreaksRecord() {
+    super(Type.HORIZONTALPAGEBREAKS);
+  }
+  
   /**
    * Constructs the dimensions from the raw data
    *

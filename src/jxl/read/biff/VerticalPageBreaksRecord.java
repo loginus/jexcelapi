@@ -39,6 +39,9 @@ public class VerticalPageBreaksRecord extends RecordData implements IVerticalPag
   private static class Biff7 {};
   public static final Biff7 biff7 = new Biff7();
 
+  public VerticalPageBreaksRecord() {
+    super(Type.VERTICALPAGEBREAKS);
+  }
   /**
    * Constructs the dimensions from the raw data
    *

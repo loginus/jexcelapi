@@ -1,10 +1,11 @@
 package jxl.write.biff;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import jxl.WorkbookSettings;
+import java.nio.file.*;
+import jxl.*;
 import jxl.biff.FormattingRecords;
 import static jxl.biff.Type.HORIZONTALPAGEBREAKS;
+import jxl.read.biff.BiffException;
 import static jxl.read.biff.HorizontalPageBreaksRecordTest.biff8pb;
 import jxl.write.*;
 import static org.junit.Assert.*;
@@ -15,7 +16,7 @@ import org.junit.Test;
  * @author Jan Schlößin
  */
 public class HorizontalPageBreaksRecordTest {
-  
+
   @Test
   public void testCreationOfBiff8() {
     int [] pageBreaks = new int[] {13, 18};
@@ -66,6 +67,41 @@ public class HorizontalPageBreaksRecordTest {
     assertArrayEquals(new Integer[] {5,6}, w.getRowPageBreaks().getRowBreaks().toArray());
     w.removeRow(6);
     assertArrayEquals(new Integer[] {5}, w.getRowPageBreaks().getRowBreaks().toArray());
+  }
+  
+  @Test
+  public void testIntegration_CopyOfWorkbookWithRowBreak() throws WriteException, IOException, BiffException {
+    Path tempSource = Files.createTempFile(null, ".xls");
+    try (WritableWorkbook wwb = Workbook.createWorkbook(tempSource)) {
+      WritableSheet sheet = wwb.createSheet("test", 0);
+      sheet.addRowPageBreak(6);
+      wwb.write();
+    }
+    Path tempDest = Files.createTempFile(null, ".xls");
+    try (Workbook wb = Workbook.getWorkbook(tempSource);
+            WritableWorkbook wwb = Workbook.createWorkbook(tempDest, wb)) {
+      wwb.write();
+    }
+    
+    Files.deleteIfExists(tempSource);
+    Files.deleteIfExists(tempDest);
+  }
+  
+  @Test
+  public void testIntegration_CopyOfWorkbookWithoutRowBreak() throws WriteException, IOException, BiffException {
+    Path tempSource = Files.createTempFile(null, ".xls");
+    try (WritableWorkbook wwb = Workbook.createWorkbook(tempSource)) {
+      wwb.createSheet("test", 0);
+      wwb.write();
+    }
+    Path tempDest = Files.createTempFile(null, ".xls");
+    try (Workbook wb = Workbook.getWorkbook(tempSource);
+            WritableWorkbook wwb = Workbook.createWorkbook(tempDest, wb)) {
+      wwb.write();
+    }
+    
+    Files.deleteIfExists(tempSource);
+    Files.deleteIfExists(tempDest);
   }
   
 }

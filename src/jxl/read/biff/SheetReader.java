@@ -21,29 +21,13 @@ package jxl.read.biff;
 
 import java.util.*;
 import jxl.*;
-
-import jxl.common.Assert;
-import jxl.common.Logger;
-
-import jxl.biff.AutoFilter;
-import jxl.biff.AutoFilterInfoRecord;
-import jxl.biff.AutoFilterRecord;
-import jxl.biff.ConditionalFormat;
-import jxl.biff.ConditionalFormatRangeRecord;
-import jxl.biff.ConditionalFormatRecord;
-import jxl.biff.ContinueRecord;
-import jxl.biff.DataValidation;
-import jxl.biff.DataValidityListRecord;
-import jxl.biff.DataValiditySettingsRecord;
-import jxl.biff.FilterModeRecord;
-import jxl.biff.FormattingRecords;
-import jxl.biff.Type;
-import jxl.biff.WorkspaceInformationRecord;
+import jxl.CellReferenceHelper;
+import jxl.HeaderFooter;
+import jxl.biff.*;
 import jxl.biff.drawing.*;
 import jxl.biff.formula.FormulaException;
-import jxl.format.PageOrder;
-import jxl.format.PageOrientation;
-import jxl.format.PaperSize;
+import jxl.common.*;
+import jxl.format.*;
 
 /**
  * Reads the sheet.  This functionality was originally part of the
@@ -55,32 +39,32 @@ final class SheetReader
   /**
    * The logger
    */
-  private static Logger logger = Logger.getLogger(SheetReader.class);
+  private static final Logger logger = Logger.getLogger(SheetReader.class);
 
   /**
    * The excel file
    */
-  private File excelFile;
+  private final File excelFile;
 
   /**
    * A handle to the shared string table
    */
-  private SSTRecord sharedStrings;
+  private final SSTRecord sharedStrings;
 
   /**
    * A handle to the sheet BOF record, which indicates the stream type
    */
-  private BOFRecord sheetBof;
+  private final BOFRecord sheetBof;
 
   /**
    * A handle to the workbook BOF record, which indicates the stream type
    */
-  private BOFRecord workbookBof;
+  private final BOFRecord workbookBof;
 
   /**
    * A handle to the formatting records
    */
-  private FormattingRecords formattingRecords;
+  private final FormattingRecords formattingRecords;
 
   /**
    * The  number of rows
@@ -100,38 +84,38 @@ final class SheetReader
   /**
    * Any cells which are out of the defined bounds
    */
-  private ArrayList<Cell> outOfBoundsCells;
+  private final ArrayList<Cell> outOfBoundsCells = new ArrayList<>();
 
   /**
    * The start position in the stream of this sheet
    */
-  private int startPosition;
+  private final int startPosition;
 
   /**
    * The list of non-default row properties
    */
-  private ArrayList<RowRecord> rowProperties;
+  private final ArrayList<RowRecord> rowProperties = new ArrayList<>(10);
 
   /**
    * An array of column info records.  They are held this way before
    * they are transferred to the more convenient array
    */
-  private ArrayList<ColumnInfoRecord> columnInfosArray;
+  private final ArrayList<ColumnInfoRecord> columnInfosArray = new ArrayList<>();
 
   /**
    * A list of shared formula groups
    */
-  private ArrayList<SharedFormulaRecord> sharedFormulas;
+  private final ArrayList<SharedFormulaRecord> sharedFormulas = new ArrayList<>();
 
   /**
    * A list of hyperlinks on this page
    */
-  private ArrayList<Hyperlink> hyperlinks;
+  private final ArrayList<Hyperlink> hyperlinks = new ArrayList<>();
 
   /**
    * The list of conditional formats on this page
    */
-  private ArrayList<ConditionalFormat> conditionalFormats;
+  private final ArrayList<ConditionalFormat> conditionalFormats = new ArrayList<>();
 
   /**
    * The autofilter information
@@ -151,12 +135,12 @@ final class SheetReader
   /**
    * The list of charts on this page
    */
-  private ArrayList<Chart> charts;
+  private ArrayList<Chart> charts = new ArrayList<>();
 
   /**
    * The list of drawings on this page
    */
-  private ArrayList<DrawingGroupObject> drawings;
+  private ArrayList<DrawingGroupObject> drawings = new ArrayList<>();
 
   /**
    * The drawing data for the drawings
@@ -186,12 +170,12 @@ final class SheetReader
   /**
    * The horizontal page breaks contained on this sheet
    */
-  private HorizontalPageBreaksRecord rowBreaks;
+  private HorizontalPageBreaksRecord rowBreaks = new HorizontalPageBreaksRecord();
 
   /**
    * The vertical page breaks contained on this sheet
    */
-  private VerticalPageBreaksRecord columnBreaks;
+  private VerticalPageBreaksRecord columnBreaks = new VerticalPageBreaksRecord();
 
   /**
    * The maximum row outline level
@@ -206,23 +190,23 @@ final class SheetReader
   /**
    * The sheet settings
    */
-  private SheetSettings settings;
+  private final SheetSettings settings;
 
   /**
    * The workbook settings
    */
-  private WorkbookSettings workbookSettings;
+  private final WorkbookSettings workbookSettings;
 
   /**
    * A handle to the workbook which contains this sheet.  Some of the records
    * need this in order to reference external sheets
    */
-  private WorkbookParser workbook;
+  private final WorkbookParser workbook;
 
   /**
    * A handle to the sheet
    */
-  private SheetImpl sheet;
+  private final SheetImpl sheet;
 
   /**
    * Constructor
@@ -253,14 +237,6 @@ final class SheetReader
     formattingRecords = fr;
     sheetBof = sb;
     workbookBof = wb;
-    columnInfosArray = new ArrayList<>();
-    sharedFormulas = new ArrayList<>();
-    hyperlinks = new ArrayList<>();
-    conditionalFormats = new ArrayList<>();
-    rowProperties = new ArrayList<>(10);
-    charts = new ArrayList<>();
-    drawings = new ArrayList<>();
-    outOfBoundsCells = new ArrayList<>();
     nineteenFour = nf;
     workbook = wp;
     startPosition = sp;
