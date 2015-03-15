@@ -19,6 +19,7 @@
 
 package jxl.write.biff;
 
+import jxl.WorkbookSettings;
 import jxl.common.Logger;
 
 import jxl.biff.BuiltInName;
@@ -33,8 +34,6 @@ import jxl.biff.WritableRecordData;
  */
 class NameRecord extends WritableRecordData
 {
-  // The logger
-  private static Logger logger = Logger.getLogger(NameRecord.class);
   /**
    * The binary data for output to file
    */
@@ -154,12 +153,15 @@ class NameRecord extends WritableRecordData
   // An empty range
   private static final NameRange EMPTY_RANGE = new NameRange(0,0,0,0,0);
 
+  private final WorkbookSettings settings;
+  
   /**
    * Constructor - used when copying sheets
    *
-   * @param index the index into the name table
+   * @param ws the workbook settings
+   * @param ind the index into the name table
    */
-  public NameRecord(jxl.read.biff.NameRecord sr, int ind)
+  public NameRecord(jxl.read.biff.NameRecord sr, int ind, WorkbookSettings ws)
   {
     super(Type.NAME);
 
@@ -176,6 +178,7 @@ class NameRecord extends WritableRecordData
     {
       ranges[i] = new NameRange(r[i]);
     }
+    settings = ws;
   }
 
   /**
@@ -213,6 +216,7 @@ class NameRecord extends WritableRecordData
                               theStartCol, 
                               theEndCol);
     modified = true;
+    settings = null;
   }
 
   /**
@@ -249,6 +253,7 @@ class NameRecord extends WritableRecordData
                               theEndRow, 
                               theStartCol, 
                               theEndCol);
+    settings = null;
   }
 
   /**
@@ -297,7 +302,8 @@ class NameRecord extends WritableRecordData
             				  theStartRow2, 
             				  theEndRow2, 
             				  theStartCol2, 
-            				  theEndCol2);    
+            				  theEndCol2);
+    settings = null;
   }
   
   
@@ -329,7 +335,7 @@ class NameRecord extends WritableRecordData
       detailLength = AREA_RANGE_LENGTH;
     }
 
-    int length = NAME_HEADER_LENGTH + detailLength;    
+    int length = NAME_HEADER_LENGTH + detailLength; 
     length += builtInName != null ? 1 : name.length();
     data = new byte[length];
 
@@ -372,7 +378,10 @@ class NameRecord extends WritableRecordData
     }
     else
     {
-      StringHelper.getBytes(name, data, 15);
+      if (settings == null)
+        StringHelper.getBytes(name, data, 15);
+      else
+        StringHelper.getBytes(name, data, 15, settings);
     }
 
     // The actual range definition.

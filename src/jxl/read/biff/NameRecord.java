@@ -19,7 +19,7 @@
 
 package jxl.read.biff;
 
-import java.util.ArrayList;
+import java.util.*;
 
 import jxl.common.Assert;
 import jxl.common.Logger;
@@ -185,7 +185,7 @@ public class NameRecord extends RecordData
   /**
    * The ranges referenced by this name
    */
-  private ArrayList ranges;
+  private List<NameRange> ranges;
 
   /**
    * Constructs this object from the raw data
@@ -202,7 +202,7 @@ public class NameRecord extends RecordData
 
     try
     {
-      ranges = new ArrayList();
+      ranges = new ArrayList<>();
 
       byte[] data = getRecord().getData();
       int option = IntegerHelper.getInt(data[0], data[1]);

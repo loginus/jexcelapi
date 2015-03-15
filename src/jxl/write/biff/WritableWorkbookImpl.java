@@ -22,20 +22,18 @@ package jxl.write.biff;
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
-
-import jxl.common.*;
-
 import jxl.*;
 import jxl.biff.*;
 import jxl.biff.CellReferenceHelper;
 import jxl.biff.drawing.*;
 import jxl.biff.formula.ExternalSheet;
+import jxl.common.*;
 import jxl.format.*;
-import jxl.read.biff.WorkbookParser;
-import jxl.write.WritableCell;
-import jxl.write.WritableSheet;
-import jxl.write.WritableWorkbook;
+import jxl.format.Colour;
 import static jxl.read.biff.SupbookRecord.*;
+import jxl.read.biff.WorkbookParser;
+import jxl.write.*;
+import jxl.write.biff.File;
 
 
 /**
@@ -310,7 +308,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
       {
         if (na[i].isBiff8())
         {
-          NameRecord n = new NameRecord(na[i], i);
+          NameRecord n = new NameRecord(na[i], i, settings);
           names.add(n);
           String name = n.getName();
           nameRecords.put(name, n);
@@ -410,7 +408,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
 
     while (i.hasNext() && !found)
     {
-      s = (WritableSheet) i.next();
+      s = i.next();
       
       if (s.getName().equals(name))
       {
@@ -574,9 +572,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
 
     if (names != null && names.size() > 0)
     {
-      for (int i=0; i< names.size();i++)
-      {
-        NameRecord n = names.get(i);
+      for (NameRecord n : names) {
         int oldRef = n.getSheetRef();
         if(oldRef == (pos+1))
         {
@@ -886,32 +882,24 @@ public class WritableWorkbookImpl extends WritableWorkbook
 
     if (xctRecords != null)
     {
-      for (int i = 0 ; i < xctRecords.length; i++)
-      {
-        outputFile.write(xctRecords[i]);
-      }
+      for (XCTRecord xctRecord : xctRecords)
+        outputFile.write(xctRecord);
     }
 
     // Write out the external sheet record, if it exists
     if (externSheet != null)
     {
       //Write out all the supbook records
-      for (int i = 0; i < supbooks.size() ; i++)
-      {
-        SupbookRecord supbook = supbooks.get(i);
+      for (SupbookRecord supbook : supbooks)
         outputFile.write(supbook);
-      }
       outputFile.write(externSheet);
     }
 
     // Write out the names, if any exists
     if (names != null)
     {
-      for (int i = 0 ; i < names.size() ; i++)
-      {
-        NameRecord n = names.get(i);
+      for (NameRecord n : names)
         outputFile.write(n);
-      }
     }
   
     // Write out the mso drawing group, if it exists

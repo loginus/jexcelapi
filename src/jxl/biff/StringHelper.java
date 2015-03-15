@@ -127,6 +127,20 @@ public final class StringHelper
     System.arraycopy(b, 0, d, pos, b.length);
   }
 
+/**
+   * Gets the ASCII bytes from the specified string and places them in the
+   * array at the specified position
+   *
+   * @param pos the position at which to place the converted data
+   * @param s the string to convert
+   * @param d the byte array which will contain the converted string data
+   */
+  public static void getBytes(String s, byte[] d, int pos, WorkbookSettings ws)
+  {
+    byte[] b = getBytes(s, ws);
+    System.arraycopy(b, 0, d, pos, b.length);
+  }
+
   /**
    * Inserts the unicode byte representation of the specified string into the
    * array passed in
