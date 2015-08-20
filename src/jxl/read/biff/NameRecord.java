@@ -207,6 +207,7 @@ public class NameRecord extends RecordData
       byte[] data = getRecord().getData();
       int option = IntegerHelper.getInt(data[0], data[1]);
       int length = data[3];
+      int sizeOfFormula = data[4];
       sheetRef = IntegerHelper.getInt(data[8],data[9]);
 
       if ((option & builtIn) != 0)
@@ -221,6 +222,11 @@ public class NameRecord extends RecordData
       if ((option & commandMacro) != 0)
       {
         // This is a command macro, so it has no cell references
+        return;
+      }
+      
+      if (sizeOfFormula == 0) {
+//        logger.warn("This name has no cell references: " + name);
         return;
       }
 
@@ -372,7 +378,7 @@ public class NameRecord extends RecordData
 
     try
     {
-      ranges = new ArrayList();
+      ranges = new ArrayList<>();
       byte[] data = getRecord().getData();
       int length = data[3];
       sheetRef = IntegerHelper.getInt(data[8], data[9]);
@@ -514,7 +520,7 @@ public class NameRecord extends RecordData
   public NameRange[] getRanges()
   {
     NameRange[] nr = new NameRange[ranges.size()];
-    return (NameRange[]) ranges.toArray(nr);
+    return ranges.toArray(nr);
   }
 
   /**
