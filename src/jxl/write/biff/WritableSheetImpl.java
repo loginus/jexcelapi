@@ -1000,10 +1000,12 @@ class WritableSheetImpl implements WritableSheet
     throws WriteException, RowsExceededException
   {
     if (cell.getType() == CellType.EMPTY)
-      if (cell.getCellFormat() == null)
-        // return if it's a blank cell with no particular cell formatting
-        // information
+      if (cell.getCellFormat() == null) {
+        // remove blank cells with no particular cell formatting
+        removeCell(cell.getRow(), cell.getColumn());
+        
         return;
+      }
     
     CellValue cv = (CellValue) cell;
 
@@ -2716,4 +2718,13 @@ class WritableSheetImpl implements WritableSheet
                                                 dvp.getLastRow());
     }
   }
+
+  private void removeCell(int row, int column) throws RowsExceededException {
+    if (row >= rows.length)
+      return;
+    
+    RowRecord rowrec = getRowRecord(row);
+    rowrec.removeCell(column);
+  }
+
 }
