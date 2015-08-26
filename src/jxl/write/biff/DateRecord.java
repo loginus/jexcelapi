@@ -161,7 +161,7 @@ public abstract class DateRecord extends CellValue
     super(Type.NUMBER, c, r, st);
     date = d;
     time = tim;
-    calculateValue(false);
+    calculateValue(true);
   }
 
   /**
