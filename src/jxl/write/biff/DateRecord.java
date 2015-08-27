@@ -23,8 +23,6 @@ import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-import jxl.common.Logger;
-
 import jxl.CellType;
 import jxl.DateCell;
 import jxl.biff.DoubleHelper;
@@ -38,10 +36,6 @@ import jxl.write.WritableCellFormat;
  */
 public abstract class DateRecord extends CellValue
 {
-  /**
-   * The logger
-   */
-  private static Logger logger = Logger.getLogger(DateRecord.class);
 
   /**
    * The excel value of the date
@@ -174,7 +168,7 @@ public abstract class DateRecord extends CellValue
     super(Type.NUMBER, dc);
     date = dc.getDate();
     time = dc.isTime();
-    calculateValue(false);
+    calculateValue(true);
   }
 
   /**
@@ -238,7 +232,7 @@ public abstract class DateRecord extends CellValue
     // If this refers to a time, then get rid of the integer part
     if (time)
     {
-      value = value - (int) value;
+      value -= (int) value;
     }
   }
 
