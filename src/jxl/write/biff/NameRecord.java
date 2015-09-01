@@ -19,14 +19,9 @@
 
 package jxl.write.biff;
 
+import java.util.Objects;
 import jxl.WorkbookSettings;
-import jxl.common.Logger;
-
-import jxl.biff.BuiltInName;
-import jxl.biff.IntegerHelper;
-import jxl.biff.StringHelper;
-import jxl.biff.Type;
-import jxl.biff.WritableRecordData;
+import jxl.biff.*;
 
 /**
  * A name record.  Simply takes the binary data from the name
@@ -166,7 +161,11 @@ class NameRecord extends WritableRecordData
     super(Type.NAME);
 
     data = sr.getData();
-    name = sr.getName();
+    
+    if (sr.getBuiltInName() != null)
+      builtInName = sr.getBuiltInName();
+    else
+      name = sr.getName();
     sheetRef = sr.getSheetRef();
     index = ind;
     modified = false;
@@ -204,6 +203,7 @@ class NameRecord extends WritableRecordData
   { 
     super(Type.NAME);
 
+    Objects.requireNonNull(theName);
     name = theName;
     index = theIndex;
     sheetRef = global ? 0 : index+1; // 0 indicates a global name, otherwise
@@ -242,6 +242,7 @@ class NameRecord extends WritableRecordData
   { 
     super(Type.NAME);
 
+    Objects.requireNonNull(theName);
     builtInName = theName;
     index = theIndex;
     sheetRef = global ? 0 : index + 1; // 0 indicates a global name, otherwise
@@ -287,6 +288,7 @@ class NameRecord extends WritableRecordData
   { 
     super(Type.NAME);
 
+    Objects.requireNonNull(theName);
     builtInName = theName;
     index = theIndex;
     sheetRef = global ? 0 : index + 1; // 0 indicates a global name, otherwise
