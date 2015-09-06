@@ -344,7 +344,7 @@ public class Drawing implements DrawingGroupObject, Image
       blipId = opt.getProperty(260).value;
 
     if (opt.getProperty(261) != null)
-      imageFile = Paths.get(opt.getProperty(261).stringValue);
+      imageFile = Paths.get(cutTailingZeros(opt.getProperty(261).stringValue));
     else
     {
       if (type == ShapeType.PICTURE_FRAME)
@@ -383,6 +383,13 @@ public class Drawing implements DrawingGroupObject, Image
     }
 
     initialized = true;
+  }
+
+  private String cutTailingZeros(String s) {
+    while ((! s.isEmpty())
+            && s.codePointAt(s.length() - 1) == '\0')
+      s = s.substring(0, s.length() - 1);
+    return s;
   }
 
   /**
