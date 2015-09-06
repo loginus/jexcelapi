@@ -22,19 +22,12 @@ package jxl.biff.drawing;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import jxl.common.Logger;
-
 /**
  * An escher container.  This record may contain other escher containers or
  * atoms
  */
 class EscherContainer extends EscherRecord
 {
-  /**
-   * The logger
-   */
-  private static Logger logger = Logger.getLogger(EscherContainer.class);
-
   /**
    * Initialized flag
    */
@@ -44,7 +37,7 @@ class EscherContainer extends EscherRecord
   /**
    * The children of this container
    */
-  private ArrayList children;
+  private final ArrayList<EscherRecord> children = new ArrayList<>();
 
   /**
    * Constructor
@@ -55,7 +48,6 @@ class EscherContainer extends EscherRecord
   {
     super(erd);
     initialized = false;
-    children = new ArrayList();
   }
 
   /**
@@ -67,7 +59,6 @@ class EscherContainer extends EscherRecord
   {
     super(type);
     setContainer(true);
-    children = new ArrayList();
   }
 
   /**
@@ -115,7 +106,7 @@ class EscherContainer extends EscherRecord
     int curpos = getPos() + HEADER_LENGTH;
     int endpos = Math.min(getPos() + getLength(), getStreamLength());
 
-    EscherRecord newRecord = null;
+    EscherRecord newRecord;
 
     while (curpos < endpos)
     {
@@ -191,6 +182,7 @@ class EscherContainer extends EscherRecord
    *
    * @return the binary data
    */
+  @Override
   byte[] getData()
   {
     if (!initialized)
@@ -199,9 +191,7 @@ class EscherContainer extends EscherRecord
     }
 
     byte[] data = new byte[0];
-    for (Iterator i = children.iterator(); i.hasNext();)
-    {
-      EscherRecord er = (EscherRecord) i.next();
+    for (EscherRecord er : children) {
       byte[] childData = er.getData();
 
       if (childData != null)

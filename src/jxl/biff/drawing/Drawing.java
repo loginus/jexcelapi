@@ -778,9 +778,9 @@ public class Drawing implements DrawingGroupObject, Image
     }
 
     byte[] data = new byte[(int) Files.size(imageFile)];
-    InputStream fis = Files.newInputStream(imageFile);
-    fis.read(data, 0, data.length);
-    fis.close();
+    try (InputStream fis = Files.newInputStream(imageFile)) {
+      fis.read(data, 0, data.length);
+    }
     return data;
   }
 
