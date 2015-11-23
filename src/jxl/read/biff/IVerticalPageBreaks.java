@@ -35,6 +35,10 @@ public interface IVerticalPageBreaks {
       return new ColumnIndex(i, firstRow, lastRow);
     }
     
+    @Override
+    public String toString() {
+      return "ColumnBreaks: {" + firstColumnFollowingBreak + ", first=" + firstRow + ", last=" + lastRow + '}';
+    }
   }
 
   /**

@@ -38,6 +38,11 @@ public interface IHorizontalPageBreaks {
     public RowIndex withFirstRowBelowBreak(int i) {
       return new RowIndex(i, firstColumn, lastColumn);
     }
+
+    @Override
+    public String toString() {
+      return "RowBreaks: {" + firstRowBelowBreak + ", first=" + firstColumn + ", last=" + lastColumn + '}';
+    }
     
   }
   
