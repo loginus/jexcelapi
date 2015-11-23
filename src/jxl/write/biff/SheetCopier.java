@@ -83,8 +83,8 @@ class SheetCopier
   private FormattingRecords formatRecords;
   private ArrayList<WritableHyperlink> hyperlinks;
   private MergedCells mergedCells;
-  private final HorizontalPageBreaksRecord rowBreaks = new HorizontalPageBreaksRecord();
-  private final VerticalPageBreaksRecord columnBreaks = new VerticalPageBreaksRecord();
+  private final HorizontalPageBreaksRecord rowBreaks;
+  private final VerticalPageBreaksRecord columnBreaks;
   private SheetWriter sheetWriter;
   private ArrayList<DrawingGroupObject> drawings;
   private ArrayList<WritableImage> images;
@@ -105,12 +105,15 @@ class SheetCopier
   private HashMap<Integer, Integer> fonts;
   private HashMap<Integer, Integer> formats;
 
-  public SheetCopier(Sheet f, WritableSheet t)
-  {
+  public SheetCopier(Sheet f, WritableSheet t,
+          HorizontalPageBreaksRecord rb,
+          VerticalPageBreaksRecord cb) {
     fromSheet = (SheetImpl) f;
     toSheet = (WritableSheetImpl) t;
     workbookSettings = toSheet.getWorkbook().getSettings();
     chartOnly = false;
+    rowBreaks = rb;
+    columnBreaks = cb;
   }
 
   void setColumnFormats(TreeSet<ColumnInfoRecord> cf)
@@ -131,20 +134,6 @@ class SheetCopier
   void setMergedCells(MergedCells mc)
   {
     mergedCells = mc;
-  }
-
-  void setRowBreaks(HorizontalPageBreaksRecord rb)
-  {
-    rowBreaks.clear();
-    for (int i : rb.getRowBreaks())
-      rowBreaks.addBreak(i);
-  }
-
-  void setColumnBreaks(VerticalPageBreaksRecord cb)
-  {
-    columnBreaks.clear();
-    for (int i : cb.getColumnBreaks())
-      columnBreaks.addBreak(i);
   }
 
   void setSheetWriter(SheetWriter sw)

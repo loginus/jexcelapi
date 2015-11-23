@@ -2,6 +2,7 @@ package jxl.write.biff;
 
 import java.io.IOException;
 import java.nio.file.*;
+import java.util.List;
 import jxl.*;
 import jxl.biff.FormattingRecords;
 import static jxl.biff.Type.VERTICALPAGEBREAKS;
@@ -79,6 +80,11 @@ public class VerticalPageBreaksRecordTest {
     Path tempDest = Files.createTempFile(null, ".xls");
     try (Workbook wb = Workbook.getWorkbook(tempSource);
             WritableWorkbook wwb = Workbook.createWorkbook(tempDest, wb)) {
+
+      List<Integer> breaks = wwb.getSheet(0).getColumnPageBreaks().getColumnBreaks();
+      assertEquals(1, breaks.size());
+      assertEquals(6, breaks.get(0).intValue());
+
       wwb.write();
     }
     

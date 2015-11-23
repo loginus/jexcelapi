@@ -1433,13 +1433,11 @@ class WritableSheetImpl implements WritableSheet
     // Copy the settings
     settings = new SheetSettings(s.getSettings(), this);
 
-    SheetCopier si = new SheetCopier(s, this);
+    SheetCopier si = new SheetCopier(s, this, rowBreaks, columnBreaks);
     si.setColumnFormats(columnFormats);
     si.setFormatRecords(formatRecords);
     si.setHyperlinks(hyperlinks);
     si.setMergedCells(mergedCells);
-    si.setRowBreaks(rowBreaks);
-    si.setColumnBreaks(columnBreaks);
     si.setSheetWriter(sheetWriter);
     si.setDrawings(drawings);
     si.setImages(images);
@@ -2506,13 +2504,11 @@ class WritableSheetImpl implements WritableSheet
     // Copy the settings
     settings = new SheetSettings(s.getSettings(), this);
 
-    SheetCopier si = new SheetCopier(s, this);
+    SheetCopier si = new SheetCopier(s, this, rowBreaks, columnBreaks);
     si.setColumnFormats(columnFormats);
     si.setFormatRecords(formatRecords);
     si.setHyperlinks(hyperlinks);
     si.setMergedCells(mergedCells);
-    si.setRowBreaks(rowBreaks);
-    si.setColumnBreaks(columnBreaks);
     si.setSheetWriter(sheetWriter);
     si.setDrawings(drawings);
     si.setImages(images);
