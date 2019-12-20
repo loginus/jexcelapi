@@ -39,7 +39,7 @@ public final class StringHelper
   // Due to a a Sun bug in some versions of JVM 1.4, the UnicodeLittle
   // encoding doesn't always work.  Making this a public static field
   // enables client code access to this (but in an undocumented and
-  // unsupported fashion).  Suggested alternative values for this 
+  // unsupported fashion).  Suggested alternative values for this
   // are  "UTF-16LE" or "UnicodeLittleUnmarked"
   public static String UNICODE_ENCODING = "UnicodeLittle";
 
@@ -188,6 +188,26 @@ public final class StringHelper
   }
 
   /**
+   * Gets a string from the data array when compressed
+   *
+   * A compressed string, omits the high bytes of all characters, if they are
+   * all zero. See "The Microsoft Excel File Format"
+   * Chapter 2.5.3 Unicode Strings (BIFF8).
+   *
+   * @param d The byte data
+   * @param length The number of characters to be converted into a string
+   * @param pos The start position of the string
+   * @return the string built up from the unicode characters
+   */
+  public static String getCompressedUnicodeString(byte[] d, int length, int pos) {
+    byte[] b = new byte[d.length * 2];
+    for (int i = 0; i < d.length; i++)
+      b[i*2] = d[i];
+
+    return getUnicodeString(b, length, pos);
+  }
+
+  /**
    * Gets a string from the data array
    *
    * @param pos The start position of the string
@@ -211,7 +231,7 @@ public final class StringHelper
   }
 
   /**
-   * Replaces all instances of search with replace in the input.  
+   * Replaces all instances of search with replace in the input.
    * Even though later versions of java can use string.replace()
    * this is included Java 1.2 compatibility
    *
@@ -220,8 +240,8 @@ public final class StringHelper
    * @param replace the java equivalent
    * @return the input string with the specified substring replaced
    */
-  public static final String replace(String input, 
-                                     String search, 
+  public static final String replace(String input,
+                                     String search,
                                      String replace)
   {
     String fmtstr = input;

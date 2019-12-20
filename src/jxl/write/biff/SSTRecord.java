@@ -28,7 +28,7 @@ import jxl.biff.Type;
 import jxl.biff.WritableRecordData;
 
 /**
- * A shared string table record. 
+ * A shared string table record.
  */
 class SSTRecord extends WritableRecordData
 {
@@ -135,7 +135,7 @@ class SSTRecord extends WritableRecordData
 
   /**
    * Gets the binary data for output to file
-   * 
+   *
    * @return the binary data
    */
   public byte[] getData()
@@ -155,12 +155,12 @@ class SSTRecord extends WritableRecordData
       s = (String) i.next();
       length = ( (Integer) stringLengths.get(count)).intValue();
       IntegerHelper.getTwoBytes(length, data, pos);
-      data[pos+2] = 0x01;
+      data[pos+2] = 0x01; // uncompressed 16 bit values
       StringHelper.getUnicodeBytes(s, data, pos+3);
       pos += s.length() * 2 + 3;
       count++;
     }
-    
+
     return data;
   }
 }

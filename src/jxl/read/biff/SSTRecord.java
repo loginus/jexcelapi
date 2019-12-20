@@ -75,9 +75,8 @@ class SSTRecord extends RecordData
    *
    * @param t the raw data
    * @param continuations the continuations
-   * @param ws the workbook settings
    */
-  public SSTRecord(Record t, Record[] continuations, WorkbookSettings ws)
+  public SSTRecord(Record t, Record[] continuations)
   {
     super(t);
 
@@ -120,7 +119,7 @@ class SSTRecord extends RecordData
                                          data[6], data[7]);
 
     strings = new String[uniqueStrings];
-    readStrings(data, 8, ws);
+    readStrings(data, 8);
   }
 
   /**
@@ -128,15 +127,13 @@ class SSTRecord extends RecordData
    *
    * @param data the raw data
    * @param offset the offset
-   * @param ws the workbook settings
    */
-  private void readStrings(byte[] data, int offset, WorkbookSettings ws)
+  private void readStrings(byte[] data, int offset)
   {
     int pos = offset;
     int numChars;
     byte optionFlags;
     String s = null;
-    boolean asciiEncoding = false;
     boolean richString = false;
     boolean extendedString = false;
     int formattingRuns = 0;
@@ -172,22 +169,18 @@ class SSTRecord extends RecordData
       }
 
       // See if string is ASCII (compressed) or unicode
-      asciiEncoding = ((optionFlags & 0x01) == 0);
+      boolean compressedUTF16 = ((optionFlags & 0x01) == 0);
 
       ByteArrayHolder bah = new ByteArrayHolder();
       BooleanHolder   bh = new BooleanHolder();
-      bh.value = asciiEncoding;
+      bh.value = compressedUTF16;
       pos += getChars(data, bah, pos, bh, numChars);
-      asciiEncoding = bh.value;
+      compressedUTF16 = bh.value;
 
-      if (asciiEncoding)
-      {
-        s = StringHelper.getString(bah.bytes, numChars, 0, ws);
-      }
+      if (compressedUTF16)
+        s = StringHelper.getCompressedUnicodeString(bah.bytes, numChars, 0);
       else
-      {
         s = StringHelper.getUnicodeString(bah.bytes, numChars, 0);
-      }
 
       strings[i] = s;
 

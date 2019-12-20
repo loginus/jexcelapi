@@ -162,7 +162,7 @@ public class WorkbookParser extends Workbook
   /**
    * The workbook settings
    */
-  private WorkbookSettings settings;
+  private final WorkbookSettings settings;
 
   /**
    * The drawings contained in this workbook
@@ -396,7 +396,7 @@ public class WorkbookParser extends Workbook
         BoundsheetRecord br = (BoundsheetRecord) boundsheets.get(firstTab);
         firstTabName = br.getName();
       }
- 
+
       if (lastTab==65535)
       {
         lastTabName = "#REF";
@@ -407,16 +407,16 @@ public class WorkbookParser extends Workbook
         lastTabName = br.getName();
       }
 
-      String sheetName = (firstTab == lastTab) ? firstTabName : 
+      String sheetName = (firstTab == lastTab) ? firstTabName :
         firstTabName + ':' + lastTabName;
 
       // if the sheet name contains apostrophes then escape them
       sheetName = sheetName.indexOf('\'') == -1 ? sheetName :
         StringHelper.replace(sheetName, "\'", "\'\'");
 
-      
+
       // if the sheet name contains spaces, then enclose in quotes
-      return sheetName.indexOf(' ') == -1 ? sheetName : 
+      return sheetName.indexOf(' ') == -1 ? sheetName :
         '\'' + sheetName + '\'';
     }
     else if (sr.getType() == SupbookRecord.EXTERNAL)
@@ -569,7 +569,7 @@ public class WorkbookParser extends Workbook
     {
       r = excelFile.next();
 
-      if (r.getType() == Type.SST)
+      if (r.getType() == Type.SST) // BIFF8 only
       {
         continueRecords.clear();
         Record nextrec = excelFile.peek();
@@ -583,7 +583,7 @@ public class WorkbookParser extends Workbook
         Record[] records = new Record[continueRecords.size()];
         records = (Record[]) continueRecords.toArray(records);
 
-        sharedStrings = new SSTRecord(r, records, settings);
+        sharedStrings = new SSTRecord(r, records);
       }
       else if (r.getType() == Type.FILEPASS)
       {
@@ -596,7 +596,7 @@ public class WorkbookParser extends Workbook
         if (bof.isBiff8())
         {
           nr = new NameRecord(r, settings, nameTable.size());
-        
+
         }
         else
         {
@@ -918,8 +918,8 @@ public class WorkbookParser extends Workbook
       if (nr.getBuiltInName() == null)
       {
         logger.warn("Usage of a local non-builtin name: " + nr.getName());
-      } 
-      else if (nr.getBuiltInName() == BuiltInName.PRINT_AREA || 
+      }
+      else if (nr.getBuiltInName() == BuiltInName.PRINT_AREA ||
                nr.getBuiltInName() == BuiltInName.PRINT_TITLES)
       {
         // appears to use the internal tab number rather than the
@@ -998,7 +998,7 @@ public class WorkbookParser extends Workbook
   }
 
   /**
-   * Returns the cell for the specified location eg. "Sheet1!A4".  
+   * Returns the cell for the specified location eg. "Sheet1!A4".
    * This is identical to using the CellReferenceHelper with its
    * associated performance overheads, consequently it should
    * be use sparingly
@@ -1008,7 +1008,7 @@ public class WorkbookParser extends Workbook
    */
   public Cell getCell(String loc)
   {
-    Sheet s = getSheet(CellReferenceHelper.getSheet(loc)); 
+    Sheet s = getSheet(CellReferenceHelper.getSheet(loc));
     return s.getCell(loc);
   }
 
@@ -1043,7 +1043,7 @@ public class WorkbookParser extends Workbook
     {
       return new EmptyCell(col, row);
     }
-    
+
     Cell cell = s.getCell(col, row);
 
     return cell;
@@ -1288,10 +1288,3 @@ public class WorkbookParser extends Workbook
     return (XCTRecord[]) xctRecords.toArray(xctr);
   }
 }
-
-
-
-
-
-
-
