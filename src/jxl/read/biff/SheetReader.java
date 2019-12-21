@@ -135,12 +135,12 @@ final class SheetReader
   /**
    * The list of charts on this page
    */
-  private ArrayList<Chart> charts = new ArrayList<>();
+  private final ArrayList<Chart> charts = new ArrayList<>();
 
   /**
    * The list of drawings on this page
    */
-  private ArrayList<DrawingGroupObject> drawings = new ArrayList<>();
+  private final ArrayList<DrawingGroupObject> drawings = new ArrayList<>();
 
   /**
    * The drawing data for the drawings
@@ -150,7 +150,7 @@ final class SheetReader
   /**
    * Indicates whether or not the dates are based around the 1904 date system
    */
-  private boolean nineteenFour;
+  private final boolean nineteenFour;
 
   /**
    * The PLS print record
@@ -249,7 +249,7 @@ final class SheetReader
     for (Cell cell : cells)
       addCell(cell);
   }
-  
+
   /**
    * Adds the cell to the array
    *
@@ -301,7 +301,7 @@ final class SheetReader
     MsoDrawingRecord msoRecord = null;
     ObjRecord objRecord = null;
     boolean firstMsoRecord = true;
-    
+
     // Handle to the last conditional format record
     ConditionalFormat condFormat = null;
 
@@ -357,7 +357,7 @@ final class SheetReader
         DimensionRecord dr = workbookBof.isBiff8()
                 ? new DimensionRecord(r)
                 : new DimensionRecord(r, DimensionRecord.biff7);
-        
+
         numRows = dr.getNumberOfRows();
         numCols = dr.getNumberOfColumns();
         cells = new Cell[numRows][numCols];
@@ -522,7 +522,7 @@ final class SheetReader
           NoteRecord nr = new NoteRecord(r);
 
           // Get the comment for the object id
-          Comment comment = comments.remove(new Integer(nr.getObjectId()));
+          Comment comment = comments.remove(nr.getObjectId());
 
           if (comment == null)
           {
@@ -545,7 +545,7 @@ final class SheetReader
       }
       else if (type == Type.ARRAY)
       {
-        
+
       }
       else if (type == Type.PROTECT)
       {
@@ -657,7 +657,7 @@ final class SheetReader
       }
       else if (type == Type.NAME)
       {
-        
+
       }
       else if (type == Type.PASSWORD)
       {
@@ -902,7 +902,7 @@ final class SheetReader
               dataValidation = new DataValidation(dvlr);
             }
           }
-          else if (objectIds.contains(new Integer(dvlr.getObjectId())))
+          else if (objectIds.contains(dvlr.getObjectId()))
           {
             dataValidation = new DataValidation(dvlr);
           }
@@ -963,7 +963,7 @@ final class SheetReader
             continueRecord = null;
           }
           handleObjectRecord(objRecord, msoRecord, comments);
-          objectIds.add(new Integer(objRecord.getObjectId()));
+          objectIds.add(objRecord.getObjectId());
         }
 
         // Save chart handling until the chart BOF record appears
@@ -1123,7 +1123,7 @@ final class SheetReader
   {
     boolean added = false;
 
-    for (int i=0, size=sharedFormulas.size(); i<size && !added; ++i) 
+    for (int i=0, size=sharedFormulas.size(); i<size && !added; ++i)
       added = sharedFormulas.get(i).add(fr);
 
     return added;
@@ -1560,7 +1560,7 @@ final class SheetReader
           comment.setFormatting(formatting);
         }
 
-        comments.put(new Integer(comment.getObjectId()), comment);
+        comments.put(comment.getObjectId(), comment);
         return;
       }
 
@@ -1804,7 +1804,7 @@ final class SheetReader
 
     // Now add all the out of bounds cells into the new cells
     addCells(outOfBoundsCells);
-    
+
     outOfBoundsCells.clear();
   }
 
