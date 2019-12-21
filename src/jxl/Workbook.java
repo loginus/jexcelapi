@@ -21,6 +21,7 @@ package jxl;
 
 import java.io.*;
 import java.nio.file.*;
+import java.util.*;
 import jxl.read.biff.*;
 import jxl.read.biff.File;
 import jxl.write.WritableWorkbook;
@@ -48,16 +49,16 @@ public abstract class Workbook implements Closeable
    * Gets the sheets within this workbook.  Use of this method for
    * large worksheets can cause performance problems.
    *
-   * @return an array of the individual sheets
+   * @return a list of the individual sheets
    */
-  public abstract Sheet[] getSheets();
+  public abstract List<Sheet> getSheets();
 
   /**
    * Gets the sheet names
    *
-   * @return an array of strings containing the sheet names
+   * @return a list of strings containing the sheet names
    */
-  public abstract String[] getSheetNames();
+  public abstract List<String> getSheetNames();
 
   /**
    * Gets the specified sheet within this workbook
@@ -303,7 +304,7 @@ public abstract class Workbook implements Closeable
    * @param in the workbook to copy
    * @param ws the configuration for this workbook
    * @return a writable workbook
-   * @throws IOException  
+   * @throws IOException
    */
   public static WritableWorkbook createWorkbook(Path file,
                                                 Workbook in,

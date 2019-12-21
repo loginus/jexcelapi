@@ -200,12 +200,12 @@ public class WorkbookParser extends Workbook
    * very large worksheets can cause performance and out of memory problems.
    * Use the alternative method getSheet() to retrieve each sheet individually
    *
-   * @return an array of the individual sheets
+   * @return a list of the individual sheets
    */
   @Override
-  public Sheet[] getSheets()
+  public List<Sheet> getSheets()
   {
-    return sheets.toArray(new Sheet[sheets.size()]);
+    return Collections.unmodifiableList(sheets);
   }
 
   /**
@@ -290,15 +290,15 @@ public class WorkbookParser extends Workbook
   /**
    * Gets the sheet names
    *
-   * @return an array of strings containing the sheet names
+   * @return a list of strings containing the sheet names
    */
   @Override
-  public String[] getSheetNames()
+  public List<String> getSheetNames()
   {
-    String[] names = new String[boundsheets.size()];
+    List<String> names = new ArrayList<>(boundsheets.size());
 
-    for (int i = 0; i < names.length; i++)
-      names[i] = boundsheets.get(i).getName();
+    for (BoundsheetRecord record : boundsheets)
+      names.add(record.getName());
 
     return names;
   }
@@ -897,9 +897,9 @@ public class WorkbookParser extends Workbook
    *
    * @return the supbook records
    */
-  public SupbookRecord[] getSupbookRecords()
+  public List<SupbookRecord> getSupbookRecords()
   {
-    return supbooks.toArray(new SupbookRecord[supbooks.size()]);
+    return Collections.unmodifiableList(supbooks);
   }
 
   /**
@@ -908,9 +908,9 @@ public class WorkbookParser extends Workbook
    *
    * @return the array of names
    */
-  public NameRecord[] getNameRecords()
+  public List<NameRecord> getNameRecords()
   {
-    return nameTable.toArray(new NameRecord[nameTable.size()]);
+    return Collections.unmodifiableList(nameTable);
   }
 
   /**
@@ -1175,11 +1175,11 @@ public class WorkbookParser extends Workbook
   /**
    * Accessor for addin function names
    *
-   * @return list of add in function names
+   * @return immutable list of add in function names
    */
-  public String[] getAddInFunctionNames()
+  public List<String> getAddInFunctionNames()
   {
-    return addInFunctions.toArray(new String[addInFunctions.size()]);
+    return Collections.unmodifiableList(addInFunctions);
   }
 
   /**
@@ -1211,9 +1211,13 @@ public class WorkbookParser extends Workbook
     return index;
   }
 
-  public XCTRecord[] getXCTRecords()
+  /**
+   *
+   * @return immutable list af XCTRecords
+   */
+  public List<XCTRecord> getXCTRecords()
   {
-    return xctRecords.toArray(new XCTRecord[xctRecords.size()]);
+    return Collections.unmodifiableList(xctRecords);
   }
 
 }

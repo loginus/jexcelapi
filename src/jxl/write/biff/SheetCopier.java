@@ -66,7 +66,7 @@ import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
 
 /**
- * A transient utility object used to copy sheets.   This 
+ * A transient utility object used to copy sheets.   This
  * functionality has been farmed out to a different class
  * in order to reduce the bloat of the WritableSheetImpl
  */
@@ -203,7 +203,7 @@ class SheetCopier
     jxl.read.biff.ColumnInfoRecord[] readCirs = fromSheet.getColumnInfos();
 
     for (jxl.read.biff.ColumnInfoRecord rcir : readCirs)
-      for (int j = rcir.getStartColumn(); j <= rcir.getEndColumn() ; j++) 
+      for (int j = rcir.getStartColumn(); j <= rcir.getEndColumn() ; j++)
       {
         ColumnInfoRecord cir = new ColumnInfoRecord(rcir, j,
                 formatRecords);
@@ -228,9 +228,9 @@ class SheetCopier
 
       for (jxl.read.biff.RowRecord rowprop : rowprops) {
         RowRecord rr = toSheet.getRowRecord(rowprop.getRowNumber());
-        XFRecord format = rowprop.hasDefaultFormat() ? 
+        XFRecord format = rowprop.hasDefaultFormat() ?
           formatRecords.getXFRecord(rowprop.getXFIndex()) : null;
-        rr.setRowDetails(rowprop.getRowHeight(), 
+        rr.setRowDetails(rowprop.getRowHeight(),
                          rowprop.matchesDefaultFontHeight(),
                          rowprop.isCollapsed(),
                          rowprop.getOutlineLevel(),
@@ -307,8 +307,8 @@ class SheetCopier
     DataValidation rdv = fromSheet.getDataValidation();
     if (rdv != null)
     {
-      dataValidation = new DataValidation(rdv, 
-                                          toSheet.getWorkbook(), 
+      dataValidation = new DataValidation(rdv,
+                                          toSheet.getWorkbook(),
                                           toSheet.getWorkbook(),
                                           workbookSettings);
       int objid = dataValidation.getComboBoxObjectId();
@@ -398,15 +398,15 @@ class SheetCopier
       for (int i = 0; i < copyRows.length ; i++)
       {
         row = copyRows[i];
-        
+
         if (row != null &&
             (!row.isDefaultHeight() ||
              row.isCollapsed()))
         {
           RowRecord rr = getRowRecord(i);
-          rr.setRowDetails(row.getRowHeight(), 
+          rr.setRowDetails(row.getRowHeight(),
                            row.matchesDefaultFontHeight(),
-                           row.isCollapsed(), 
+                           row.isCollapsed(),
                            row.getStyle());
         }
       }
@@ -428,13 +428,13 @@ class SheetCopier
     DataValidation rdv = fromWritableSheet.dataValidation;
     if (rdv != null)
     {
-      dataValidation = new DataValidation(rdv, 
+      dataValidation = new DataValidation(rdv,
                                           workbook,
-                                          workbook, 
+                                          workbook,
                                           workbookSettings);
     }
 
-    // Copy the charts 
+    // Copy the charts
     sheetWriter.setCharts(fromWritableSheet.getCharts());
 
     // Copy the drawings
@@ -443,7 +443,7 @@ class SheetCopier
     {
       if (dr[i] instanceof jxl.biff.drawing.Drawing)
       {
-        WritableImage wi = new WritableImage(dr[i], 
+        WritableImage wi = new WritableImage(dr[i],
                                              workbook.getDrawingGroup());
         drawings.add(wi);
         images.add(wi);
@@ -469,7 +469,7 @@ class SheetCopier
         (fromWritableSheet.buttonPropertySet);
     }
     */
-  }  
+  }
 
   /**
    * Imports a sheet from a different workbook, doing a deep copy
@@ -486,7 +486,7 @@ class SheetCopier
     jxl.read.biff.ColumnInfoRecord[] readCirs = fromSheet.getColumnInfos();
 
     for (jxl.read.biff.ColumnInfoRecord rcir : readCirs)
-      for (int j = rcir.getStartColumn(); j <= rcir.getEndColumn() ; j++) 
+      for (int j = rcir.getStartColumn(); j <= rcir.getEndColumn() ; j++)
       {
         ColumnInfoRecord cir = new ColumnInfoRecord(rcir, j);
         int xfIndex = cir.getXfIndex();
@@ -602,7 +602,7 @@ class SheetCopier
 
     // Make sure the destination workbook has a drawing group
     // created in it
-    if (dr.length > 0 && 
+    if (dr.length > 0 &&
         toSheet.getWorkbook().getDrawingGroup() == null)
     {
       toSheet.getWorkbook().createDrawingGroup();
@@ -637,8 +637,8 @@ class SheetCopier
     DataValidation rdv = fromSheet.getDataValidation();
     if (rdv != null)
     {
-      dataValidation = new DataValidation(rdv, 
-                                          toSheet.getWorkbook(), 
+      dataValidation = new DataValidation(rdv,
+                                          toSheet.getWorkbook(),
                                           toSheet.getWorkbook(),
                                           workbookSettings);
       int objid = dataValidation.getComboBoxObjectId();
@@ -739,13 +739,13 @@ class SheetCopier
         newCell = new Blank(cell);
       }
     }
-    
+
     return newCell;
   }
 
-  /** 
+  /**
    * Performs a deep copy of the specified cell, handling the cell format
-   * 
+   *
    * @param cell the cell to copy
    */
   private WritableCell deepCopyCell(Cell cell)
@@ -764,13 +764,13 @@ class SheetCopier
         (fromSheet.getWorkbook(),
          fromSheet.getWorkbook(),
          workbookSettings);
-      
+
       if (crossSheetReference)
       {
         try
         {
         logger.warn("Formula " + rfr.getFormula() +
-                    " in cell " + 
+                    " in cell " +
                     CellReferenceHelper.getCellReference(cell.getColumn(),
                                                          cell.getRow()) +
                     " cannot be imported because it references another " +
@@ -778,12 +778,12 @@ class SheetCopier
         }
         catch (FormulaException e)
         {
-          logger.warn("Formula  in cell " + 
+          logger.warn("Formula  in cell " +
                       CellReferenceHelper.getCellReference(cell.getColumn(),
                                                            cell.getRow()) +
                       " cannot be imported:  " + e.getMessage());
         }
-        
+
         // Create a new error formula and add it instead
         c = new Formula(cell.getColumn(), cell.getRow(), "\"ERROR\"");
       }
@@ -804,7 +804,7 @@ class SheetCopier
     return c;
   }
 
-  /** 
+  /**
    * Perform a shallow copy of the cells from the specified sheet into this one
    */
   void shallowCopyCells()
@@ -829,7 +829,7 @@ class SheetCopier
             toSheet.addCell(c);
 
             // Cell.setCellFeatures short circuits when the cell is copied,
-            // so make sure the copy logic handles the validated cells        
+            // so make sure the copy logic handles the validated cells
             if (c.getCellFeatures() != null &&
                     c.getCellFeatures().hasDataValidation())
             {
@@ -846,7 +846,7 @@ class SheetCopier
     numRows = toSheet.getRows();
   }
 
-  /** 
+  /**
    * Perform a deep copy of the cells from the specified sheet into this one
    */
   void deepCopyCells()
@@ -935,16 +935,16 @@ class SheetCopier
    */
   private void importNames()
   {
-    WorkbookParser fromWorkbook = (WorkbookParser) fromSheet.getWorkbook();
+    WorkbookParser fromWorkbook = fromSheet.getWorkbook();
     WritableWorkbook toWorkbook = toSheet.getWorkbook();
     int fromSheetIndex = fromWorkbook.getIndex(fromSheet);
-    NameRecord[] nameRecords = fromWorkbook.getNameRecords();
+    List<NameRecord> nameRecords = fromWorkbook.getNameRecords();
     String[] names = toWorkbook.getRangeNames();
 
-    for (int i = 0 ; i < nameRecords.length ;i++)
+    for (int i = 0 ; i < nameRecords.size() ;i++)
     {
-      NameRecord.NameRange[] nameRanges = nameRecords[i].getRanges();
-      
+      NameRecord.NameRange[] nameRanges = nameRecords.get(i).getRanges();
+
       for (int j = 0; j < nameRanges.length; j++)
       {
         int nameSheetIndex = fromWorkbook.getExternalSheetIndex
@@ -952,7 +952,7 @@ class SheetCopier
 
         if (fromSheetIndex == nameSheetIndex)
         {
-          String name = nameRecords[i].getName();
+          String name = nameRecords.get(i).getName();
           if (Arrays.binarySearch(names, name) < 0)
           {
             toWorkbook.addNameArea(name,
@@ -964,10 +964,10 @@ class SheetCopier
           }
           else
           {
-            logger.warn("Named range " + name + 
+            logger.warn("Named range " + name +
                         " is already present in the destination workbook");
           }
-                                 
+
         }
       }
     }
@@ -984,22 +984,22 @@ class SheetCopier
     return numRows;
   }
 
-  /** 
+  /**
    * Accessor for the maximum column outline level
    *
    * @return the maximum column outline level, or 0 if no outlines/groups
    */
-  public int getMaxColumnOutlineLevel() 
+  public int getMaxColumnOutlineLevel()
   {
     return maxColumnOutlineLevel;
   }
 
-  /** 
+  /**
    * Accessor for the maximum row outline level
    *
    * @return the maximum row outline level, or 0 if no outlines/groups
    */
-  public int getMaxRowOutlineLevel() 
+  public int getMaxRowOutlineLevel()
   {
     return maxRowOutlineLevel;
   }
