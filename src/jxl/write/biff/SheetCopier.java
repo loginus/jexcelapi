@@ -72,7 +72,7 @@ import jxl.write.WriteException;
  */
 class SheetCopier
 {
-  private static final Logger logger = Logger.getLogger(SheetCopier.class);
+  private static final Logger LOGGER = Logger.getLogger(SheetCopier.class);
 
   private final SheetImpl fromSheet;
   private final WritableSheetImpl toSheet;
@@ -344,7 +344,7 @@ class SheetCopier
     {
       if (fromSheet.getWorkbookBof().isBiff7())
       {
-        logger.warn("Cannot copy Biff7 print settings record - ignoring");
+        LOGGER.warn("Cannot copy Biff7 print settings record - ignoring");
       }
       else
       {
@@ -561,7 +561,7 @@ class SheetCopier
     Chart[] fromCharts = fromSheet.getCharts();
     if (fromCharts != null && fromCharts.length > 0)
     {
-      logger.warn("Importing of charts is not supported");
+      LOGGER.warn("Importing of charts is not supported");
       /*
       sheetWriter.setCharts(fromSheet.getCharts());
       IndexMapping xfMapping = new IndexMapping(200);
@@ -663,7 +663,7 @@ class SheetCopier
     {
       if (fromSheet.getWorkbookBof().isBiff7())
       {
-        logger.warn("Cannot copy Biff7 print settings record - ignoring");
+        LOGGER.warn("Cannot copy Biff7 print settings record - ignoring");
       }
       else
       {
@@ -769,7 +769,7 @@ class SheetCopier
       {
         try
         {
-        logger.warn("Formula " + rfr.getFormula() +
+        LOGGER.warn("Formula " + rfr.getFormula() +
                     " in cell " +
                     CellReferenceHelper.getCellReference(cell.getColumn(),
                                                          cell.getRow()) +
@@ -778,7 +778,7 @@ class SheetCopier
         }
         catch (FormulaException e)
         {
-          logger.warn("Formula  in cell " +
+          LOGGER.warn("Formula  in cell " +
                       CellReferenceHelper.getCellReference(cell.getColumn(),
                                                            cell.getRow()) +
                       " cannot be imported:  " + e.getMessage());
@@ -852,18 +852,13 @@ class SheetCopier
   void deepCopyCells()
   {
     // Copy the cells
-    int cells = fromSheet.getRows();
-    Cell[] row = null;
-    Cell cell = null;
-    for (int i = 0;  i < cells; i++)
+    int rowCount = fromSheet.getRows();
+    for (int i = 0;  i < rowCount; i++)
     {
-      row = fromSheet.getRow(i);
+      Cell[] row = fromSheet.getRow(i);
 
-      for (int j = 0; j < row.length; j++)
-      {
-        cell = row[j];
+      for (Cell cell : row) {
         WritableCell c = deepCopyCell(cell);
-
         // Encase the calls to addCell in a try-catch block
         // These should not generate any errors, because we are
         // copying from an existing spreadsheet.  In the event of
@@ -878,7 +873,7 @@ class SheetCopier
             // Cell.setCellFeatures short circuits when the cell is copied,
             // so make sure the copy logic handles the validated cells
             if (c.getCellFeatures() != null &&
-                c.getCellFeatures().hasDataValidation())
+                    c.getCellFeatures().hasDataValidation())
             {
               validatedCells.add(c);
             }
@@ -923,7 +918,7 @@ class SheetCopier
     }
     catch (NumFormatRecordsException e)
     {
-      logger.warn("Maximum number of format records exceeded.  Using " +
+      LOGGER.warn("Maximum number of format records exceeded.  Using " +
                   "default format.");
 
       return WritableWorkbook.NORMAL_STYLE;
@@ -941,33 +936,25 @@ class SheetCopier
     List<NameRecord> nameRecords = fromWorkbook.getNameRecords();
     String[] names = toWorkbook.getRangeNames();
 
-    for (int i = 0 ; i < nameRecords.size() ;i++)
-    {
-      NameRecord.NameRange[] nameRanges = nameRecords.get(i).getRanges();
+    for (var nameRecord : nameRecords) {
+      NameRecord.NameRange[] nameRanges = nameRecord.getRanges();
 
-      for (int j = 0; j < nameRanges.length; j++)
-      {
-        int nameSheetIndex = fromWorkbook.getExternalSheetIndex
-          (nameRanges[j].getExternalSheet());
+      for (NameRecord.NameRange nameRange : nameRanges) {
+        int nameSheetIndex = fromWorkbook.getExternalSheetIndex(nameRange.getExternalSheet());
 
-        if (fromSheetIndex == nameSheetIndex)
-        {
-          String name = nameRecords.get(i).getName();
+        if (fromSheetIndex == nameSheetIndex) {
+          String name = nameRecord.getName();
           if (Arrays.binarySearch(names, name) < 0)
-          {
-            toWorkbook.addNameArea(name,
-                                   toSheet,
-                                   nameRanges[j].getFirstColumn(),
-                                   nameRanges[j].getFirstRow(),
-                                   nameRanges[j].getLastColumn(),
-                                   nameRanges[j].getLastRow());
-          }
+            toWorkbook.addNameArea(
+                    name,
+                    toSheet,
+                    nameRange.getFirstColumn(),
+                    nameRange.getFirstRow(),
+                    nameRange.getLastColumn(),
+                    nameRange.getLastRow());
           else
-          {
-            logger.warn("Named range " + name +
-                        " is already present in the destination workbook");
-          }
-
+            LOGGER.warn("Named range " + name +
+                    " is already present in the destination workbook");
         }
       }
     }
