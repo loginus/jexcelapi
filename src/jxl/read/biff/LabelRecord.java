@@ -34,12 +34,12 @@ class LabelRecord extends CellValue implements LabelCell
   /**
    * The length of the label in characters
    */
-  private int length;
+  private final int length;
 
   /**
    * The label
    */
-  private String string;
+  private final String string;
 
   /**
    * Dummy indicators for overloading the constructor
@@ -96,6 +96,7 @@ class LabelRecord extends CellValue implements LabelCell
    *
    * @return the label
    */
+  @Override
   public String getString()
   {
     return string;
@@ -106,6 +107,7 @@ class LabelRecord extends CellValue implements LabelCell
    *
    * @return the label
    */
+  @Override
   public String getContents()
   {
     return string;
@@ -116,6 +118,7 @@ class LabelRecord extends CellValue implements LabelCell
    *
    * @return the cell type
    */
+  @Override
   public CellType getType()
   {
     return CellType.LABEL;

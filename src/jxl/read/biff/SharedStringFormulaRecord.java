@@ -43,16 +43,11 @@ import jxl.biff.formula.FormulaParser;
 public class SharedStringFormulaRecord extends BaseSharedFormulaRecord
   implements LabelCell, FormulaData, StringFormulaCell
 {
-  /**
-   * The logger
-   */
-  private static Logger logger = Logger.getLogger
-    (SharedStringFormulaRecord.class);
 
   /**
    * The value of this string formula
    */
-  private String value;
+  private final String value;
 
   // Dummy value for overloading the constructor when the string evaluates
   // to null
@@ -104,7 +99,7 @@ public class SharedStringFormulaRecord extends BaseSharedFormulaRecord
 			nextRecord = excelFile.next(); // move the pointer within the data
 			byte[] d = new byte[stringData.length + nextRecord.getLength() - 1];
 			System.arraycopy(stringData, 0, d, 0, stringData.length);
-			System.arraycopy(nextRecord.getData(), 1, d, 
+			System.arraycopy(nextRecord.getData(), 1, d,
 											 stringData.length, nextRecord.getLength() - 1);
 			stringData = d;
 			nextRecord = excelFile.peek();
@@ -112,8 +107,8 @@ public class SharedStringFormulaRecord extends BaseSharedFormulaRecord
 
     int chars = IntegerHelper.getInt(stringData[0], stringData[1]);
 
-    boolean unicode = false;
-    int startpos = 3;
+    boolean unicode;
+    int startpos;
     if (stringData.length == chars + 2)
     {
       // String might only consist of a one byte length indicator, instead
@@ -177,6 +172,7 @@ public class SharedStringFormulaRecord extends BaseSharedFormulaRecord
    *
    * @return the value
    */
+  @Override
   public String getString()
   {
     return value;
@@ -187,6 +183,7 @@ public class SharedStringFormulaRecord extends BaseSharedFormulaRecord
    *
    * @return the value as a string
    */
+  @Override
   public String getContents()
   {
     return value;
@@ -197,6 +194,7 @@ public class SharedStringFormulaRecord extends BaseSharedFormulaRecord
    *
    * @return the cell type
    */
+  @Override
   public CellType getType()
   {
     return CellType.STRING_FORMULA;
@@ -209,6 +207,7 @@ public class SharedStringFormulaRecord extends BaseSharedFormulaRecord
    * @return the raw record data
    * @exception FormulaException
    */
+  @Override
   public byte[] getFormulaData() throws FormulaException
   {
     if (!getSheet().getWorkbookBof().isBiff8())

@@ -35,10 +35,6 @@ import jxl.biff.formula.ExternalSheet;
  */
 class FormulaRecord extends CellValue
 {
-  /**
-   * The logger
-   */
-  private static Logger logger = Logger.getLogger(FormulaRecord.class);
 
   /**
    * The "real" formula record - will be either a string a or a number
@@ -101,7 +97,7 @@ class FormulaRecord extends CellValue
       {
         // We have a string which evaluates to null
         formula = new SharedStringFormulaRecord
-          (t, excelFile, fr, es, nt, si, 
+          (t, excelFile, fr, es, nt, si,
            SharedStringFormulaRecord.EMPTY_STRING);
       }
       else if (data[6]  == 2 &&
@@ -110,7 +106,7 @@ class FormulaRecord extends CellValue
       {
         // The cell is in error
         int errorCode = data[8];
-        formula = new SharedErrorFormulaRecord(t, excelFile, errorCode, 
+        formula = new SharedErrorFormulaRecord(t, excelFile, errorCode,
                                                fr, es, nt, si);
       }
       else if (data[6]  == 1  &&
@@ -231,6 +227,7 @@ class FormulaRecord extends CellValue
    *
    * @return The numerical value of the formula as a string
    */
+  @Override
   public String getContents()
   {
     Assert.verify(false);
@@ -242,6 +239,7 @@ class FormulaRecord extends CellValue
    *
    * @return The cell type
    */
+  @Override
   public CellType getType()
   {
     Assert.verify(false);
