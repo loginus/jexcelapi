@@ -19,10 +19,10 @@
 
 package jxl.write.biff;
 
+import jxl.biff.*;
+import static jxl.biff.Type.UNKNOWN;
 import jxl.common.Logger;
 
-import jxl.biff.Type;
-import jxl.biff.WritableRecordData;
 
 /**
  * Writes out some arbitrary record data.  Used during the debug process
@@ -47,7 +47,7 @@ class ArbitraryRecord extends WritableRecordData
    */
   public ArbitraryRecord(int type, byte[] d)
   {
-    super(Type.createType(type));
+    super(UNKNOWN);
 
     data = d;
     logger.warn("ArbitraryRecord of type " + type + " created");
@@ -55,7 +55,7 @@ class ArbitraryRecord extends WritableRecordData
 
   /**
    * Retrieves the data to be written to the binary file
-   * 
+   *
    * @return the binary data
    */
   public byte[] getData()
