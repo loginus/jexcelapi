@@ -39,7 +39,7 @@ final class SheetReader
   /**
    * The logger
    */
-  private static final Logger logger = Logger.getLogger(SheetReader.class);
+  private static final Logger LOGGER = Logger.getLogger(SheetReader.class);
 
   /**
    * The excel file
@@ -266,7 +266,7 @@ final class SheetReader
         StringBuffer sb = new StringBuffer();
         CellReferenceHelper.getCellReference
           (cell.getColumn(), cell.getRow(), sb);
-        logger.warn("Cell " + sb.toString() +
+        LOGGER.warn("Cell " + sb.toString() +
                     " already contains data");
       }
       cells[cell.getRow()][cell.getColumn()] = cell;
@@ -331,17 +331,17 @@ final class SheetReader
 
       if (type == Type.UNKNOWN && r.getCode() == 0)
       {
-        logger.warn("Biff code zero found");
+        LOGGER.warn("Biff code zero found");
 
         // Try a dimension record
         if (r.getLength() == 0xa)
         {
-          logger.warn("Biff code zero found - trying a dimension record.");
+          LOGGER.warn("Biff code zero found - trying a dimension record.");
           r.setType(Type.DIMENSION);
         }
         else
         {
-          logger.warn("Biff code zero found - Ignoring.");
+          LOGGER.warn("Biff code zero found - Ignoring.");
         }
       }
 
@@ -361,40 +361,37 @@ final class SheetReader
           numCols = dr.getNumberOfColumns();
           cells = new Cell[numRows][numCols];
           break;
+
         case LABELSST:
           addCell(new LabelSSTRecord(r,
                   sharedStrings,
                   formattingRecords,
                   sheet));
           break;
+
         case RK:
         case RK2:
           RKRecord rkr = new RKRecord(r, formattingRecords, sheet);
-          if (formattingRecords.isDate(rkr.getXFIndex()))
-          {
-            DateCell dc = new DateRecord
-                    (rkr, rkr.getXFIndex(), formattingRecords, nineteenFour, sheet);
+          if (formattingRecords.isDate(rkr.getXFIndex())) {
+            DateCell dc = new DateRecord(rkr, rkr.getXFIndex(), formattingRecords, nineteenFour, sheet);
             addCell(dc);
-          }
-          else
-          {
+          } else
             addCell(rkr);
-          } break;
-        case HLINK:{
+          break;
+
+        case HLINK: {
           HyperlinkRecord hr = new HyperlinkRecord(r, sheet, workbookSettings);
           hyperlinks.add(hr);
-            break;
-          }
+          break;
+        }
+
         case MERGEDCELLS:
-          MergedCellsRecord  mc = new MergedCellsRecord(r, sheet);
+          MergedCellsRecord mc = new MergedCellsRecord(r, sheet);
           if (mergedCells == null)
-          {
             mergedCells = mc.getRanges();
-          }
-          else
-          {
-            Range[] newMergedCells =
-                    new Range[mergedCells.length + mc.getRanges().length];
+          else {
+            Range[] newMergedCells
+                    = new Range[mergedCells.length + mc.getRanges().length];
             System.arraycopy(mergedCells, 0, newMergedCells, 0,
                     mergedCells.length);
             System.arraycopy(mc.getRanges(),
@@ -402,82 +399,74 @@ final class SheetReader
                     newMergedCells, mergedCells.length,
                     mc.getRanges().length);
             mergedCells = newMergedCells;
-          } break;
-        case MULRK:
-          {
-            MulRKRecord mulrk = new MulRKRecord(r);
-            // Get the individual cell records from the multiple record
-            int num = mulrk.getNumberOfColumns();
-            for (int i = 0; i < num; i++)
-            {
-              int ixf = mulrk.getXFIndex(i);
-
-              NumberValue nv = new NumberValue
-                      (mulrk.getRow(),
-                              mulrk.getFirstColumn() + i,
-                              RKHelper.getDouble(mulrk.getRKNumber(i)),
-                              ixf,
-                              formattingRecords,
-                              sheet);
-
-
-              if (formattingRecords.isDate(ixf))
-              {
-                DateCell dc = new DateRecord(nv,
-                        ixf,
-                        formattingRecords,
-                        nineteenFour,
-                        sheet);
-                addCell(dc);
-              }
-              else
-              {
-                nv.setNumberFormat(formattingRecords.getNumberFormat(ixf));
-                addCell(nv);
-              }
-            }
           }
           break;
-        case NUMBER:
-          {
-            NumberRecord nr = new NumberRecord(r, formattingRecords, sheet);
-            if (formattingRecords.isDate(nr.getXFIndex()))
-            {
-              DateCell dc = new DateRecord(nr,
-                      nr.getXFIndex(),
+
+        case MULRK: {
+          MulRKRecord mulrk = new MulRKRecord(r);
+          // Get the individual cell records from the multiple record
+          int num = mulrk.getNumberOfColumns();
+          for (int i = 0; i < num; i++) {
+            int ixf = mulrk.getXFIndex(i);
+
+            NumberValue nv = new NumberValue(mulrk.getRow(),
+                    mulrk.getFirstColumn() + i,
+                    RKHelper.getDouble(mulrk.getRKNumber(i)),
+                    ixf,
+                    formattingRecords,
+                    sheet);
+
+            if (formattingRecords.isDate(ixf)) {
+              DateCell dc = new DateRecord(nv,
+                      ixf,
                       formattingRecords,
-                      nineteenFour, sheet);
+                      nineteenFour,
+                      sheet);
               addCell(dc);
-            }
-            else
-            {
-              addCell(nr);
+            } else {
+              nv.setNumberFormat(formattingRecords.getNumberFormat(ixf));
+              addCell(nv);
             }
           }
-          break;
-        case BOOLERR:{
+        }
+        break;
+
+        case NUMBER: {
+          NumberRecord nr = new NumberRecord(r, formattingRecords, sheet);
+          if (formattingRecords.isDate(nr.getXFIndex())) {
+            DateCell dc = new DateRecord(nr,
+                    nr.getXFIndex(),
+                    formattingRecords,
+                    nineteenFour, sheet);
+            addCell(dc);
+          } else
+            addCell(nr);
+        }
+        break;
+
+        case BOOLERR: {
           BooleanRecord br = new BooleanRecord(r, formattingRecords, sheet);
-          if (br.isError())
-          {
+          if (br.isError()) {
             ErrorRecord er = new ErrorRecord(br.getRecord(), formattingRecords,
                     sheet);
             addCell(er);
-          }
-          else
-          {
+          } else
             addCell(br);
-          }   break;
-          }
+          break;
+        }
+
         case PRINTGRIDLINES:
           // A handle to printgridlines record
           PrintGridLinesRecord printGridLinesRecord = new PrintGridLinesRecord(r);
           settings.setPrintGridLines(printGridLinesRecord.getPrintGridLines());
           break;
+
         case PRINTHEADERS:
           // A handle to printheaders record
           PrintHeadersRecord printHeadersRecord = new PrintHeadersRecord(r);
           settings.setPrintHeaders(printHeadersRecord.getPrintHeaders());
           break;
+
         case WINDOW2:
           window2Record = workbookBof.isBiff8()
                   ? new Window2Record(r)
@@ -487,34 +476,33 @@ final class SheetReader
           settings.setSelected(true);
           settings.setPageBreakPreviewMode(window2Record.isPageBreakPreview());
           break;
-        case PANE:{
+
+        case PANE: {
           PaneRecord pr = new PaneRecord(r);
-          if (window2Record != null &&
-                  window2Record.getFrozen())
-          {
+          if (window2Record != null
+                  && window2Record.getFrozen()) {
             settings.setVerticalFreeze(pr.getRowsVisible());
             settings.setHorizontalFreeze(pr.getColumnsVisible());
-          }   break;
           }
+          break;
+        }
+
         case CONTINUE:
           // don't know what this is for, but keep hold of it anyway
           continueRecord = new ContinueRecord(r);
           break;
+
         case NOTE:
-          if (!workbookSettings.getDrawingsDisabled())
-          {
+          if (!workbookSettings.getDrawingsDisabled()) {
             NoteRecord nr = new NoteRecord(r);
 
             // Get the comment for the object id
             Comment comment = comments.remove(nr.getObjectId());
 
             if (comment == null)
-            {
-              logger.warn(" cannot find comment for note id " +
-                      nr.getObjectId() + "...ignoring");
-            }
-            else
-            {
+              LOGGER.warn(" cannot find comment for note id "
+                      + nr.getObjectId() + "...ignoring");
+            else {
               comment.setNote(nr);
 
               drawings.add(comment);
@@ -525,33 +513,35 @@ final class SheetReader
                       comment.getWidth(),
                       comment.getHeight());
             }
-          } break;
+          }
+          break;
+
         case ARRAY:
           break;
-        case PROTECT:{
+
+        case PROTECT: {
           ProtectRecord pr = new ProtectRecord(r);
           settings.setProtected(pr.isProtected());
-            break;
-          }
+          break;
+        }
+
         case SHAREDFORMULA:
-          if (sharedFormula == null)
-          {
-            logger.warn("Shared template formula is null - " +
-                    "trying most recent formula template");
-            SharedFormulaRecord lastSharedFormula =
-                    sharedFormulas.get(sharedFormulas.size() - 1);
+          if (sharedFormula == null) {
+            LOGGER.warn("Shared template formula is null - "
+                    + "trying most recent formula template");
+            SharedFormulaRecord lastSharedFormula
+                    = sharedFormulas.get(sharedFormulas.size() - 1);
 
             if (lastSharedFormula != null)
-            {
               sharedFormula = lastSharedFormula.getTemplateFormula();
-            }
-          } SharedFormulaRecord sfr = new SharedFormulaRecord
-                  (r, sharedFormula, workbook, workbook, sheet);
+          }
+          SharedFormulaRecord sfr = new SharedFormulaRecord(r, sharedFormula, workbook, workbook, sheet);
           sharedFormulas.add(sfr);
           sharedFormula = null;
           break;
+
         case FORMULA:
-        case FORMULA2:{
+        case FORMULA2: {
           FormulaRecord fr = new FormulaRecord(r,
                   excelFile,
                   formattingRecords,
@@ -559,8 +549,7 @@ final class SheetReader
                   workbook,
                   sheet,
                   workbookSettings);
-          if (fr.isShared())
-          {
+          if (fr.isShared()) {
             BaseSharedFormulaRecord prevSharedFormula = sharedFormula;
             sharedFormula = (BaseSharedFormulaRecord) fr.getFormula();
 
@@ -568,60 +557,51 @@ final class SheetReader
             sharedFormulaAdded = addToSharedFormulas(sharedFormula);
 
             if (sharedFormulaAdded)
-            {
               sharedFormula = prevSharedFormula;
-            }
 
             // If we still haven't added the previous base shared formula,
             // revert it to an ordinary formula and add it to the cell
             if (!sharedFormulaAdded && prevSharedFormula != null)
-            {
               // Do nothing.  It's possible for the biff file to contain the
               // record sequence
               // FORMULA-SHRFMLA-FORMULA-SHRFMLA-FORMULA-FORMULA-FORMULA
               // ie. it first lists all the formula templates, then it
               // lists all the individual formulas
               addCell(revertSharedFormula(prevSharedFormula));
-            }
-          }
-          else
-          {
+          } else {
             Cell cell = fr.getFormula();
-            try
-            {
+            try {
               // See if the formula evaluates to date
-              if (fr.getFormula().getType() == CellType.NUMBER_FORMULA)
-              {
+              if (fr.getFormula().getType() == CellType.NUMBER_FORMULA) {
                 NumberFormulaRecord nfr = (NumberFormulaRecord) fr.getFormula();
                 if (formattingRecords.isDate(nfr.getXFIndex()))
-                {
                   cell = new DateFormulaRecord(nfr,
                           formattingRecords,
                           workbook,
                           workbook,
                           nineteenFour,
                           sheet);
-                }
               }
 
               addCell(cell);
-            }
-            catch (FormulaException e)
-            {
+            } catch (FormulaException e) {
               // Something has gone wrong trying to read the formula data eg. it
               // might be unsupported biff7 data
-              logger.warn
-                      (CellReferenceHelper.getCellReference
-                       (cell.getColumn(), cell.getRow()) + " " + e.getMessage());
+              LOGGER.warn(CellReferenceHelper
+                      .getCellReference(cell.getColumn(), cell.getRow()) + " " + e
+                      .getMessage());
             }
-          }   break;
           }
+          break;
+        }
+
         case LABEL:
           addCell(workbookBof.isBiff8()
                   ? new LabelRecord(r, formattingRecords, sheet, workbookSettings)
                   : new LabelRecord(r, formattingRecords, sheet, workbookSettings,
                           LabelRecord.biff7));
           break;
+
         case RSTRING:
           // RString records are obsolete in biff 8
           Assert.verify(!workbookBof.isBiff8());
@@ -630,96 +610,94 @@ final class SheetReader
                   RStringRecord.biff7);
           addCell(lr);
           break;
+
         case NAME:
           break;
-        case PASSWORD:{
+
+        case PASSWORD: {
           PasswordRecord pr = new PasswordRecord(r);
           settings.setPasswordHash(pr.getPasswordHash());
-            break;
-          }
+          break;
+        }
+
         case ROW:
           RowRecord rr = new RowRecord(r);
           // See if the row has anything funny about it
-          if (!rr.isDefaultHeight() ||
-                  !rr.matchesDefaultFontHeight() ||
-                  rr.isCollapsed() ||
-                  rr.hasDefaultFormat() ||
-                  rr.getOutlineLevel() != 0)
-          {
+          if (!rr.isDefaultHeight()
+                  || !rr.matchesDefaultFontHeight()
+                  || rr.isCollapsed()
+                  || rr.hasDefaultFormat()
+                  || rr.getOutlineLevel() != 0)
             rowProperties.add(rr);
-          } break;
+          break;
+
         case BLANK:
           if (!workbookSettings.getIgnoreBlanks())
             addCell(new BlankCell(r, formattingRecords, sheet));
           break;
+
         case MULBLANK:
-          if (!workbookSettings.getIgnoreBlanks())
-          {
+          if (!workbookSettings.getIgnoreBlanks()) {
             MulBlankRecord mulblank = new MulBlankRecord(r);
 
             // Get the individual cell records from the multiple record
             int num = mulblank.getNumberOfColumns();
 
-            for (int i = 0; i < num; i++)
-            {
+            for (int i = 0; i < num; i++) {
               int ixf = mulblank.getXFIndex(i);
 
-              MulBlankCell mbc = new MulBlankCell
-                      (mulblank.getRow(),
-                              mulblank.getFirstColumn() + i,
-                              ixf,
-                              formattingRecords,
-                              sheet);
+              MulBlankCell mbc = new MulBlankCell(mulblank.getRow(),
+                      mulblank.getFirstColumn() + i,
+                      ixf,
+                      formattingRecords,
+                      sheet);
 
               addCell(mbc);
             }
-          } break;
+          }
+          break;
+
         case SCL:
           SCLRecord scl = new SCLRecord(r);
           settings.setZoomFactor(scl.getZoomFactor());
           break;
+
         case COLINFO:
           ColumnInfoRecord cir = new ColumnInfoRecord(r);
           columnInfosArray.add(cir);
           break;
-        case HEADER:{
+
+        case HEADER: {
           HeaderRecord hr = workbookBof.isBiff8()
                   ? new HeaderRecord(r, workbookSettings)
                   : new HeaderRecord(r, workbookSettings, HeaderRecord.biff7);
           HeaderFooter header = new HeaderFooter(hr.getHeader());
           settings.setHeader(header);
-            break;
-          }
-        case FOOTER:{
+          break;
+        }
+
+        case FOOTER: {
           FooterRecord fr = workbookBof.isBiff8()
                   ? new FooterRecord(r, workbookSettings)
                   : new FooterRecord(r, workbookSettings, FooterRecord.biff7);
           HeaderFooter footer = new HeaderFooter(fr.getFooter());
           settings.setFooter(footer);
-            break;
-          }
+          break;
+        }
+
         case SETUP:
           SetupRecord sr = new SetupRecord(r);
           // If the setup record has its not initialized bit set, then
           // use the sheet settings default values
-          if (sr.getInitialized())
-          {
+          if (sr.getInitialized()) {
             if (sr.isPortrait())
-            {
               settings.setOrientation(PageOrientation.PORTRAIT);
-            }
             else
-            {
               settings.setOrientation(PageOrientation.LANDSCAPE);
-            }
             if (sr.isRightDown())
-            {
               settings.setPageOrder(PageOrder.RIGHT_THEN_DOWN);
-            }
             else
-            {
               settings.setPageOrder(PageOrder.DOWN_THEN_RIGHT);
-            }
             settings.setPaperSize(PaperSize.getPaperSize(sr.getPaperSize()));
             settings.setHeaderMargin(sr.getHeaderMargin());
             settings.setFooterMargin(sr.getFooterMargin());
@@ -727,111 +705,116 @@ final class SheetReader
             settings.setPageStart(sr.getPageStart());
             settings.setFitWidth(sr.getFitWidth());
             settings.setFitHeight(sr.getFitHeight());
-            settings.setHorizontalPrintResolution
-                    (sr.getHorizontalPrintResolution());
+            settings.setHorizontalPrintResolution(sr
+                    .getHorizontalPrintResolution());
             settings.setVerticalPrintResolution(sr.getVerticalPrintResolution());
             settings.setCopies(sr.getCopies());
 
             if (workspaceOptions != null)
-            {
               settings.setFitToPages(workspaceOptions.getFitToPages());
-            }
-          } break;
+          }
+          break;
+
         case WSBOOL:
           workspaceOptions = new WorkspaceInformationRecord(r);
           break;
+
         case DEFCOLWIDTH:
           DefaultColumnWidthRecord dcwr = new DefaultColumnWidthRecord(r);
           settings.setDefaultColumnWidth(dcwr.getWidth());
           break;
+
         case DEFAULTROWHEIGHT:
           DefaultRowHeightRecord drhr = new DefaultRowHeightRecord(r);
           if (drhr.getHeight() != 0)
-          {
             settings.setDefaultRowHeight(drhr.getHeight());
-          } break;
+          break;
+
         case CONDFMT:
-          ConditionalFormatRangeRecord cfrr =
-                  new ConditionalFormatRangeRecord(r);
+          ConditionalFormatRangeRecord cfrr
+                  = new ConditionalFormatRangeRecord(r);
           condFormat = new ConditionalFormat(cfrr);
           conditionalFormats.add(condFormat);
           break;
+
         case CF:
           ConditionalFormatRecord cfr = new ConditionalFormatRecord(r);
           condFormat.addCondition(cfr);
           break;
+
         case FILTERMODE:
           filterMode = new FilterModeRecord(r);
           break;
+
         case AUTOFILTERINFO:
           autoFilterInfo = new AutoFilterInfoRecord(r);
           break;
+
         case AUTOFILTER:
-          if (!workbookSettings.getAutoFilterDisabled())
-          {
+          if (!workbookSettings.getAutoFilterDisabled()) {
             AutoFilterRecord af = new AutoFilterRecord(r);
 
-            if (autoFilter == null)
-            {
+            if (autoFilter == null) {
               autoFilter = new AutoFilter(filterMode, autoFilterInfo);
               filterMode = null;
               autoFilterInfo = null;
             }
 
             autoFilter.add(af);
-          } break;
-        case LEFTMARGIN:{
+          }
+          break;
+
+        case LEFTMARGIN: {
           MarginRecord m = new LeftMarginRecord(r);
           settings.setLeftMargin(m.getMargin());
-            break;
-          }
-        case RIGHTMARGIN:{
+          break;
+        }
+
+        case RIGHTMARGIN: {
           MarginRecord m = new RightMarginRecord(r);
           settings.setRightMargin(m.getMargin());
-            break;
-          }
-        case TOPMARGIN:{
+          break;
+        }
+
+        case TOPMARGIN: {
           MarginRecord m = new TopMarginRecord(r);
           settings.setTopMargin(m.getMargin());
-            break;
-          }
-        case BOTTOMMARGIN:{
+          break;
+        }
+
+        case BOTTOMMARGIN: {
           MarginRecord m = new BottomMarginRecord(r);
           settings.setBottomMargin(m.getMargin());
-            break;
-          }
+          break;
+        }
+
         case HORIZONTALPAGEBREAKS:
           rowBreaks = workbookBof.isBiff8()
                   ? new HorizontalPageBreaksRecord(r)
-                  : new HorizontalPageBreaksRecord
-                    (r, HorizontalPageBreaksRecord.biff7);
+                  : new HorizontalPageBreaksRecord(r, HorizontalPageBreaksRecord.biff7);
           break;
+
         case VERTICALPAGEBREAKS:
           columnBreaks = workbookBof.isBiff8()
                   ? new VerticalPageBreaksRecord(r)
-                  : new VerticalPageBreaksRecord
-                    (r, VerticalPageBreaksRecord.biff7);
+                  : new VerticalPageBreaksRecord(r, VerticalPageBreaksRecord.biff7);
           break;
+
         case PLS:
           plsRecord = new PLSRecord(r);
           // Check for Continue records
           while (excelFile.peek().getType() == Type.CONTINUE)
-          {
             r.addContinueRecord(excelFile.next());
-          } break;
+          break;
+
         case DVAL:
-          if (!workbookSettings.getCellValidationDisabled())
-          {
+          if (!workbookSettings.getCellValidationDisabled()) {
             DataValidityListRecord dvlr = new DataValidityListRecord(r);
             if (dvlr.getObjectId() == -1)
-            {
-              if (msoRecord != null && objRecord == null)
-              {
+              if (msoRecord != null && objRecord == null) {
                 // there is a drop down associated with this data validation
                 if (drawingData == null)
-                {
                   drawingData = new DrawingData();
-                }
 
                 Drawing2 d2 = new Drawing2(msoRecord, drawingData,
                         workbook.getDrawingGroup());
@@ -839,113 +822,107 @@ final class SheetReader
                 msoRecord = null;
 
                 dataValidation = new DataValidation(dvlr);
-              }
-              else
-              {
+              } else
                 // no drop down
                 dataValidation = new DataValidation(dvlr);
-              }
-            }
             else if (objectIds.contains(dvlr.getObjectId()))
-            {
               dataValidation = new DataValidation(dvlr);
-            }
             else
-            {
-              logger.warn("object id " + dvlr.getObjectId() + " referenced " +
-                      " by data validity list record not found - ignoring");
-            }
-          } break;
-        case HCENTER:{
+              LOGGER.warn("object id " + dvlr.getObjectId() + " referenced "
+                      + " by data validity list record not found - ignoring");
+          }
+          break;
+
+        case HCENTER: {
           CentreRecord hr = new CentreRecord(r);
           settings.setHorizontalCentre(hr.isCentre());
-            break;
-          }
+          break;
+        }
+
         case VCENTER:
           CentreRecord vc = new CentreRecord(r);
           settings.setVerticalCentre(vc.isCentre());
           break;
+
         case DV:
-          if (!workbookSettings.getCellValidationDisabled())
-          {
-            DataValiditySettingsRecord dvsr =
-                    new DataValiditySettingsRecord(r,
+          if (!workbookSettings.getCellValidationDisabled()) {
+            DataValiditySettingsRecord dvsr
+                    = new DataValiditySettingsRecord(r,
                             workbook,
                             workbook,
                             workbook.getSettings());
-            if (dataValidation != null)
-            {
+            if (dataValidation != null) {
               dataValidation.add(dvsr);
               addCellValidation(dvsr.getFirstColumn(),
                       dvsr.getFirstRow(),
                       dvsr.getLastColumn(),
                       dvsr.getLastRow(),
                       dvsr);
-            }
-            else
-            {
-              logger.warn("cannot add data validity settings");
-            }
-          } break;
+            } else
+              LOGGER.warn("cannot add data validity settings");
+          }
+          break;
+
         case OBJ:
           objRecord = new ObjRecord(r);
-          if (!workbookSettings.getDrawingsDisabled())
-          {
+          if (!workbookSettings.getDrawingsDisabled()) {
             // sometimes excel writes out continue records instead of drawing
             // records, so forcibly hack the stashed continue record into
             // a drawing record
-            if (msoRecord == null && continueRecord != null)
-            {
-              logger.warn("Cannot find drawing record - using continue record");
+            if (msoRecord == null && continueRecord != null) {
+              LOGGER.warn("Cannot find drawing record - using continue record");
               msoRecord = new MsoDrawingRecord(continueRecord.getRecord());
               continueRecord = null;
             }
             handleObjectRecord(objRecord, msoRecord, comments);
             objectIds.add(objRecord.getObjectId());
           } // Save chart handling until the chart BOF record appears
-          if (objRecord.getType() != ObjRecord.CHART)
-          {
+          if (objRecord.getType() != ObjRecord.CHART) {
             objRecord = null;
             msoRecord = null;
-          } break;
+          }
+          break;
+
         case MSODRAWING:
-          if (!workbookSettings.getDrawingsDisabled())
-          {
+          if (!workbookSettings.getDrawingsDisabled()) {
             if (msoRecord != null)
-            {
               // For form controls, a rogue MSODRAWING record can crop up
               // after the main one.  Add these into the drawing data
               drawingData.addRawData(msoRecord.getData());
-            }
             msoRecord = new MsoDrawingRecord(r);
 
-            if (firstMsoRecord)
-            {
+            if (firstMsoRecord) {
               msoRecord.setFirst();
               firstMsoRecord = false;
             }
-          } break;
+          }
+          break;
+
         case BUTTONPROPERTYSET:
           buttonPropertySet = new ButtonPropertySetRecord(r);
           break;
-        case CALCMODE:{
+
+        case CALCMODE: {
           CalcModeRecord cmr = new CalcModeRecord(r);
           settings.setAutomaticFormulaCalculation(cmr.isAutomatic());
-            break;
-          }
-        case SAVERECALC:{
+          break;
+        }
+
+        case SAVERECALC: {
           SaveRecalcRecord cmr = new SaveRecalcRecord(r);
           settings.setRecalculateFormulasBeforeSave(cmr.getRecalculateOnSave());
-            break;
-          }
+          break;
+        }
+
         case GUTS:
           GuttersRecord gr = new GuttersRecord(r);
-          maxRowOutlineLevel =
-                  gr.getRowOutlineLevel() > 0 ? gr.getRowOutlineLevel() - 1 : 0;
-          maxColumnOutlineLevel =
-                  gr.getColumnOutlineLevel() > 0 ? gr.getRowOutlineLevel() - 1 : 0;
+          maxRowOutlineLevel
+                  = gr.getRowOutlineLevel() > 0 ? gr.getRowOutlineLevel() - 1 : 0;
+          maxColumnOutlineLevel
+                  = gr.getColumnOutlineLevel() > 0 ? gr.getRowOutlineLevel() - 1 : 0;
           break;
-        case BOF:{
+
+        case BOF: {
           BOFRecord br = new BOFRecord(r);
           Assert.verify(!br.isWorksheet());
           int startpos = excelFile.getPos() - r.getLength() - 4;
@@ -953,32 +930,22 @@ final class SheetReader
           // Thanks to Rohit for spotting this
           Record r2 = excelFile.next();
           while (r2.getCode() != Type.EOF.value)
-          {
             r2 = excelFile.next();
-          }   if (br.isChart())
-          {
+          if (br.isChart()) {
             if (!workbook.getWorkbookBof().isBiff8())
-            {
-              logger.warn("only biff8 charts are supported");
-            }
-            else
-            {
+              LOGGER.warn("only biff8 charts are supported");
+            else {
               if (drawingData == null)
-              {
                 drawingData = new DrawingData();
-              }
 
-              if (!workbookSettings.getDrawingsDisabled())
-              {
+              if (!workbookSettings.getDrawingsDisabled()) {
                 Chart chart = new Chart(msoRecord, objRecord, drawingData,
                         startpos, excelFile.getPos(),
                         excelFile, workbookSettings);
                 charts.add(chart);
 
                 if (workbook.getDrawingGroup() != null)
-                {
                   workbook.getDrawingGroup().add(chart);
-                }
               }
             }
 
@@ -988,14 +955,12 @@ final class SheetReader
           }   // If this worksheet is just a chart, then the EOF reached
           // represents the end of the sheet as well as the end of the chart
           if (sheetBof.isChart())
-          {
             cont = false;
-          }   break;
-          }
+          break;
+        }
+
         case EOF:
           cont = false;
-          break;
-        default:
           break;
       }
     }
@@ -1034,7 +999,7 @@ final class SheetReader
     // Check that the comments hash is empty
     if (!comments.isEmpty())
     {
-      logger.warn("Not all comments have a corresponding Note record");
+      LOGGER.warn("Not all comments have a corresponding Note record");
     }
   }
 
@@ -1106,7 +1071,7 @@ final class SheetReader
     {
       // Something has gone wrong trying to read the formula data eg. it
       // might be unsupported biff7 data
-      logger.warn
+      LOGGER.warn
         (CellReferenceHelper.getCellReference(fr.getColumn(), fr.getRow()) +
          " " + e.getMessage());
 
@@ -1313,7 +1278,7 @@ final class SheetReader
     Cell c = cells[row][col];
     if (c == null)
     {
-      logger.warn("Cell at " + CellReferenceHelper.getCellReference(col, row) +
+      LOGGER.warn("Cell at " + CellReferenceHelper.getCellReference(col, row) +
                   " not present - adding a blank");
       MulBlankCell mbc = new MulBlankCell(row,
                                           col,
@@ -1343,7 +1308,7 @@ final class SheetReader
     }
     else
     {
-      logger.warn("Not able to add comment to cell type " +
+      LOGGER.warn("Not able to add comment to cell type " +
                   c.getClass().getName() +
                   " at " + CellReferenceHelper.getCellReference(col, row));
     }
@@ -1402,7 +1367,7 @@ final class SheetReader
         }
         else
         {
-          logger.warn("Not able to add comment to cell type " +
+          LOGGER.warn("Not able to add comment to cell type " +
                       c.getClass().getName() +
                       " at " + CellReferenceHelper.getCellReference(col, row));
         }
@@ -1423,7 +1388,7 @@ final class SheetReader
   {
     if (msoRecord == null)
     {
-      logger.warn("Object record is not associated with a drawing " +
+      LOGGER.warn("Object record is not associated with a drawing " +
                   " record - ignoring");
       return;
     }
@@ -1606,7 +1571,7 @@ final class SheetReader
       // Non-supported types which have multiple record types
       if (objRecord.getType() == ObjRecord.TEXT)
       {
-        logger.warn(objRecord.getType() + " Object on sheet \"" +
+        LOGGER.warn(objRecord.getType() + " Object on sheet \"" +
                     sheet.getName() +
                     "\" not supported - omitting");
 
@@ -1643,7 +1608,7 @@ final class SheetReader
       // Handle other types
       if (objRecord.getType() != ObjRecord.CHART)
       {
-        logger.warn(objRecord.getType() + " Object on sheet \"" +
+        LOGGER.warn(objRecord.getType() + " Object on sheet \"" +
                     sheet.getName() +
                     "\" not supported - omitting");
 
@@ -1665,7 +1630,7 @@ final class SheetReader
     }
     catch (DrawingDataException e)
     {
-      logger.warn(e.getMessage() +
+      LOGGER.warn(e.getMessage() +
                   "...disabling drawings for the remainder of the workbook");
       workbookSettings.setDrawingsDisabled(true);
     }
