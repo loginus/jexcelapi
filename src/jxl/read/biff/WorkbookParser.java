@@ -20,9 +20,7 @@
 package jxl.read.biff;
 
 import java.nio.file.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.*;
 
 import jxl.common.Assert;
 import jxl.common.Logger;
@@ -63,41 +61,47 @@ public class WorkbookParser extends Workbook
   /**
    * The logger
    */
-  private static Logger logger = Logger.getLogger(WorkbookParser.class);
+  private static final Logger LOGGER = Logger.getLogger(WorkbookParser.class);
 
   /**
    * The excel file
    */
-  private File excelFile;
+  private final File excelFile;
+
   /**
    * The number of open bofs
    */
   private int bofs;
+
   /**
    * Indicates whether or not the dates are based around the 1904 date system
    */
   private boolean nineteenFour;
+
   /**
    * The shared string table
    */
   private SSTRecord sharedStrings;
+
   /**
    * The names of all the worksheets
    */
-  private ArrayList boundsheets;
-  /**
-   * The xf records
-   */
-  private FormattingRecords formattingRecords;
+  private final List<BoundsheetRecord> boundsheets = new ArrayList<>(10);
+
   /**
    * The fonts used by this workbook
    */
-  private Fonts fonts;
+  private final Fonts fonts = new Fonts();
+
+  /**
+   * The xf records
+   */
+  private final FormattingRecords formattingRecords = new FormattingRecords(fonts);
 
   /**
    * The sheets contained in this workbook
    */
-  private ArrayList sheets;
+  private final List<SheetImpl> sheets = new ArrayList<>(10);
 
   /**
    * The last sheet accessed
@@ -107,22 +111,22 @@ public class WorkbookParser extends Workbook
   /**
    * The index of the last sheet retrieved
    */
-  private int lastSheetIndex;
+  private int lastSheetIndex = -1;
 
   /**
    * The named records found in this workbook
    */
-  private HashMap namedRecords;
+  private final Map<String, NameRecord> namedRecords = new HashMap<>();
 
   /**
    * The list of named records
    */
-  private ArrayList nameTable;
+  private List<NameRecord> nameTable;
 
   /**
    * The list of add in functions
    */
-  private ArrayList addInFunctions;
+  private List<String> addInFunctions;
 
   /**
    * The external sheet record.  Used by formulas, and names
@@ -132,7 +136,7 @@ public class WorkbookParser extends Workbook
   /**
    * The list of supporting workbooks - used by formulas
    */
-  private ArrayList supbooks;
+  private final List<SupbookRecord> supbooks = new ArrayList<>(10);
 
   /**
    * The bof record for this workbook
@@ -152,12 +156,12 @@ public class WorkbookParser extends Workbook
   /**
    * Workbook protected flag
    */
-  private boolean wbProtected;
+  private boolean wbProtected = false;
 
   /**
    * Contains macros flag
    */
-  private boolean containsMacros;
+  private boolean containsMacros = false;
 
   /**
    * The workbook settings
@@ -175,7 +179,7 @@ public class WorkbookParser extends Workbook
    */
   private CountryRecord countryRecord;
 
-  private ArrayList xctRecords;
+  private final List<XCTRecord> xctRecords = new ArrayList<>(10);
 
   /**
    * Constructs this object from the raw excel data
@@ -187,17 +191,7 @@ public class WorkbookParser extends Workbook
   {
     super();
     excelFile = f;
-    boundsheets = new ArrayList(10);
-    fonts = new Fonts();
-    formattingRecords = new FormattingRecords(fonts);
-    sheets = new ArrayList(10);
-    supbooks = new ArrayList(10);
-    namedRecords = new HashMap();
-    lastSheetIndex = -1;
-    wbProtected = false;
-    containsMacros = false;
     settings = s;
-    xctRecords = new ArrayList(10);
   }
 
  /**
@@ -208,10 +202,10 @@ public class WorkbookParser extends Workbook
    *
    * @return an array of the individual sheets
    */
+  @Override
   public Sheet[] getSheets()
   {
-    Sheet[] sheetArray = new Sheet[getNumberOfSheets()];
-    return (Sheet[]) sheets.toArray(sheetArray);
+    return sheets.toArray(new Sheet[sheets.size()]);
   }
 
   /**
@@ -221,6 +215,7 @@ public class WorkbookParser extends Workbook
    * @param index the zero based index of the required sheet
    * @return The sheet specified by the index
    */
+  @Override
   public Sheet getReadSheet(int index)
   {
     return getSheet(index);
@@ -232,6 +227,7 @@ public class WorkbookParser extends Workbook
    * @param index the zero based index of the required sheet
    * @return The sheet specified by the index
    */
+  @Override
   public Sheet getSheet(int index)
   {
     // First see if the last sheet index is the same as this sheet index.
@@ -253,7 +249,7 @@ public class WorkbookParser extends Workbook
       }
     }
 
-    lastSheet = (SheetImpl) sheets.get(index);
+    lastSheet = sheets.get(index);
     lastSheetIndex = index;
     lastSheet.readSheet();
 
@@ -266,17 +262,17 @@ public class WorkbookParser extends Workbook
    * @param name the sheet name
    * @return The sheet with the specified name, or null if it is not found
    */
+  @Override
   public Sheet getSheet(String name)
   {
     // Iterate through the boundsheet records
     int pos = 0;
     boolean found = false;
-    Iterator i = boundsheets.iterator();
-    BoundsheetRecord br = null;
+    Iterator<BoundsheetRecord> i = boundsheets.iterator();
 
     while (i.hasNext() && !found)
     {
-      br = (BoundsheetRecord) i.next();
+      BoundsheetRecord br = i.next();
 
       if (br.getName().equals(name))
       {
@@ -296,16 +292,13 @@ public class WorkbookParser extends Workbook
    *
    * @return an array of strings containing the sheet names
    */
+  @Override
   public String[] getSheetNames()
   {
     String[] names = new String[boundsheets.size()];
 
-    BoundsheetRecord br = null;
     for (int i = 0; i < names.length; i++)
-    {
-      br = (BoundsheetRecord) boundsheets.get(i);
-      names[i] = br.getName();
-    }
+      names[i] = boundsheets.get(i).getName();
 
     return names;
   }
@@ -319,6 +312,7 @@ public class WorkbookParser extends Workbook
    * @param index the external sheet reference
    * @return the actual sheet index
    */
+  @Override
   public int getExternalSheetIndex(int index)
   {
     // For biff7, the whole external reference thing works differently
@@ -343,6 +337,7 @@ public class WorkbookParser extends Workbook
    * @param index the external sheet reference
    * @return the actual sheet index
    */
+  @Override
   public int getLastExternalSheetIndex(int index)
   {
     // For biff7, the whole external reference thing works differently
@@ -365,19 +360,20 @@ public class WorkbookParser extends Workbook
    * @param index the external sheet index
    * @return the name of the external sheet
    */
+  @Override
   public String getExternalSheetName(int index)
   {
     // For biff7, the whole external reference thing works differently
     // Hopefully for our purposes sheet references will all be local
     if (workbookBof.isBiff7())
     {
-      BoundsheetRecord br = (BoundsheetRecord) boundsheets.get(index);
+      BoundsheetRecord br = boundsheets.get(index);
 
       return br.getName();
     }
 
     int supbookIndex = externSheet.getSupbookIndex(index);
-    SupbookRecord sr = (SupbookRecord) supbooks.get(supbookIndex);
+    SupbookRecord sr = supbooks.get(supbookIndex);
 
     int firstTab = externSheet.getFirstTabIndex(index);
     int lastTab  = externSheet.getLastTabIndex(index);
@@ -393,7 +389,7 @@ public class WorkbookParser extends Workbook
       }
       else
       {
-        BoundsheetRecord br = (BoundsheetRecord) boundsheets.get(firstTab);
+        BoundsheetRecord br = boundsheets.get(firstTab);
         firstTabName = br.getName();
       }
 
@@ -403,7 +399,7 @@ public class WorkbookParser extends Workbook
       }
       else
       {
-        BoundsheetRecord br = (BoundsheetRecord) boundsheets.get(lastTab);
+        BoundsheetRecord br = boundsheets.get(lastTab);
         lastTabName = br.getName();
       }
 
@@ -439,7 +435,7 @@ public class WorkbookParser extends Workbook
     }
 
     // An unknown supbook - return unkown
-    logger.warn("Unknown Supbook 3");
+    LOGGER.warn("Unknown Supbook 3");
     return "[UNKNOWN]";
   }
 
@@ -455,13 +451,13 @@ public class WorkbookParser extends Workbook
     // Hopefully for our purposes sheet references will all be local
     if (workbookBof.isBiff7())
     {
-      BoundsheetRecord br = (BoundsheetRecord) boundsheets.get(index);
+      BoundsheetRecord br = boundsheets.get(index);
 
       return br.getName();
     }
 
     int supbookIndex = externSheet.getSupbookIndex(index);
-    SupbookRecord sr = (SupbookRecord) supbooks.get(supbookIndex);
+    SupbookRecord sr = supbooks.get(supbookIndex);
 
     int lastTab = externSheet.getLastTabIndex(index);
 
@@ -474,7 +470,7 @@ public class WorkbookParser extends Workbook
        }
        else
        {
-         BoundsheetRecord br = (BoundsheetRecord) boundsheets.get(lastTab);
+         BoundsheetRecord br = boundsheets.get(lastTab);
          return br.getName();
        }
     }
@@ -494,7 +490,7 @@ public class WorkbookParser extends Workbook
     }
 
     // An unknown supbook - return unkown
-    logger.warn("Unknown Supbook 4");
+    LOGGER.warn("Unknown Supbook 4");
     return "[UNKNOWN]";
   }
 
@@ -503,6 +499,7 @@ public class WorkbookParser extends Workbook
    *
    * @return the number of sheets in this workbook
    */
+  @Override
   public int getNumberOfSheets()
   {
     return sheets.size();
@@ -512,6 +509,7 @@ public class WorkbookParser extends Workbook
    * Closes this workbook, and frees makes any memory allocated available
    * for garbage collection
    */
+  @Override
   public void close()
   {
     if (lastSheet != null)
@@ -531,7 +529,7 @@ public class WorkbookParser extends Workbook
    *
    * @param s the sheet to add
    */
-  final void addSheet(Sheet s)
+  private void addSheet(SheetImpl s)
   {
     sheets.add(s);
   }
@@ -542,6 +540,7 @@ public class WorkbookParser extends Workbook
    * @exception BiffException
    * @exception PasswordException if the workbook is password protected
    */
+  @Override
   protected void parse() throws BiffException, PasswordException
   {
     Record r = null;
@@ -559,10 +558,10 @@ public class WorkbookParser extends Workbook
     {
       throw new BiffException(BiffException.expectedGlobals);
     }
-    ArrayList continueRecords = new ArrayList();
-    ArrayList localNames = new ArrayList();
-    nameTable = new ArrayList();
-    addInFunctions = new ArrayList();
+    List<Record> continueRecords = new ArrayList<>();
+    List<NameRecord> localNames = new ArrayList<>();
+    nameTable = new ArrayList<>();
+    addInFunctions = new ArrayList<>();
 
     // Skip to the first worksheet
     while (bofs == 1)
@@ -579,9 +578,7 @@ public class WorkbookParser extends Workbook
           nextrec = excelFile.peek();
         }
 
-        // cast the array
-        Record[] records = new Record[continueRecords.size()];
-        records = (Record[]) continueRecords.toArray(records);
+        Record[] records = continueRecords.toArray(new Record[continueRecords.size()]);
 
         sharedStrings = new SSTRecord(r, records);
       }
@@ -591,31 +588,18 @@ public class WorkbookParser extends Workbook
       }
       else if (r.getType() == Type.NAME)
       {
-        NameRecord nr = null;
-
-        if (bof.isBiff8())
-        {
-          nr = new NameRecord(r, settings, nameTable.size());
-
-        }
-        else
-        {
-          nr = new NameRecord(r, settings, nameTable.size(),
-                              NameRecord.biff7);
-        }
+        NameRecord nr = bof.isBiff8()
+                ? new NameRecord(r, settings, nameTable.size())
+                : new NameRecord(r, settings, nameTable.size(), NameRecord.biff7);
 
         // Add all local and global names to the name table in order to
         // preserve the indexing
         nameTable.add(nr);
 
         if (nr.isGlobal())
-        {
           namedRecords.put(nr.getName(), nr);
-        }
         else
-        {
           localNames.add(nr);
-        }
       }
       else if (r.getType() == Type.FONT)
       {
@@ -720,8 +704,7 @@ public class WorkbookParser extends Workbook
       }
       else if (r.getType() == Type.XCT)
       {
-        XCTRecord xctr = new XCTRecord(r);
-        xctRecords.add(xctr);
+        xctRecords.add(new XCTRecord(r));
       }
       else if (r.getType() == Type.CODEPAGE)
       {
@@ -737,8 +720,7 @@ public class WorkbookParser extends Workbook
           nextrec = excelFile.peek();
         }
 
-        SupbookRecord sr = new SupbookRecord(r, settings);
-        supbooks.add(sr);
+        supbooks.add(new SupbookRecord(r, settings));
       }
       else if (r.getType() == Type.EXTERNNAME)
       {
@@ -859,8 +841,8 @@ public class WorkbookParser extends Workbook
                                     nineteenFour,
                                     this);
 
-        BoundsheetRecord br = (BoundsheetRecord) boundsheets.get
-          (getNumberOfSheets());
+        BoundsheetRecord br = boundsheets.get
+                  (getNumberOfSheets());
         s.setName(br.getName());
         s.setHidden(br.isHidden());
         addSheet(s);
@@ -876,15 +858,15 @@ public class WorkbookParser extends Workbook
                                     nineteenFour,
                                     this);
 
-        BoundsheetRecord br = (BoundsheetRecord) boundsheets.get
-          (getNumberOfSheets());
+        BoundsheetRecord br = boundsheets.get
+                  (getNumberOfSheets());
         s.setName(br.getName());
         s.setHidden(br.isHidden());
         addSheet(s);
       }
       else
       {
-        logger.warn("BOF is unrecognized");
+        LOGGER.warn("BOF is unrecognized");
 
 
         while (excelFile.hasNext() && r.getType() != Type.EOF)
@@ -911,23 +893,19 @@ public class WorkbookParser extends Workbook
     }
 
     // Add all the local names to the specific sheets
-    for (Iterator it = localNames.iterator() ; it.hasNext() ;)
-    {
-      NameRecord nr  = (NameRecord) it.next();
-
+    for (NameRecord nr : localNames)
       if (nr.getBuiltInName() == null)
       {
-        logger.warn("Usage of a local non-builtin name: " + nr.getName());
+        LOGGER.warn("Usage of a local non-builtin name: " + nr.getName());
       }
       else if (nr.getBuiltInName() == BuiltInName.PRINT_AREA ||
-               nr.getBuiltInName() == BuiltInName.PRINT_TITLES)
+              nr.getBuiltInName() == BuiltInName.PRINT_TITLES)
       {
         // appears to use the internal tab number rather than the
         // external sheet index
-        SheetImpl s = (SheetImpl) sheets.get(nr.getSheetRef() - 1);
+        SheetImpl s = sheets.get(nr.getSheetRef() - 1);
         s.addLocalName(nr);
       }
-    }
   }
 
   /**
@@ -971,8 +949,7 @@ public class WorkbookParser extends Workbook
    */
   public SupbookRecord[] getSupbookRecords()
   {
-    SupbookRecord[] sr = new SupbookRecord[supbooks.size()];
-    return (SupbookRecord[]) supbooks.toArray(sr);
+    return supbooks.toArray(new SupbookRecord[supbooks.size()]);
   }
 
   /**
@@ -983,8 +960,7 @@ public class WorkbookParser extends Workbook
    */
   public NameRecord[] getNameRecords()
   {
-    NameRecord[] na = new NameRecord[nameTable.size()];
-    return (NameRecord[]) nameTable.toArray(na);
+    return nameTable.toArray(new NameRecord[nameTable.size()]);
   }
 
   /**
@@ -1006,6 +982,7 @@ public class WorkbookParser extends Workbook
    * @param loc the cell to retrieve
    * @return the cell at the specified location
    */
+  @Override
   public Cell getCell(String loc)
   {
     Sheet s = getSheet(CellReferenceHelper.getSheet(loc));
@@ -1021,9 +998,10 @@ public class WorkbookParser extends Workbook
    * @return the cell in the top left of the range if found, NULL
    *         otherwise
    */
+  @Override
   public Cell findCellByName(String name)
   {
-    NameRecord nr = (NameRecord) namedRecords.get(name);
+    NameRecord nr = namedRecords.get(name);
 
     if (nr == null)
     {
@@ -1063,9 +1041,10 @@ public class WorkbookParser extends Workbook
    * @param name the name to find
    * @return the range of cells
    */
+  @Override
   public Range[] findByName(String name)
   {
-    NameRecord nr = (NameRecord) namedRecords.get(name);
+    NameRecord nr = namedRecords.get(name);
 
     if (nr == null)
     {
@@ -1096,13 +1075,10 @@ public class WorkbookParser extends Workbook
    *
    * @return the list of named cells within the workbook
    */
+  @Override
   public String[] getRangeNames()
   {
-    Object[] keys = namedRecords.keySet().toArray();
-    String[] names = new String[keys.length];
-    System.arraycopy(keys, 0, names, 0, keys.length);
-
-    return names;
+    return namedRecords.keySet().toArray(new String[namedRecords.size()]);
   }
 
   /**
@@ -1111,6 +1087,7 @@ public class WorkbookParser extends Workbook
    *
    * @return the BOF record
    */
+  @Override
   public BOFRecord getWorkbookBof()
   {
     return workbookBof;
@@ -1121,6 +1098,7 @@ public class WorkbookParser extends Workbook
    *
    * @return whether or not the sheet is protected
    */
+  @Override
   public boolean isProtected()
   {
     return wbProtected;
@@ -1142,6 +1120,7 @@ public class WorkbookParser extends Workbook
    * @param sheetName the sheet name to look for
    * @return the external sheet index
    */
+  @Override
   public int getExternalSheetIndex(String sheetName)
   {
     return 0;
@@ -1153,6 +1132,7 @@ public class WorkbookParser extends Workbook
    * @param sheetName the sheet name to look for
    * @return the external sheet index
    */
+  @Override
   public int getLastExternalSheetIndex(String sheetName)
   {
     return 0;
@@ -1165,14 +1145,13 @@ public class WorkbookParser extends Workbook
    * @return the name of the cell
    * @exception NameRangeException
    */
+  @Override
   public String getName(int index) throws NameRangeException
   {
-    //    Assert.verify(index >= 0 && index < nameTable.size());
     if (index < 0 || index >= nameTable.size())
-    {
       throw new NameRangeException();
-    }
-    return ((NameRecord) nameTable.get(index)).getName();
+
+    return nameTable.get(index).getName();
   }
 
   /**
@@ -1181,9 +1160,10 @@ public class WorkbookParser extends Workbook
    * @param name the name to search for
    * @return the index in the name table
    */
+  @Override
   public int getNameIndex(String name)
   {
-    NameRecord nr = (NameRecord) namedRecords.get(name);
+    NameRecord nr = namedRecords.get(name);
 
     return nr != null ? nr.getIndex() : 0;
   }
@@ -1249,8 +1229,7 @@ public class WorkbookParser extends Workbook
    */
   public String[] getAddInFunctionNames()
   {
-    String[] addins = new String[0];
-    return (String[]) addInFunctions.toArray(addins);
+    return addInFunctions.toArray(new String[addInFunctions.size()]);
   }
 
   /**
@@ -1265,9 +1244,9 @@ public class WorkbookParser extends Workbook
     int index = -1;
     int pos = 0;
 
-    for (Iterator i = boundsheets.iterator() ; i.hasNext() && index == -1 ;)
+    for (Iterator<BoundsheetRecord> i = boundsheets.iterator() ; i.hasNext() && index == -1 ;)
     {
-      BoundsheetRecord br = (BoundsheetRecord) i.next();
+      BoundsheetRecord br = i.next();
 
       if (br.getName().equals(name))
       {
@@ -1284,7 +1263,7 @@ public class WorkbookParser extends Workbook
 
   public XCTRecord[] getXCTRecords()
   {
-    XCTRecord[] xctr = new XCTRecord[0];
-    return (XCTRecord[]) xctRecords.toArray(xctr);
+    return xctRecords.toArray(new XCTRecord[xctRecords.size()]);
   }
+
 }
