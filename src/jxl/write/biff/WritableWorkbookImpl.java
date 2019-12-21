@@ -45,23 +45,23 @@ public class WritableWorkbookImpl extends WritableWorkbook
   /**
    * The logger
    */
-  private static Logger logger = Logger.getLogger(WritableWorkbookImpl.class);
+  private static final Logger LOGGER = Logger.getLogger(WritableWorkbookImpl.class);
   /**
    * The list of formats available within this workbook
    */
-  private FormattingRecords formatRecords;
+  private final FormattingRecords formatRecords;
   /**
    * The output file to write the workbook to
    */
-  private File outputFile;
+  private final File outputFile;
   /**
    * The list of sheets within this workbook
    */
-  private ArrayList<WritableSheetImpl> sheets;
+  private final List<WritableSheetImpl> sheets = new ArrayList<>();
   /**
    * The list of fonts available within this workbook
    */
-  private Fonts fonts;
+  private final Fonts fonts;
   /**
    * The list of external sheets, used by cell references in formulas
    */
@@ -80,19 +80,19 @@ public class WritableWorkbookImpl extends WritableWorkbook
   /**
    * A lookup hash map of the name records
    */
-  private final HashMap<String, NameRecord> nameRecords;
+  private final Map<String, NameRecord> nameRecords = new HashMap<>();
 
   /**
    * The shared strings used by this workbook
    */
-  private SharedStrings sharedStrings;
+  private final SharedStrings sharedStrings = new SharedStrings();
 
   /**
    * Indicates whether or not the output stream should be closed.  This
    * depends on whether this Workbook was created with an output stream,
    * or a flat file (flat file closes the stream
    */
-  private boolean closeStream;
+  private final boolean closeStream;
 
   /**
    * The workbook protection flag
@@ -102,13 +102,13 @@ public class WritableWorkbookImpl extends WritableWorkbook
   /**
    * The settings for the workbook
    */
-  private WorkbookSettings settings;
+  private final WorkbookSettings settings;
 
   /**
    * The list of cells for the entire workbook which need to be updated
    * following a row/column insert or remove
    */
-  private ArrayList<CellValue> rcirCells;
+  private final List<CellValue> rcirCells = new ArrayList<>();
 
   /**
    * The drawing group
@@ -118,7 +118,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
   /**
    * The jxl.common.workbook styles
    */
-  private Styles styles;
+  private final Styles styles = new Styles();
 
   /**
    * Contains macros flag
@@ -162,15 +162,10 @@ public class WritableWorkbookImpl extends WritableWorkbook
   {
     super();
     outputFile = new File(os, ws, null);
-    sheets = new ArrayList<>();
-    sharedStrings = new SharedStrings();
-    nameRecords = new HashMap<>();
     closeStream = cs;
     wbProtected = false;
     containsMacros = false;
     settings = ws;
-    rcirCells = new ArrayList<>();
-    styles = new Styles();
 
     // Reset the statically declared styles.  These are no longer needed
     // because the Styles class will intercept all calls within
@@ -187,8 +182,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
       DateRecord.defaultDateFormat.uninitialize();
      }
 
-    WritableFonts wf = new WritableFonts(this);
-    fonts = wf;
+    fonts = new WritableFonts(this);
 
     WritableFormattingRecords wfr = new WritableFormattingRecords(fonts,
                                                                   styles);
@@ -231,15 +225,10 @@ public class WritableWorkbookImpl extends WritableWorkbook
      }
 
     closeStream = cs;
-    sheets = new ArrayList<>();
-    sharedStrings = new SharedStrings();
-    nameRecords = new HashMap<>();
     fonts = wp.getFonts();
     formatRecords = wp.getFormattingRecords();
     wbProtected = false;
     settings = ws;
-    rcirCells = new ArrayList<>();
-    styles = new Styles();
     outputFile = new File(os, ws, wp.getCompoundFile());
 
     containsMacros = false;
@@ -281,7 +270,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
         {
           if (readSupbook.getType() != ADDIN)
           {
-            logger.warn("unsupported supbook type - ignoring");
+            LOGGER.warn("unsupported supbook type - ignoring");
           }
         }
       }
@@ -318,7 +307,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
         }
         else
         {
-          logger.warn("Cannot copy Biff7 name records - ignoring");
+          LOGGER.warn("Cannot copy Biff7 name records - ignoring");
         }
       }
     }
@@ -850,7 +839,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
         CountryCode.getCountryCode(settings.getExcelDisplayLanguage());
       if (lang == CountryCode.UNKNOWN)
       {
-        logger.warn("Unknown country code " +
+        LOGGER.warn("Unknown country code " +
                     settings.getExcelDisplayLanguage() +
                     " using " + CountryCode.USA.getCode());
         lang = CountryCode.USA;
@@ -860,7 +849,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
       countryRecord = new CountryRecord(lang, region);
       if (region == CountryCode.UNKNOWN)
       {
-        logger.warn("Unknown country code " +
+        LOGGER.warn("Unknown country code " +
                     settings.getExcelDisplayLanguage() +
                     " using " + CountryCode.UK.getCode());
         region = CountryCode.UK;
@@ -1046,7 +1035,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
     }
 
     // An unknown supbook - return unkown
-    logger.warn("Unknown Supbook 1");
+    LOGGER.warn("Unknown Supbook 1");
     return "[UNKNOWN]";
   }
 
@@ -1076,7 +1065,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
     }
 
     // An unknown supbook - return unkown
-    logger.warn("Unknown Supbook 2");
+    LOGGER.warn("Unknown Supbook 2");
     return "[UNKNOWN]";
   }
 
@@ -1174,7 +1163,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
       if (supbook.getType() != SupbookRecord.INTERNAL ||
           supbook.getNumberOfSheets() != getNumberOfSheets())
       {
-        logger.warn("Cannot find sheet " + sheetName + " in supbook record");
+        LOGGER.warn("Cannot find sheet " + sheetName + " in supbook record");
       }
 
       return externSheet.getIndex(0, sheetpos);
@@ -1187,7 +1176,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
     if (closeSquareBracketsIndex == -1 ||
         openSquareBracketsIndex == -1)
     {
-      logger.warn("Square brackets");
+      LOGGER.warn("Square brackets");
       return -1;
     }
 
@@ -1428,7 +1417,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * range of cells, then the cell on the top left is returned.  If
    * the name cannot be found, null is returned
    *
-   * @param  the name of the cell/range to search for
+   * @param  name of the cell/range to search for
    * @return the cell in the top left of the range if found, NULL
    *         otherwise
    */
@@ -1464,7 +1453,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * If the named range contains a single cell, the top left and
    * bottom right cell will be the same cell
    *
-   * @param  the name of the cell/range to search for
+   * @param  name of the cell/range to search for
    * @return the range of cells
    */
   @Override
@@ -1598,7 +1587,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
       names.remove(pos);
       if (nameRecords.remove(name) == null)
       {
-        logger.warn("Could not remove " + name + " from index lookups");
+        LOGGER.warn("Could not remove " + name + " from index lookups");
       }
     }
   }
