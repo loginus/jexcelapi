@@ -377,8 +377,8 @@ public class WorkbookParser extends Workbook
 
     int firstTab = externSheet.getFirstTabIndex(index);
     int lastTab  = externSheet.getLastTabIndex(index);
-    String firstTabName = "";
-    String lastTabName = "";
+    String firstTabName;
+    String lastTabName;
 
     if (sr.getType() == SupbookRecord.INTERNAL)
     {
@@ -568,246 +568,196 @@ public class WorkbookParser extends Workbook
     {
       r = excelFile.next();
 
-      if (r.getType() == Type.SST) // BIFF8 only
-      {
-        continueRecords.clear();
-        Record nextrec = excelFile.peek();
-        while (nextrec.getType() == Type.CONTINUE)
-        {
-          continueRecords.add(excelFile.next());
-          nextrec = excelFile.peek();
-        }
-
-        Record[] records = continueRecords.toArray(new Record[continueRecords.size()]);
-
-        sharedStrings = new SSTRecord(r, records);
-      }
-      else if (r.getType() == Type.FILEPASS)
-      {
-        throw new PasswordException();
-      }
-      else if (r.getType() == Type.NAME)
-      {
-        NameRecord nr = bof.isBiff8()
-                ? new NameRecord(r, settings, nameTable.size())
-                : new NameRecord(r, settings, nameTable.size(), NameRecord.biff7);
-
-        // Add all local and global names to the name table in order to
-        // preserve the indexing
-        nameTable.add(nr);
-
-        if (nr.isGlobal())
-          namedRecords.put(nr.getName(), nr);
-        else
-          localNames.add(nr);
-      }
-      else if (r.getType() == Type.FONT)
-      {
-        FontRecord fr = null;
-
-        if (bof.isBiff8())
-        {
-          fr = new FontRecord(r, settings);
-        }
-        else
-        {
-          fr = new FontRecord(r, settings, FontRecord.biff7);
-        }
-        fonts.addFont(fr);
-      }
-      else if (r.getType() == Type.PALETTE)
-      {
-        PaletteRecord palette = new PaletteRecord(r);
-        formattingRecords.setPalette(palette);
-      }
-      else if (r.getType() == Type.NINETEENFOUR)
-      {
-        NineteenFourRecord nr = new NineteenFourRecord(r);
-        nineteenFour = nr.is1904();
-      }
-      else if (r.getType() == Type.FORMAT)
-      {
-        FormatRecord fr = null;
-        if (bof.isBiff8())
-        {
-          fr = new FormatRecord(r, settings, FormatRecord.biff8);
-        }
-        else
-        {
-          fr = new FormatRecord(r, settings, FormatRecord.biff7);
-        }
-        try
-        {
-          formattingRecords.addFormat(fr);
-        }
-        catch (NumFormatRecordsException e)
-        {
-          // This should not happen.  Bomb out
-          Assert.verify(false, e.getMessage());
-        }
-      }
-      else if (r.getType() == Type.XF)
-      {
-        XFRecord xfr = null;
-        if (bof.isBiff8())
-        {
-          xfr = new XFRecord(r, settings, XFRecord.biff8);
-        }
-        else
-        {
-          xfr = new XFRecord(r, settings, XFRecord.biff7);
-        }
-
-        try
-        {
-          formattingRecords.addStyle(xfr);
-        }
-        catch (NumFormatRecordsException e)
-        {
-          // This should not happen.  Bomb out
-          Assert.verify(false, e.getMessage());
-        }
-      }
-      else if (r.getType() == Type.BOUNDSHEET)
-      {
-        BoundsheetRecord br = null;
-
-        if (bof.isBiff8())
-        {
-          br = new BoundsheetRecord(r, settings);
-        }
-        else
-        {
-          br = new BoundsheetRecord(r, BoundsheetRecord.biff7);
-        }
-
-        if (br.isSheet())
-        {
-          boundsheets.add(br);
-        }
-        else if (br.isChart() && !settings.getDrawingsDisabled())
-        {
-          boundsheets.add(br);
-        }
-      }
-      else if (r.getType() == Type.EXTERNSHEET)
-      {
-        if (bof.isBiff8())
-        {
-          externSheet = new ExternalSheetRecord(r, settings);
-        }
-        else
-        {
-          externSheet = new ExternalSheetRecord(r, settings,
-                                                ExternalSheetRecord.biff7);
-        }
-      }
-      else if (r.getType() == Type.XCT)
-      {
-        xctRecords.add(new XCTRecord(r));
-      }
-      else if (r.getType() == Type.CODEPAGE)
-      {
-        CodepageRecord cr = new CodepageRecord(r);
-        settings.setCharacterSet(cr.getCharacterSet());
-      }
-      else if (r.getType() == Type.SUPBOOK)
-      {
-        Record nextrec = excelFile.peek();
-        while (nextrec.getType() == Type.CONTINUE)
-        {
-          r.addContinueRecord(excelFile.next());
-          nextrec = excelFile.peek();
-        }
-
-        supbooks.add(new SupbookRecord(r, settings));
-      }
-      else if (r.getType() == Type.EXTERNNAME)
-      {
-        ExternalNameRecord enr = new ExternalNameRecord(r, settings);
-
-        if (enr.isAddInFunction())
-        {
-          addInFunctions.add(enr.getName());
-        }
-      }
-      else if (r.getType() == Type.PROTECT)
-      {
-        ProtectRecord pr = new ProtectRecord(r);
-        wbProtected = pr.isProtected();
-      }
-      else if (r.getType() == Type.OBJPROJ)
-      {
-        containsMacros = true;
-      }
-      else if (r.getType() == Type.COUNTRY)
-      {
-        countryRecord = new CountryRecord(r);
-      }
-      else if (r.getType() == Type.MSODRAWINGGROUP)
-      {
-        if (!settings.getDrawingsDisabled())
-        {
-          msoDrawingGroup = new MsoDrawingGroupRecord(r);
-
-          if (drawingGroup == null)
-          {
-            drawingGroup = new DrawingGroup(Origin.READ);
-          }
-
-          drawingGroup.add(msoDrawingGroup);
-
+      switch (r.getType()) {
+        case SST: {
+          // BIFF8 only
+          continueRecords.clear();
           Record nextrec = excelFile.peek();
-          while (nextrec.getType() == Type.CONTINUE)
-          {
-            drawingGroup.add(excelFile.next());
+          while (nextrec.getType() == Type.CONTINUE) {
+            continueRecords.add(excelFile.next());
             nextrec = excelFile.peek();
           }
+          Record[] records = continueRecords.toArray(new Record[continueRecords
+                  .size()]);
+          sharedStrings = new SSTRecord(r, records);
+          break;
         }
-      }
-      else if (r.getType() == Type.BUTTONPROPERTYSET)
-      {
-        buttonPropertySet = new ButtonPropertySetRecord(r);
-      }
-      else if (r.getType() == Type.EOF)
-      {
-        bofs--;
-      }
-      else if (r.getType() == Type.REFRESHALL)
-      {
-        RefreshAllRecord rfm = new RefreshAllRecord(r);
-        settings.setRefreshAll(rfm.getRefreshAll());
-      }
-      else if (r.getType() == Type.TEMPLATE)
-      {
-        TemplateRecord rfm = new TemplateRecord(r);
-        settings.setTemplate(rfm.getTemplate());
-      }
-      else if (r.getType() == Type.EXCEL9FILE)
-      {
-        Excel9FileRecord e9f = new Excel9FileRecord(r);
-        settings.setExcel9File(e9f.getExcel9File());
-      }
-      else if (r.getType() == Type.WINDOWPROTECT)
-      {
-        WindowProtectedRecord winp = new WindowProtectedRecord(r);
-        settings.setWindowProtected(winp.getWindowProtected());
-      }
-      else if (r.getType() == Type.HIDEOBJ)
-      {
-        HideobjRecord hobj = new HideobjRecord(r);
-        settings.setHideobj(hobj.getHideMode());
-      }
-      else if (r.getType() == Type.WRITEACCESS)
-      {
-        WriteAccessRecord war = new WriteAccessRecord(r, bof.isBiff8(),
-                                                      settings);
-        settings.setWriteAccess(war.getWriteAccess());
-      }
-      else
-      {
-        // logger.info("Unsupported record type: " +
-        //            Integer.toHexString(r.getCode())+"h");
+
+        case FILEPASS:
+          throw new PasswordException();
+
+        case NAME: {
+          NameRecord nr = bof.isBiff8()
+                  ? new NameRecord(r, settings, nameTable.size())
+                  : new NameRecord(r, settings, nameTable.size(), NameRecord.biff7);
+          // Add all local and global names to the name table in order to
+          // preserve the indexing
+          nameTable.add(nr);
+          if (nr.isGlobal())
+            namedRecords.put(nr.getName(), nr);
+          else
+            localNames.add(nr);
+          break;
+        }
+
+        case FONT: {
+          FontRecord fr = bof.isBiff8()
+                  ? new FontRecord(r, settings)
+                  : new FontRecord(r, settings, FontRecord.biff7);
+          fonts.addFont(fr);
+          break;
+        }
+
+        case PALETTE:
+          PaletteRecord palette = new PaletteRecord(r);
+          formattingRecords.setPalette(palette);
+          break;
+
+        case NINETEENFOUR: {
+          NineteenFourRecord nr = new NineteenFourRecord(r);
+          nineteenFour = nr.is1904();
+          break;
+        }
+
+        case FORMAT: {
+          FormatRecord fr = bof.isBiff8()
+                  ? new FormatRecord(r, settings, FormatRecord.biff8)
+                  : new FormatRecord(r, settings, FormatRecord.biff7);
+          try {
+            formattingRecords.addFormat(fr);
+          } catch (NumFormatRecordsException e) {
+            // This should not happen.  Bomb out
+            Assert.verify(false, e.getMessage());
+          }
+          break;
+        }
+
+        case XF:
+          XFRecord xfr = bof.isBiff8()
+                  ? new XFRecord(r, settings, XFRecord.biff8)
+                  : new XFRecord(r, settings, XFRecord.biff7);
+          try {
+            formattingRecords.addStyle(xfr);
+          } catch (NumFormatRecordsException e) {
+            // This should not happen.  Bomb out
+            Assert.verify(false, e.getMessage());
+          }
+          break;
+
+        case BOUNDSHEET:
+          BoundsheetRecord br = bof.isBiff8()
+                  ? new BoundsheetRecord(r, settings)
+                  : new BoundsheetRecord(r, BoundsheetRecord.biff7);
+
+          if (br.isSheet())
+            boundsheets.add(br);
+          else if (br.isChart() && !settings.getDrawingsDisabled())
+            boundsheets.add(br);
+          break;
+
+        case EXTERNSHEET:
+          if (bof.isBiff8())
+            externSheet = new ExternalSheetRecord(r, settings);
+          else
+            externSheet = new ExternalSheetRecord(r, settings,
+                    ExternalSheetRecord.biff7);
+          break;
+
+        case XCT:
+          xctRecords.add(new XCTRecord(r));
+          break;
+
+        case CODEPAGE:
+          CodepageRecord cr = new CodepageRecord(r);
+          settings.setCharacterSet(cr.getCharacterSet());
+          break;
+
+        case SUPBOOK: {
+          Record nextrec = excelFile.peek();
+          while (nextrec.getType() == Type.CONTINUE) {
+            r.addContinueRecord(excelFile.next());
+            nextrec = excelFile.peek();
+          }
+          supbooks.add(new SupbookRecord(r, settings));
+          break;
+
+        }
+        case EXTERNNAME:
+          ExternalNameRecord enr = new ExternalNameRecord(r, settings);
+          if (enr.isAddInFunction())
+            addInFunctions.add(enr.getName());
+          break;
+
+        case PROTECT:
+          ProtectRecord pr = new ProtectRecord(r);
+          wbProtected = pr.isProtected();
+          break;
+
+        case OBJPROJ:
+          containsMacros = true;
+          break;
+
+        case COUNTRY:
+          countryRecord = new CountryRecord(r);
+          break;
+
+        case MSODRAWINGGROUP:
+          if (!settings.getDrawingsDisabled()) {
+            msoDrawingGroup = new MsoDrawingGroupRecord(r);
+
+            if (drawingGroup == null)
+              drawingGroup = new DrawingGroup(Origin.READ);
+
+            drawingGroup.add(msoDrawingGroup);
+
+            Record nextrec = excelFile.peek();
+            while (nextrec.getType() == Type.CONTINUE) {
+              drawingGroup.add(excelFile.next());
+              nextrec = excelFile.peek();
+            }
+          }
+          break;
+
+        case BUTTONPROPERTYSET:
+          buttonPropertySet = new ButtonPropertySetRecord(r);
+          break;
+
+        case EOF:
+          bofs--;
+          break;
+
+        case REFRESHALL: {
+          RefreshAllRecord rfm = new RefreshAllRecord(r);
+          settings.setRefreshAll(rfm.getRefreshAll());
+          break;
+        }
+
+        case TEMPLATE: {
+          TemplateRecord rfm = new TemplateRecord(r);
+          settings.setTemplate(rfm.getTemplate());
+          break;
+        }
+
+        case EXCEL9FILE:
+          Excel9FileRecord e9f = new Excel9FileRecord(r);
+          settings.setExcel9File(e9f.getExcel9File());
+          break;
+
+        case WINDOWPROTECT:
+          WindowProtectedRecord winp = new WindowProtectedRecord(r);
+          settings.setWindowProtected(winp.getWindowProtected());
+          break;
+
+        case HIDEOBJ:
+          HideobjRecord hobj = new HideobjRecord(r);
+          settings.setHideobj(hobj.getHideMode());
+          break;
+
+        case WRITEACCESS:
+          WriteAccessRecord war = new WriteAccessRecord(r, bof.isBiff8(),
+                  settings);
+          settings.setWriteAccess(war.getWriteAccess());
+          break;
       }
     }
 
