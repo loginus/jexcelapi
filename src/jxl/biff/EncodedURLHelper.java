@@ -63,12 +63,18 @@ public class EncodedURLHelper
       byteArray.add(msDosDriveLetter);
       byteArray.add((byte) s.charAt(0));
       pos = 2;
+    } else if ((s.charAt(0) == '\\' && s.charAt(1) == '\\')
+            || (s.charAt(0) == '/' && s.charAt(1) == '/')) {
+      byteArray.add(msDosDriveLetter);
+      byteArray.add((byte) '@');
+      pos = 2;
     }
     else if (s.charAt(pos) == '\\' ||
              s.charAt(pos) == '/')
     {
       byteArray.add(sameDrive);
     }
+
 
     while (s.charAt(pos) == '\\' ||
            s.charAt(pos) == '/')
@@ -120,17 +126,17 @@ public class EncodedURLHelper
         // add the filename component
         byteArray.add(StringHelper.getBytes(nextFileNameComponent,
                                             ws));
+        if (pos < s.length())
+        {
+          byteArray.add(endOfSubdirectory);
+        }
       }
 
-      if (pos < s.length())
-      {
-        byteArray.add(endOfSubdirectory);
-      }
     }
 
     return byteArray.getBytes();
   }
-  
+
   private static byte[] getURL(String s, WorkbookSettings ws)
   {
     ByteArray byteArray = new ByteArray();
