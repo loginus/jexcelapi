@@ -20,7 +20,6 @@
 package jxl.biff;
 
 import jxl.common.Logger;
-
 import jxl.WorkbookSettings;
 
 /**
@@ -34,11 +33,11 @@ public class EncodedURLHelper
   private static Logger logger = Logger.getLogger(EncodedURLHelper.class);
 
   // The control codes
-  private static byte msDosDriveLetter = 0x01;
-  private static byte sameDrive = 0x02;
-  private static byte endOfSubdirectory = 0x03;
-  private static byte parentDirectory = 0x04;
-  private static byte unencodedUrl = 0x05;
+  private static char msDosDriveLetter = 0x01;
+  private static char sameDrive = 0x02;
+  private static char endOfSubdirectory = 0x03;
+  private static char parentDirectory = 0x04;
+  private static char unencodedUrl = 0x05;
 
   public static byte[] getEncodedURL(String s, WorkbookSettings ws)
   {
@@ -54,25 +53,25 @@ public class EncodedURLHelper
 
   private static byte[] getFile(String s, WorkbookSettings ws)
   {
-    ByteArray byteArray = new ByteArray();
+    StringBuilder sb = new StringBuilder();
 
     int pos = 0;
     if (s.charAt(1) == ':')
     {
       // we have a drive letter
-      byteArray.add(msDosDriveLetter);
-      byteArray.add((byte) s.charAt(0));
+      sb.append(msDosDriveLetter);
+      sb.append(s.charAt(0));
       pos = 2;
     } else if ((s.charAt(0) == '\\' && s.charAt(1) == '\\')
             || (s.charAt(0) == '/' && s.charAt(1) == '/')) {
-      byteArray.add(msDosDriveLetter);
-      byteArray.add((byte) '@');
+      sb.append(msDosDriveLetter);
+      sb.append('@');
       pos = 2;
     }
     else if (s.charAt(pos) == '\\' ||
              s.charAt(pos) == '/')
     {
-      byteArray.add(sameDrive);
+      sb.append(sameDrive);
     }
 
 
@@ -119,30 +118,29 @@ public class EncodedURLHelper
       else if (nextFileNameComponent.equals(".."))
       {
         // parent directory
-        byteArray.add(parentDirectory);
+        sb.append(parentDirectory);
       }
       else
       {
-        // add the filename component
-        byteArray.add(StringHelper.getBytes(nextFileNameComponent,
-                                            ws));
+        // append the filename component
+        sb.append(nextFileNameComponent);
         if (pos < s.length())
         {
-          byteArray.add(endOfSubdirectory);
+          sb.append(endOfSubdirectory);
         }
       }
 
     }
 
-    return byteArray.getBytes();
+    return StringHelper.getBytes(sb.toString(), ws);
   }
 
-  private static byte[] getURL(String s, WorkbookSettings ws)
-  {
-    ByteArray byteArray = new ByteArray();
-    byteArray.add(unencodedUrl);
-    byteArray.add((byte) s.length());
-    byteArray.add(StringHelper.getBytes(s, ws));
-    return byteArray.getBytes();
+  private static byte[] getURL(String s, WorkbookSettings ws) {
+    StringBuilder sb = new StringBuilder(s.length() + 2);
+    sb.append(unencodedUrl);
+    sb.append((char) s.length());
+    sb.append(s);
+    return StringHelper.getBytes(sb.toString(), ws);
   }
+
 }
