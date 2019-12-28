@@ -19,7 +19,6 @@
 
 package jxl.biff;
 
-import jxl.common.Logger;
 import jxl.WorkbookSettings;
 
 /**
@@ -27,10 +26,6 @@ import jxl.WorkbookSettings;
  */
 public class EncodedURLHelper
 {
-  /**
-   * The logger
-   */
-  private static Logger logger = Logger.getLogger(EncodedURLHelper.class);
 
   // The control codes
   private static char msDosDriveLetter = 0x01;
@@ -86,7 +81,7 @@ public class EncodedURLHelper
       int nextSepIndex1 = s.indexOf('/', pos);
       int nextSepIndex2 = s.indexOf('\\', pos);
       int nextSepIndex = 0;
-      String nextFileNameComponent = null;
+      String nextFileNameComponent;
 
       if (nextSepIndex1 != -1 && nextSepIndex2 != -1)
       {
@@ -111,23 +106,22 @@ public class EncodedURLHelper
         pos = nextSepIndex + 1;
       }
 
-      if (nextFileNameComponent.equals("."))
-      {
-        // current directory - do nothing
-      }
-      else if (nextFileNameComponent.equals(".."))
-      {
-        // parent directory
-        sb.append(parentDirectory);
-      }
-      else
-      {
-        // append the filename component
-        sb.append(nextFileNameComponent);
-        if (pos < s.length())
-        {
-          sb.append(endOfSubdirectory);
-        }
+      switch (nextFileNameComponent) {
+        case ".":
+          // current directory - do nothing
+          break;
+
+        case "..":
+          // parent directory
+          sb.append(parentDirectory);
+          break;
+
+        default:
+          // append the filename component
+          sb.append(nextFileNameComponent);
+          if (pos < s.length())
+            sb.append(endOfSubdirectory);
+          break;
       }
 
     }
