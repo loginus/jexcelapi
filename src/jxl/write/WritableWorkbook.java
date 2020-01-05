@@ -21,6 +21,7 @@ package jxl.write;
 
 import java.io.*;
 import java.nio.file.Path;
+import java.util.*;
 
 import jxl.*;
 import jxl.format.Colour;
@@ -65,7 +66,7 @@ public abstract class WritableWorkbook implements Closeable
   /**
    * A cell format used to hide the cell contents
    */
-  public static final WritableCellFormat HIDDEN_STYLE = 
+  public static final WritableCellFormat HIDDEN_STYLE =
     new WritableCellFormat(new DateFormat(";;;"));
 
   /**
@@ -237,6 +238,19 @@ public abstract class WritableWorkbook implements Closeable
   }
 
   /**
+   * Gets the location from this workbook.  If the name refers to a
+   * range of cells, then the location on the top left is returned.  If
+   * the name cannot be found, null is returned
+   *
+   * @param  name of the cell/range to search for
+   * @return the cell in the top left of the range if found, NULL
+   *         otherwise
+   * @throws NoSuchElementException when a range with the name could
+   *         not be found.
+   */
+  public abstract CellLocation findCellLocationByName(String name) throws NoSuchElementException;
+
+  /**
    * Gets the named cell from this workbook.  The name refers to a
    * range of cells, then the cell on the top left is returned.  If
    * the name cannot be, null is returned
@@ -271,7 +285,7 @@ public abstract class WritableWorkbook implements Closeable
   public abstract String[] getRangeNames();
 
   /**
-   * Removes the specified named range from the workbook.  Note that 
+   * Removes the specified named range from the workbook.  Note that
    * removing a name could cause formulas which use that name to
    * calculate their results incorrectly
    *

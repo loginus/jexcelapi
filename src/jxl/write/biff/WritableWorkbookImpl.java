@@ -1412,6 +1412,23 @@ public class WritableWorkbookImpl extends WritableWorkbook
     }
   }
 
+  @Override
+  public CellLocation findCellLocationByName(String name) throws NoSuchElementException {
+    NameRecord nr = nameRecords.get(name);
+
+    if (nr == null)
+      throw new NoSuchElementException("The range named " + name + " was not found.");
+
+    NameRecord.NameRange[] ranges = nr.getRanges();
+
+    // Go and retrieve the first cell in the first range
+    int sheetIndex = getExternalSheetIndex(ranges[0].getExternalSheet());
+    return new CellLocation(
+            getSheet(sheetIndex),
+            ranges[0].getFirstColumn(),
+            ranges[0].getFirstRow());
+  }
+
   /**
    * Gets the named cell from this workbook.  If the name refers to a
    * range of cells, then the cell on the top left is returned.  If
@@ -1424,22 +1441,13 @@ public class WritableWorkbookImpl extends WritableWorkbook
   @Override
   public WritableCell findCellByName(String name)
   {
-    NameRecord nr = nameRecords.get(name);
-
-    if (nr == null)
-    {
+    CellLocation cl = null;
+    try {
+      cl = findCellLocationByName(name);
+    } catch (NoSuchElementException ex) {
       return null;
     }
-
-    NameRecord.NameRange[] ranges = nr.getRanges();
-
-    // Go and retrieve the first cell in the first range
-    int sheetIndex = getExternalSheetIndex(ranges[0].getExternalSheet());
-    WritableSheet s    = getSheet(sheetIndex);
-    WritableCell  cell = s.getWritableCell(ranges[0].getFirstColumn(),
-                                           ranges[0].getFirstRow());
-
-    return cell;
+    return cl.getSheet().getWritableCell(cl.getColumn(), cl.getRow());
   }
 
   /**
