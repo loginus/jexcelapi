@@ -45,7 +45,7 @@ class WritableSheetImpl implements WritableSheet
    * The logger
    */
   private static final Logger logger = Logger.getLogger(WritableSheetImpl.class);
-    
+
   /**
    * The name of this sheet
    */
@@ -207,14 +207,14 @@ class WritableSheetImpl implements WritableSheet
 
   /**
    * The maximum number of characters permissible for a sheet name
-   */ 
+   */
   private final static int maxSheetNameLength = 31;
 
   /**
    * The illegal characters for a sheet name
    */
-  private final static char[] illegalSheetNameCharacters = 
-    new char[] {'*', ':', '?', '\\'}; 
+  private final static char[] illegalSheetNameCharacters =
+    new char[] {'*', ':', '?', '\\'};
 
   /**
    * The supported file types
@@ -228,7 +228,7 @@ class WritableSheetImpl implements WritableSheet
   {
     /**
      * Equals method
-     * 
+     *
      * @param o the object to compare
      * @return TRUE if equal, FALSE otherwise
      */
@@ -240,7 +240,7 @@ class WritableSheetImpl implements WritableSheet
 
     /**
      * Comparison function for to ColumnInfoRecords
-     * 
+     *
      * @param o2 first object to compare
      * @param o1 second object to compare
      * @return the result of the comparison
@@ -255,7 +255,7 @@ class WritableSheetImpl implements WritableSheet
 
       Assert.verify(o1 instanceof ColumnInfoRecord);
       Assert.verify(o2 instanceof ColumnInfoRecord);
-      
+
       ColumnInfoRecord ci1 = (ColumnInfoRecord) o1;
       ColumnInfoRecord ci2 = (ColumnInfoRecord) o2;
 
@@ -265,7 +265,7 @@ class WritableSheetImpl implements WritableSheet
 
   /**
    * Constructor
-   * 
+   *
    * @param fr the formatting records used by the workbook
    * @param of the output file to write the binary data
    * @param f the fonts used by the workbook
@@ -273,9 +273,9 @@ class WritableSheetImpl implements WritableSheet
    * @param ss the shared strings used by the workbook
    * @param ws the workbook settings
    */
-  WritableSheetImpl(String n, 
-                           File of, 
-                           FormattingRecords fr, 
+  WritableSheetImpl(String n,
+                           File of,
+                           FormattingRecords fr,
                            SharedStrings ss,
                            WorkbookSettings ws,
                            WritableWorkbookImpl ww)
@@ -304,7 +304,7 @@ class WritableSheetImpl implements WritableSheet
 
 
     sheetWriter = new SheetWriter(outputFile,
-                                  this, 
+                                  this,
                                   workbookSettings);
   }
 
@@ -324,7 +324,7 @@ class WritableSheetImpl implements WritableSheet
 
   /**
    * Returns the cell specified at this row and at this column
-   * 
+   *
    * @param column the column number
    * @param row the row number
    * @return the cell at the specified co-ordinates
@@ -354,7 +354,7 @@ class WritableSheetImpl implements WritableSheet
 
   /**
    * Returns the cell specified at this row and at this column
-   * 
+   *
    * @param column the column number
    * @param row the row number
    * @return the cell at the specified co-ordinates
@@ -373,13 +373,13 @@ class WritableSheetImpl implements WritableSheet
     {
       c = new EmptyCell(column, row);
     }
-    
+
     return c;
   }
 
   /**
    * Returns the number of rows in this sheet
-   * 
+   *
    * @return the number of rows in this sheet
    */
   @Override
@@ -390,7 +390,7 @@ class WritableSheetImpl implements WritableSheet
 
   /**
    * Returns the number of columns in this sheet
-   * 
+   *
    * @return the number of columns in this sheet
    */
   @Override
@@ -420,7 +420,7 @@ class WritableSheetImpl implements WritableSheet
    * If no match is found, then null is returned.  The search is performed
    * on a row by row basis, so the lower the row number, the more
    * efficiently the algorithm will perform
-   * 
+   *
    * @param contents the string to match
    * @param firstCol the first column within the range
    * @param firstRow the first row of the range
@@ -430,19 +430,19 @@ class WritableSheetImpl implements WritableSheet
    * @return the Cell whose contents match the parameter, null if not found
    */
   @Override
-  public Cell findCell(String contents, 
-                       int firstCol, 
-                       int firstRow, 
-                       int lastCol, 
-                       int lastRow, 
+  public Cell findCell(String contents,
+                       int firstCol,
+                       int firstRow,
+                       int lastCol,
+                       int lastRow,
                        boolean reverse)
   {
     CellFinder cellFinder = new CellFinder(this);
     return cellFinder.findCell(contents,
-                               firstCol, 
-                               firstRow, 
+                               firstCol,
+                               firstRow,
                                lastCol,
-                               lastRow, 
+                               lastRow,
                                reverse);
   }
 
@@ -451,7 +451,7 @@ class WritableSheetImpl implements WritableSheet
    * If no match is found, then null is returned.  The search is performed
    * on a row by row basis, so the lower the row number, the more
    * efficiently the algorithm will perform
-   * 
+   *
    * @param pattern the regular expression string to match
    * @param firstCol the first column within the range
    * @param firstRow the first row of the range
@@ -461,19 +461,19 @@ class WritableSheetImpl implements WritableSheet
    * @return the Cell whose contents match the parameter, null if not found
    */
   @Override
-  public Cell findCell(Pattern pattern, 
-                       int firstCol, 
-                       int firstRow, 
-                       int lastCol, 
-                       int lastRow, 
+  public Cell findCell(Pattern pattern,
+                       int firstCol,
+                       int firstRow,
+                       int lastCol,
+                       int lastRow,
                        boolean reverse)
   {
     CellFinder cellFinder = new CellFinder(this);
     return cellFinder.findCell(pattern,
-                               firstCol, 
-                               firstRow, 
+                               firstCol,
+                               firstRow,
                                lastCol,
-                               lastRow, 
+                               lastRow,
                                reverse);
   }
 
@@ -485,7 +485,7 @@ class WritableSheetImpl implements WritableSheet
    * from the findCell methods in that only cells with labels are
    * queried - all numerical cells are ignored.  This should therefore
    * improve performance.
-   * 
+   *
    * @param contents the string to match
    * @return the Cell whose contents match the paramter, null if not found
    */
@@ -498,7 +498,7 @@ class WritableSheetImpl implements WritableSheet
 
   /**
    * Gets all the cells on the specified row
-   * 
+   *
    * @param row the rows whose cells are to be returned
    * @return the cells on the given row
    */
@@ -532,7 +532,7 @@ class WritableSheetImpl implements WritableSheet
 
   /**
    * Gets all the cells on the specified column
-   * 
+   *
    * @param col the column whose cells are to be returned
    * @return the cells on the specified column
    */
@@ -567,7 +567,7 @@ class WritableSheetImpl implements WritableSheet
 
   /**
    * Gets the name of this sheet
-   * 
+   *
    * @return the name of the sheet
    */
   @Override
@@ -604,7 +604,7 @@ class WritableSheetImpl implements WritableSheet
 
     // Copy in everything up to the new row
     System.arraycopy(oldRows, 0, rows, 0, row);
-    
+
     // Copy in the remaining rows
     System.arraycopy(oldRows, row, rows, row+1, numRows - row);
 
@@ -662,11 +662,19 @@ class WritableSheetImpl implements WritableSheet
 
     // Adjust the maximum row record
     numRows++;
+
+    for (DrawingGroupObject dgo : drawings)
+      if (dgo instanceof Drawing) {
+        var drawing = (Drawing) dgo;
+        if (drawing.getRow() >= row)
+          drawing.setY(drawing.getRow() + 1);
+      }
+
   }
 
   /**
-   * Inserts a blank column into this spreadsheet.  If the column is out of 
-   * range of the columns in the sheet, then no action is taken.  If the 
+   * Inserts a blank column into this spreadsheet.  If the column is out of
+   * range of the columns in the sheet, then no action is taken.  If the
    * max column on the sheet has been reached, then the last column entry
    * gets dropped
    *
@@ -879,7 +887,7 @@ class WritableSheetImpl implements WritableSheet
   }
 
   /**
-   * Removes a row from this spreadsheet.  If the row is out of 
+   * Removes a row from this spreadsheet.  If the row is out of
    * range of the columns in the sheet, then no action is taken
    *
    * @param row the row to remove
@@ -903,7 +911,7 @@ class WritableSheetImpl implements WritableSheet
 
     // Copy in everything up to the row to be removed
     System.arraycopy(oldRows, 0, rows, 0, row);
-    
+
     // Copy in the remaining rows
     System.arraycopy(oldRows, row + 1, rows, row, numRows - (row + 1));
 
@@ -979,34 +987,34 @@ class WritableSheetImpl implements WritableSheet
   }
 
   /**
-   * Adds the cell to this sheet.  If the cell has already been added to 
+   * Adds the cell to this sheet.  If the cell has already been added to
    * this sheet or another sheet, a WriteException is thrown.  If the
    * position to be occupied by this cell is already taken, the incumbent
    * cell is replaced.
-   * The cell is then marked as referenced, and its formatting information 
+   * The cell is then marked as referenced, and its formatting information
    * registered with the list of formatting records updated if necessary
    * The RowsExceededException may be caught if client code wishes to
    * explicitly trap the case where too many rows have been written
    * to the current sheet.  If this behaviour is not desired, it is
    * sufficient simply to handle the WriteException, since this is a base
    * class of RowsExceededException
-   * 
-   * @exception WriteException 
+   *
+   * @exception WriteException
    * @exception RowsExceededException
    * @param cell the cell to add
    */
   @Override
-  public void addCell(WritableCell cell) 
+  public void addCell(WritableCell cell)
     throws WriteException, RowsExceededException
   {
     if (cell.getType() == CellType.EMPTY)
       if (cell.getCellFormat() == null) {
         // remove blank cells with no particular cell formatting
         removeCell(cell.getRow(), cell.getColumn());
-        
+
         return;
       }
-    
+
     CellValue cv = (CellValue) cell;
 
     if (cv.isReferenced())
@@ -1024,12 +1032,12 @@ class WritableSheetImpl implements WritableSheet
     // Check for shared data validations, but only if the cell being added
     // has a data validation
     if (cell.getCellFeatures() != null &&
-        cell.getCellFeatures().hasDataValidation() && 
+        cell.getCellFeatures().hasDataValidation() &&
         curSharedValidation)
     {
       DVParser dvp = curcell.getCellFeatures().getDVParser();
-      logger.warn("Cannot add cell at " + 
-                  CellReferenceHelper.getCellReference(cv) + 
+      logger.warn("Cannot add cell at " +
+                  CellReferenceHelper.getCellReference(cv) +
                   " because it is part of the shared cell validation group " +
                   CellReferenceHelper.getCellReference(dvp.getFirstColumn(),
                                                        dvp.getFirstRow()) +
@@ -1043,7 +1051,7 @@ class WritableSheetImpl implements WritableSheet
     if (curSharedValidation)
     {
       WritableCellFeatures wcf = cell.getWritableCellFeatures();
-      
+
       if (wcf == null)
       {
         wcf = new WritableCellFeatures();
@@ -1064,10 +1072,10 @@ class WritableSheetImpl implements WritableSheet
     cv.setCellDetails(formatRecords, sharedStrings, this);
   }
 
-  /** 
+  /**
    * Gets the row record at the specified row number, growing the
    * array as needs dictate
-   * 
+   *
    * @param row the row number we are interested in
    * @return the row record at the specified row
    * @exception RowsExceededException
@@ -1102,7 +1110,7 @@ class WritableSheetImpl implements WritableSheet
 
   /**
    * Gets the row record for the specified row
-   * 
+   *
    * @param r the row
    * @return the row record
    */
@@ -1133,7 +1141,7 @@ class WritableSheetImpl implements WritableSheet
       cir = i.next();
 
       if (cir.getColumn() >= c)
-        stop = true;    
+        stop = true;
     }
 
     if (!stop)
@@ -1144,7 +1152,7 @@ class WritableSheetImpl implements WritableSheet
 
   /**
    * Sets the name of this worksheet
-   * 
+   *
    * @param n the name of this sheet
    */
   @Override
@@ -1155,7 +1163,7 @@ class WritableSheetImpl implements WritableSheet
 
   /**
    * Sets the hidden status of this sheet
-   * 
+   *
    * @param h the hiden flag
    * @deprecated Use the settings bean instead
    */
@@ -1167,7 +1175,7 @@ class WritableSheetImpl implements WritableSheet
 
   /**
    * Indicates whether or not this sheet is protected
-   * 
+   *
    * @param prot protected flag
    * @deprecated Use the settings bean instead
    */
@@ -1185,10 +1193,10 @@ class WritableSheetImpl implements WritableSheet
   {
     settings.setSelected();
   }
-  
+
   /**
    * Retrieves the hidden status of this sheet
-   * 
+   *
    * @return TRUE if hidden, FALSE otherwise
    * @deprecated Use the sheet settings bean instead
    */
@@ -1200,7 +1208,7 @@ class WritableSheetImpl implements WritableSheet
 
   /**
    * Sets the width (in characters) for a particular column in this sheet
-   * 
+   *
    * @param col the column whose width to set
    * @param width the width of the column in characters
    */
@@ -1213,9 +1221,9 @@ class WritableSheetImpl implements WritableSheet
   }
 
   /**
-   * Sets the width (in characters) and format options for a 
+   * Sets the width (in characters) and format options for a
    * particular column in this sheet
-   * 
+   *
    * @param col the column to set
    * @param width the width in characters
    * @param format the formt details for the column
@@ -1229,7 +1237,7 @@ class WritableSheetImpl implements WritableSheet
     setColumnView(col, cv);
   }
 
-  /** 
+  /**
    * Sets the view for this column
    *
    * @param col the column on which to set the view
@@ -1251,7 +1259,7 @@ class WritableSheetImpl implements WritableSheet
       {
         formatRecords.addStyle(xfr);
       }
-      
+
       int width = view.depUsed() ? view.getDimension() * 256 : view.getSize();
 
       if (view.isAutosize())
@@ -1259,8 +1267,8 @@ class WritableSheetImpl implements WritableSheet
         autosizedColumns.add(col);
       }
 
-      ColumnInfoRecord cir = new ColumnInfoRecord(col, 
-                                                  width, 
+      ColumnInfoRecord cir = new ColumnInfoRecord(col,
+                                                  width,
                                                   xfr);
 
       if (view.isHidden())
@@ -1332,7 +1340,7 @@ class WritableSheetImpl implements WritableSheet
    * @deprecated use the override which takes a CellView object
    */
   @Override
-  public void setRowView(int row, int height, 
+  public void setRowView(int row, int height,
                          boolean collapsed)
                          throws RowsExceededException
   {
@@ -1384,11 +1392,11 @@ class WritableSheetImpl implements WritableSheet
   }
 
   /**
-   * Writes out this sheet.  This functionality is delegated off to the 
+   * Writes out this sheet.  This functionality is delegated off to the
    * SheetWriter class in order to reduce the bloated nature of this source
    * file
    *
-   * @exception IOException 
+   * @exception IOException
    */
   public void write() throws IOException
   {
@@ -1403,11 +1411,11 @@ class WritableSheetImpl implements WritableSheet
       autosizeColumns();
     }
 
-    sheetWriter.setWriteData(rows, 
-                             rowBreaks, 
+    sheetWriter.setWriteData(rows,
+                             rowBreaks,
                              columnBreaks,
-                             hyperlinks, 
-                             mergedCells, 
+                             hyperlinks,
+                             mergedCells,
                              columnFormats,
                              maxRowOutlineLevel,
                              maxColumnOutlineLevel);
@@ -1419,13 +1427,13 @@ class WritableSheetImpl implements WritableSheet
     sheetWriter.setDataValidation(dataValidation, validatedCells);
     sheetWriter.setConditionalFormats(conditionalFormats);
     sheetWriter.setAutoFilter(autoFilter);
-    
+
     sheetWriter.write();
   }
 
   /**
    * Copies the specified sheet, row by row and cell by cell
-   * 
+   *
    * @param s the sheet to copy
    */
   void copy(Sheet s)
@@ -1459,7 +1467,7 @@ class WritableSheetImpl implements WritableSheet
 
   /**
    * Copies the specified sheet, row by row and cell by cell
-   * 
+   *
    * @param s the sheet to copy
    */
   void copy(WritableSheet s)
@@ -1565,10 +1573,10 @@ class WritableSheetImpl implements WritableSheet
 
   /**
    * Removes the specified hyperlink.  Note that if you merely set the
-   * cell contents to be an Empty cell, then the cells containing the 
+   * cell contents to be an Empty cell, then the cells containing the
    * hyperlink will still be active.  The contents of the cell which
    * activate the hyperlink are removed.
-   * The hyperlink passed in must be a hyperlink retrieved using the 
+   * The hyperlink passed in must be a hyperlink retrieved using the
    * getHyperlinks method
    *
    * @param h the hyperlink to remove.
@@ -1583,12 +1591,12 @@ class WritableSheetImpl implements WritableSheet
 
   /**
    * Removes the specified hyperlink.  Note that if you merely set the
-   * cell contents to be an Empty cell, then the cells containing the 
+   * cell contents to be an Empty cell, then the cells containing the
    * hyperlink will still be active.
-   * If the preserveLabel field is set, the cell contents of the 
+   * If the preserveLabel field is set, the cell contents of the
    * hyperlink are preserved, although the hyperlink is deactivated.  If
    * this value is FALSE, the cell contents are removed
-   * The hyperlink passed in must be a hyperlink retrieved using the 
+   * The hyperlink passed in must be a hyperlink retrieved using the
    * getHyperlinks method
    *
    * @param h the hyperlink to remove.
@@ -1612,13 +1620,13 @@ class WritableSheetImpl implements WritableSheet
 
   /**
    * Adds the specified hyperlink
-   * 
+   *
    * @param the hyperlink
    * @exception WriteException
    * @exception RowsExceededException
    */
   @Override
-  public void addHyperlink(WritableHyperlink h) 
+  public void addHyperlink(WritableHyperlink h)
     throws WriteException, RowsExceededException
   {
     // First set the label on the sheet
@@ -1658,11 +1666,11 @@ class WritableSheetImpl implements WritableSheet
     }
     else
     {
-      Label l = new Label(h.getColumn(), h.getRow(), contents, 
+      Label l = new Label(h.getColumn(), h.getRow(), contents,
                           WritableWorkbook.HYPERLINK_STYLE);
       addCell(l);
     }
-    
+
     // Set all other cells within range to be empty
     for (int i = h.getRow(); i <= h.getLastRow(); i++)
       for (int j = h.getColumn(); j <= h.getLastColumn(); j++)
@@ -1676,7 +1684,7 @@ class WritableSheetImpl implements WritableSheet
   }
 
   /**
-   * Merges the specified cells.  Any clashes or intersections between 
+   * Merges the specified cells.  Any clashes or intersections between
    * merged cells are resolved when the spreadsheet is written out
    *
    * @param col1 the column number of the top left cell
@@ -1710,7 +1718,7 @@ class WritableSheetImpl implements WritableSheet
     return range;
   }
 
-  /** 
+  /**
    * Sets a row grouping
    *
    * @param row1 the first row of the group
@@ -1720,28 +1728,28 @@ class WritableSheetImpl implements WritableSheet
    * @exception RowsExceededException
    */
   @Override
-  public void setRowGroup(int row1, int row2, 
-                          boolean collapsed) 
-    throws WriteException, RowsExceededException 
+  public void setRowGroup(int row1, int row2,
+                          boolean collapsed)
+    throws WriteException, RowsExceededException
   {
     if (row2 < row1)
     {
-      logger.warn("Cannot merge cells - top and bottom rows incorrectly " + 
+      logger.warn("Cannot merge cells - top and bottom rows incorrectly " +
                   "specified");
     }
 
-    for (int i = row1; i <= row2; i++) 
+    for (int i = row1; i <= row2; i++)
     {
       RowRecord row = getRowRecord(i);
       numRows = Math.max(i+1, numRows);
       row.incrementOutlineLevel();
       row.setCollapsed(collapsed);
-      maxRowOutlineLevel = Math.max(maxRowOutlineLevel, 
+      maxRowOutlineLevel = Math.max(maxRowOutlineLevel,
                                     row.getOutlineLevel());
     }
   }
 
-  /** 
+  /**
    * Unsets a row grouping
    *
    * @param row1 the first row to unset
@@ -1750,8 +1758,8 @@ class WritableSheetImpl implements WritableSheet
    * @exception RowsExceededException
    */
   @Override
-  public void unsetRowGroup(int row1, int row2) 
-    throws WriteException, RowsExceededException 
+  public void unsetRowGroup(int row1, int row2)
+    throws WriteException, RowsExceededException
   {
     if (row2 < row1)
     {
@@ -1762,26 +1770,26 @@ class WritableSheetImpl implements WritableSheet
     // Make sure the spreadsheet is up to size
     if (row2 >= numRows)
     {
-      logger.warn("" + row2 + 
+      logger.warn("" + row2 +
                   " is greater than the sheet bounds");
       row2 = numRows - 1;
     }
 
-    for (int i = row1; i <= row2; i++) 
+    for (int i = row1; i <= row2; i++)
     {
       rows[i].decrementOutlineLevel();
     }
 
     // Recalculate the max outline level
     maxRowOutlineLevel = 0;
-    for (int i = rows.length; i-- > 0; ) 
+    for (int i = rows.length; i-- > 0; )
     {
-      maxRowOutlineLevel = Math.max(maxRowOutlineLevel, 
+      maxRowOutlineLevel = Math.max(maxRowOutlineLevel,
                                     rows[i].getOutlineLevel());
     }
   }
 
-  /** 
+  /**
    * Sets a column grouping
    *
    * @param col1 the first column of the group
@@ -1791,8 +1799,8 @@ class WritableSheetImpl implements WritableSheet
    * @exception RowsExceededException
    */
   @Override
-  public void setColumnGroup(int col1, int col2, boolean collapsed) 
-    throws WriteException, RowsExceededException 
+  public void setColumnGroup(int col1, int col2, boolean collapsed)
+    throws WriteException, RowsExceededException
   {
     if (col2 < col1)
     {
@@ -1800,7 +1808,7 @@ class WritableSheetImpl implements WritableSheet
                   "specified");
     }
 
-    for (int i = col1; i <= col2; i++) 
+    for (int i = col1; i <= col2; i++)
     {
       ColumnInfoRecord cir = getColumnInfo(i);
 
@@ -1814,12 +1822,12 @@ class WritableSheetImpl implements WritableSheet
 
       cir.incrementOutlineLevel();
       cir.setCollapsed(collapsed);
-      maxColumnOutlineLevel = Math.max(maxColumnOutlineLevel, 
+      maxColumnOutlineLevel = Math.max(maxColumnOutlineLevel,
                                        cir.getOutlineLevel());
     }
   }
 
-  /** 
+  /**
    * Unsets a column grouping
    *
    * @param col1 the first column to unset
@@ -1828,8 +1836,8 @@ class WritableSheetImpl implements WritableSheet
    * @exception RowsExceededException
    */
   @Override
-  public void unsetColumnGroup(int col1, int col2) 
-    throws WriteException, RowsExceededException 
+  public void unsetColumnGroup(int col1, int col2)
+    throws WriteException, RowsExceededException
   {
     if (col2 < col1)
     {
@@ -1837,18 +1845,18 @@ class WritableSheetImpl implements WritableSheet
                   "specified");
     }
 
-    for (int i = col1; i <= col2; i++) 
+    for (int i = col1; i <= col2; i++)
     {
       ColumnInfoRecord cir = getColumnInfo(i);
       cir.decrementOutlineLevel();
     }
-    
+
     // Recalculate the max outline level
     maxColumnOutlineLevel = 0;
-    for (Iterator<ColumnInfoRecord> it = columnFormats.iterator(); it.hasNext(); ) 
+    for (Iterator<ColumnInfoRecord> it = columnFormats.iterator(); it.hasNext(); )
     {
       ColumnInfoRecord cir = it.next();
-      maxColumnOutlineLevel = Math.max(maxColumnOutlineLevel, 
+      maxColumnOutlineLevel = Math.max(maxColumnOutlineLevel,
                                        cir.getOutlineLevel());
     }
   }
@@ -1939,7 +1947,7 @@ class WritableSheetImpl implements WritableSheet
    * @deprecated Use the SheetSettings bean
    */
   @Override
-  public void setPageSetup(PageOrientation p, PaperSize ps, 
+  public void setPageSetup(PageOrientation p, PaperSize ps,
                            double hm, double fm)
   {
     settings.setPaperSize(ps);
@@ -1948,7 +1956,7 @@ class WritableSheetImpl implements WritableSheet
     settings.setFooterMargin(fm);
   }
 
-  /** 
+  /**
    * Gets the settings for this sheet
    *
    * @return the page settings bean
@@ -1969,7 +1977,7 @@ class WritableSheetImpl implements WritableSheet
 
   /**
    * Forces a page break at the specified row
-   * 
+   *
    * @param row the row to break at
    */
   @Override
@@ -1980,7 +1988,7 @@ class WritableSheetImpl implements WritableSheet
 
   /**
    * Forces a page break at the specified column
-   * 
+   *
    * @param col the column to break at
    */
   @Override
@@ -2013,17 +2021,17 @@ class WritableSheetImpl implements WritableSheet
 
   /**
    * Check all the merged cells for borders.  Although in an OO sense the
-   * logic should belong in this class, in order to reduce the bloated 
+   * logic should belong in this class, in order to reduce the bloated
    * nature of the source code for this object this logic has been delegated
    * to the SheetWriter
    */
   void checkMergedBorders()
   {
-    sheetWriter.setWriteData(rows, 
-                             rowBreaks, 
+    sheetWriter.setWriteData(rows,
+                             rowBreaks,
                              columnBreaks,
-                             hyperlinks, 
-                             mergedCells, 
+                             hyperlinks,
+                             mergedCells,
                              columnFormats,
                              maxRowOutlineLevel,
                              maxColumnOutlineLevel);
@@ -2047,8 +2055,8 @@ class WritableSheetImpl implements WritableSheet
    * @param fontMapping the index mapping for fonts
    * @param formatMapping the index mapping for formats
    */
-  void rationalize(IndexMapping xfMapping, 
-                   IndexMapping fontMapping, 
+  void rationalize(IndexMapping xfMapping,
+                   IndexMapping fontMapping,
                    IndexMapping formatMapping)
   {
     // Rationalize the column formats
@@ -2063,7 +2071,7 @@ class WritableSheetImpl implements WritableSheet
     // Rationalize any data that appears on the charts
     Chart[] charts = getCharts();
     for (Chart chart : charts)
-      chart.rationalize(xfMapping, fontMapping, formatMapping);    
+      chart.rationalize(xfMapping, fontMapping, formatMapping);
   }
 
   /**
@@ -2118,7 +2126,7 @@ class WritableSheetImpl implements WritableSheet
 
   /**
    * Accessor for the chart only method
-   * 
+   *
    * @return TRUE if this is a chart only, FALSE otherwise
    */
   boolean isChartOnly()
@@ -2210,9 +2218,9 @@ class WritableSheetImpl implements WritableSheet
     {
       String fileName = imageFile.getFileName().toString();
       int fileTypeIndex = fileName.lastIndexOf('.');
-      fileType = fileTypeIndex != -1 ? 
+      fileType = fileTypeIndex != -1 ?
         fileName.substring(fileTypeIndex+1) : "";
-      
+
       for (int i = 0 ; i < imageTypes.length && !supported ; i++)
       {
         if (fileType.equalsIgnoreCase(imageTypes[i]))
@@ -2318,7 +2326,7 @@ class WritableSheetImpl implements WritableSheet
       String newname = n.replace(illegalSheetNameCharacters[i], '@');
       if (n != newname)
       {
-        logger.warn(illegalSheetNameCharacters[i] + 
+        logger.warn(illegalSheetNameCharacters[i] +
         " is not a valid character within a sheet name - replacing");
       }
       n = newname;
@@ -2371,7 +2379,7 @@ class WritableSheetImpl implements WritableSheet
 
       if (!result)
       {
-        logger.warn("Could not remove validated cell " + 
+        logger.warn("Could not remove validated cell " +
                     CellReferenceHelper.getCellReference(cv));
       }
     }
@@ -2475,13 +2483,13 @@ class WritableSheetImpl implements WritableSheet
       {
         String contents = cell.getContents();
         Font font = cell.getCellFormat().getFont();
-        
+
         Font activeFont = font.equals(defaultFont) ? columnFont : font;
 
         int pointSize = activeFont.getPointSize();
         int numChars = contents.length();
 
-        if (activeFont.isItalic() || 
+        if (activeFont.isItalic() ||
             activeFont.getBoldWeight() > 400) // magic value for normal bold
         {
           numChars += 2;
@@ -2494,7 +2502,7 @@ class WritableSheetImpl implements WritableSheet
     cir.setWidth(maxWidth / defaultFont.getPointSize());
   }
 
-  /** 
+  /**
    * Imports a sheet from a different workbook
    *
    * @param s the sheet to import
@@ -2527,15 +2535,15 @@ class WritableSheetImpl implements WritableSheet
   }
 
   /**
-   * Extend the data validation contained in the specified cell across and 
+   * Extend the data validation contained in the specified cell across and
    * downwards
    *
    * @param c the number of cells accross to apply this data validation
    * @param r the number of cells downwards to apply this data validation
    */
   @Override
-  public void applySharedDataValidation(WritableCell c, 
-                                        int extraCols, 
+  public void applySharedDataValidation(WritableCell c,
+                                        int extraCols,
                                         int extraRows)
     throws WriteException
   {
@@ -2544,8 +2552,8 @@ class WritableSheetImpl implements WritableSheet
         !c.getWritableCellFeatures().hasDataValidation())
     {
       logger.warn("Cannot extend data validation for " +
-                  CellReferenceHelper.getCellReference(c.getColumn(), 
-                                                       c.getRow()) + 
+                  CellReferenceHelper.getCellReference(c.getColumn(),
+                                                       c.getRow()) +
                   " as it has no data validation");
       return;
     }
@@ -2579,7 +2587,7 @@ class WritableSheetImpl implements WritableSheet
             logger.warn("Cannot apply data validation from " +
                         CellReferenceHelper.getCellReference(startColumn,
                                                              startRow) +
-                        " to " + 
+                        " to " +
                         CellReferenceHelper.getCellReference
                           (startColumn + extraCols,
                            startRow + extraRows) +
@@ -2594,7 +2602,7 @@ class WritableSheetImpl implements WritableSheet
 
     // Extend the range on the source data validation
     WritableCellFeatures sourceDataValidation = c.getWritableCellFeatures();
-    sourceDataValidation.getDVParser().extendCellValidation(extraCols, 
+    sourceDataValidation.getDVParser().extendCellValidation(extraCols,
                                                             extraRows);
 
     // Go through all the additional cells and add the data validation cell
@@ -2610,7 +2618,7 @@ class WritableSheetImpl implements WritableSheet
         }
 
         WritableCell c2 = rowrec.getCell(x);
-        
+
         // Check that the target cell does not have any data validation
         if (c2 == null)
         {
@@ -2641,8 +2649,8 @@ class WritableSheetImpl implements WritableSheet
   }
 
  /**
-   * Remove the shared data validation from multiple cells.  The cell passed 
-   * in is the top left cell.  The data validation is removed from this 
+   * Remove the shared data validation from multiple cells.  The cell passed
+   * in is the top left cell.  The data validation is removed from this
    * cell and all cells which share the same validation.
    *
    * @param cell the top left cell containing the shared data validation
@@ -2659,7 +2667,7 @@ class WritableSheetImpl implements WritableSheet
     }
 
     DVParser dvp = wcf.getDVParser();
-    
+
     // If the cell is not part of an extended validation, then simply call
     // the atomic remove validation from the cell features
     if (!dvp.extendedCellsValidation())
@@ -2693,7 +2701,7 @@ class WritableSheetImpl implements WritableSheet
       for (int x = dvp.getFirstColumn(); x <= dvp.getLastColumn(); x++)
       {
         CellValue c2 = rows[y].getCell(x);
-        
+
         // It's possible that some cells in the shared data range might
         // be null eg. in the event of an insertRow or insertColumn
         if (c2 != null)
@@ -2718,7 +2726,7 @@ class WritableSheetImpl implements WritableSheet
   private void removeCell(int row, int column) throws RowsExceededException {
     if (row >= rows.length)
       return;
-    
+
     RowRecord rowrec = getRowRecord(row);
     rowrec.removeCell(column);
   }
