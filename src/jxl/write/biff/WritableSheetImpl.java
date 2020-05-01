@@ -20,6 +20,7 @@
 package jxl.write.biff;
 
 import java.io.IOException;
+import static java.lang.Math.max;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -645,11 +646,8 @@ class WritableSheetImpl implements WritableSheet
     numRows++;
 
     for (DrawingGroupObject dgo : drawings)
-      if (dgo instanceof Drawing) {
-        var drawing = (Drawing) dgo;
-        if (drawing.getRow() >= row)
-          drawing.setY(drawing.getRow() + 1);
-      }
+      if (dgo.getY() >= row)
+        dgo.setY(dgo.getY() + 1);
 
   }
 
@@ -750,11 +748,8 @@ class WritableSheetImpl implements WritableSheet
     numColumns++;
 
     for (DrawingGroupObject dgo : drawings)
-      if (dgo instanceof Drawing) {
-        var drawing = (Drawing) dgo;
-        if (drawing.getColumn() >= col)
-          drawing.setX(drawing.getColumn() + 1);
-      }
+      if (dgo.getX() >= col)
+        dgo.setX(dgo.getX() + 1);
 
   }
 
@@ -873,6 +868,10 @@ class WritableSheetImpl implements WritableSheet
     }
 
     numColumns--;
+
+    for (DrawingGroupObject dgo : drawings)
+      if (dgo.getX() >= col)
+        dgo.setX(max(dgo.getX() - 1, 0));
   }
 
   /**
@@ -947,20 +946,12 @@ class WritableSheetImpl implements WritableSheet
       workbook.rowRemoved(this, row);
     }
 
-    // Adjust any drawings
-    /*
-    if (drawings != null)
-    {
-      for (Iterator drawingIt = drawings.iterator() ; drawingIt.hasNext() ; )
-      {
-        DrawingGroupObject dgo = (DrawingGroupObject) drawingIt.next();
-        dgo.removeRow(row);
-      }
-    }
-    */
-
     // Adjust the maximum row record
     numRows--;
+
+    for (DrawingGroupObject dgo : drawings)
+      if (dgo.getY() >= row)
+        dgo.setY(max(dgo.getY() - 1, 0));
   }
 
   /**
