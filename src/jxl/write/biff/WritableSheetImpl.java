@@ -896,13 +896,10 @@ class WritableSheetImpl implements WritableSheet
     rows.remove(row);
 
     // Decrement all the internal row numbers by one
-    for (int i = row; i < numRows; i++)
-    {
-      if (rows.get(i) != null)
-      {
-        rows.get(i).decrementRow();
-      }
-    }
+    rows.stream()
+            .skip(row)
+            .filter(Objects::nonNull)
+            .forEach(RowRecord::decrementRow);
 
     // Adjust any hyperlinks
     Iterator<WritableHyperlink> i = hyperlinks.iterator();
