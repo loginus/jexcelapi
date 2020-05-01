@@ -767,6 +767,14 @@ class WritableSheetImpl implements WritableSheet
     }
 
     numColumns++;
+
+    for (DrawingGroupObject dgo : drawings)
+      if (dgo instanceof Drawing) {
+        var drawing = (Drawing) dgo;
+        if (drawing.getColumn() >= col)
+          drawing.setX(drawing.getColumn() + 1);
+      }
+
   }
 
   /**
