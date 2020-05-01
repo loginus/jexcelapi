@@ -57,7 +57,7 @@ class WritableSheetImpl implements WritableSheet
   /**
    * The rows within this sheet
    */
-  private RowRecord[] rows;
+  private List<RowRecord> rows;
   /**
    * A handle to workbook format records
    */
@@ -196,11 +196,6 @@ class WritableSheetImpl implements WritableSheet
   private final WritableWorkbookImpl workbook;
 
   /**
-   * The amount by which to grow the rows array
-   */
-  private final static int rowGrowSize = 10;
-
-  /**
    * The maximum number of rows excel allows in a worksheet
    */
   private final static int numRowsPerSheet = 65536;
@@ -282,7 +277,7 @@ class WritableSheetImpl implements WritableSheet
   {
     name = validateName(n);
     outputFile = of;
-    rows = new RowRecord[0];
+    rows = new ArrayList<>();
     numRows = 0;
     numColumns = 0;
     chartOnly = false;
@@ -364,9 +359,9 @@ class WritableSheetImpl implements WritableSheet
   {
     WritableCell c = null;
 
-    if (row < rows.length && rows[row] != null)
+    if (row < rows.size() && rows.get(row) != null)
     {
-      c = rows[row].getCell(column);
+      c = rows.get(row).getCell(column);
     }
 
     if (c == null)
@@ -591,29 +586,15 @@ class WritableSheetImpl implements WritableSheet
     }
 
     // Create a new array to hold the new rows.  Grow it if need be
-    RowRecord[] oldRows = rows;
 
-    if (numRows == rows.length)
-    {
-      rows = new RowRecord[oldRows.length + rowGrowSize];
-    }
-    else
-    {
-      rows = new RowRecord[oldRows.length];
-    }
-
-    // Copy in everything up to the new row
-    System.arraycopy(oldRows, 0, rows, 0, row);
-
-    // Copy in the remaining rows
-    System.arraycopy(oldRows, row, rows, row+1, numRows - row);
+    rows.add(row, null);
 
     // Increment all the internal row number by one
     for (int i = row+1; i <= numRows; i++)
     {
-      if (rows[i] != null)
+      if (rows.get(i) != null)
       {
-        rows[i].incrementRow();
+        rows.get(i).incrementRow();
       }
     }
 
@@ -691,9 +672,9 @@ class WritableSheetImpl implements WritableSheet
     // Iterate through all the row records adding in the column
     for (int i = 0 ; i < numRows ; i++)
     {
-      if (rows[i] != null)
+      if (rows.get(i) != null)
       {
-        rows[i].insertColumn(col);
+        rows.get(i).insertColumn(col);
       }
     }
 
@@ -794,9 +775,9 @@ class WritableSheetImpl implements WritableSheet
     // Iterate through all the row records removing the column
     for (int i = 0 ; i < numRows ; i++)
     {
-      if (rows[i] != null)
+      if (rows.get(i) != null)
       {
-        rows[i].removeColumn(col);
+        rows.get(i).removeColumn(col);
       }
     }
 
@@ -912,23 +893,14 @@ class WritableSheetImpl implements WritableSheet
       return;
     }
 
-    // Create a new array to hold the new rows.  Grow it if need be
-    RowRecord[] oldRows = rows;
-
-    rows = new RowRecord[oldRows.length];
-
-    // Copy in everything up to the row to be removed
-    System.arraycopy(oldRows, 0, rows, 0, row);
-
-    // Copy in the remaining rows
-    System.arraycopy(oldRows, row + 1, rows, row, numRows - (row + 1));
+    rows.remove(row);
 
     // Decrement all the internal row numbers by one
     for (int i = row; i < numRows; i++)
     {
-      if (rows[i] != null)
+      if (rows.get(i) != null)
       {
-        rows[i].decrementRow();
+        rows.get(i).decrementRow();
       }
     }
 
@@ -1096,21 +1068,15 @@ class WritableSheetImpl implements WritableSheet
     }
 
     // Grow the array of rows if needs be
-    // Thanks to Brendan for spotting the flaw in merely adding on the
-    // grow size
-    if (row >= rows.length)
-    {
-      RowRecord[] oldRows = rows;
-      rows = new RowRecord[Math.max(oldRows.length + rowGrowSize, row+1)];
-      System.arraycopy(oldRows, 0, rows, 0, oldRows.length);
-    }
+    while (row >= rows.size())
+      rows.add(null);
 
-    RowRecord rowrec = rows[row];
+    RowRecord rowrec = rows.get(row);
 
     if (rowrec == null)
     {
       rowrec = new RowRecord(row, this);
-      rows[row] = rowrec;
+      rows.set(row, rowrec);
     }
 
     return rowrec;
@@ -1124,12 +1090,12 @@ class WritableSheetImpl implements WritableSheet
    */
   RowRecord getRowInfo(int r)
   {
-    if (r < 0 || r > rows.length)
+    if (r < 0 || r > rows.size())
     {
       return null;
     }
 
-    return rows[r];
+    return rows.get(r);
   }
 
   /**
@@ -1419,7 +1385,7 @@ class WritableSheetImpl implements WritableSheet
       autosizeColumns();
     }
 
-    sheetWriter.setWriteData(rows,
+    sheetWriter.setWriteData(rows.toArray(RowRecord[]::new),
                              rowBreaks,
                              columnBreaks,
                              hyperlinks,
@@ -1486,7 +1452,7 @@ class WritableSheetImpl implements WritableSheet
     WritableSheetCopier sc = new WritableSheetCopier(s, this);
     sc.setColumnFormats(si.columnFormats, columnFormats);
     sc.setMergedCells(si.mergedCells, mergedCells);
-    sc.setRows(si.rows);
+    sc.setRows(si.rows.toArray(RowRecord[]::new));
     sc.setRowBreaks(si.rowBreaks, rowBreaks);
     sc.setColumnBreaks(si.columnBreaks, columnBreaks);
     sc.setDataValidation(si.dataValidation);
@@ -1621,8 +1587,8 @@ class WritableSheetImpl implements WritableSheet
     {
       // Set the cell contents for the hyperlink - including any formatting
       // information - to be empty
-      Assert.verify(rows.length > h.getRow() && rows[h.getRow()] != null);
-      rows[h.getRow()].removeCell(h.getColumn());
+      Assert.verify(rows.size() > h.getRow() && rows.get(h.getRow()) != null);
+      rows.get(h.getRow()).removeCell(h.getColumn());
     }
   }
 
@@ -1684,8 +1650,8 @@ class WritableSheetImpl implements WritableSheet
       for (int j = h.getColumn(); j <= h.getLastColumn(); j++)
         if (i != h.getRow() && j != h.getColumn())
           // Set the cell to be empty
-          if (rows.length < h.getLastColumn() && rows[i] != null)
-            rows[i].removeCell(j);
+          if (rows.size() < h.getLastColumn() && rows.get(i) != null)
+            rows.get(i).removeCell(j);
 
     ((HyperlinkRecord) h).initialize(this);
     hyperlinks.add(h);
@@ -1785,15 +1751,15 @@ class WritableSheetImpl implements WritableSheet
 
     for (int i = row1; i <= row2; i++)
     {
-      rows[i].decrementOutlineLevel();
+      rows.get(i).decrementOutlineLevel();
     }
 
     // Recalculate the max outline level
     maxRowOutlineLevel = 0;
-    for (int i = rows.length; i-- > 0; )
+    for (int i = rows.size(); i-- > 0; )
     {
       maxRowOutlineLevel = Math.max(maxRowOutlineLevel,
-                                    rows[i].getOutlineLevel());
+                                    rows.get(i).getOutlineLevel());
     }
   }
 
@@ -2035,7 +2001,7 @@ class WritableSheetImpl implements WritableSheet
    */
   void checkMergedBorders()
   {
-    sheetWriter.setWriteData(rows,
+    sheetWriter.setWriteData(rows.toArray(RowRecord[]::new),
                              rowBreaks,
                              columnBreaks,
                              hyperlinks,
@@ -2482,9 +2448,9 @@ class WritableSheetImpl implements WritableSheet
     for (int i = 0 ; i < numRows; i++)
     {
       Cell cell = null;
-      if (rows[i] != null)
+      if (rows.get(i) != null)
       {
-        cell = rows[i].getCell(col);
+        cell = rows.get(i).getCell(col);
       }
 
       if (cell != null)
@@ -2573,9 +2539,9 @@ class WritableSheetImpl implements WritableSheet
     int endRow = Math.min(numRows - 1, startRow + extraRows);
     for (int y = startRow; y <= endRow; y++)
     {
-      if (rows[y] != null)
+      if (rows.get(y) != null)
       {
-        int endCol = Math.min(rows[y].getMaxColumn() -1,
+        int endCol = Math.min(rows.get(y).getMaxColumn() -1,
                              startColumn + extraCols);
         for (int x = startColumn; x <= endCol; x++)
         {
@@ -2585,7 +2551,7 @@ class WritableSheetImpl implements WritableSheet
             continue; // continue statements - they're no better than gotos
           }
 
-          WritableCell c2 = rows[y].getCell(x);
+          WritableCell c2 = rows.get(y).getCell(x);
 
           // Check that the target cell does not have any data validation
           if (c2 != null &&
@@ -2708,7 +2674,7 @@ class WritableSheetImpl implements WritableSheet
     {
       for (int x = dvp.getFirstColumn(); x <= dvp.getLastColumn(); x++)
       {
-        CellValue c2 = rows[y].getCell(x);
+        CellValue c2 = rows.get(y).getCell(x);
 
         // It's possible that some cells in the shared data range might
         // be null eg. in the event of an insertRow or insertColumn
@@ -2732,7 +2698,7 @@ class WritableSheetImpl implements WritableSheet
   }
 
   private void removeCell(int row, int column) throws RowsExceededException {
-    if (row >= rows.length)
+    if (row >= rows.size())
       return;
 
     RowRecord rowrec = getRowRecord(row);
