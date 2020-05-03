@@ -58,7 +58,7 @@ class WritableSheetImpl implements WritableSheet
   /**
    * The rows within this sheet
    */
-  private List<RowRecord> rows;
+  private final List<RowRecord> rows;
   /**
    * A handle to workbook format records
    */
@@ -199,7 +199,7 @@ class WritableSheetImpl implements WritableSheet
   /**
    * The maximum number of rows excel allows in a worksheet
    */
-  private final static int numRowsPerSheet = 65536;
+  final static int MAX_ROWS_PER_SHEET = 65536;
 
   /**
    * The maximum number of characters permissible for a sheet name
@@ -579,14 +579,23 @@ class WritableSheetImpl implements WritableSheet
    * @param row the row to insert
    */
   @Override
-  public void insertRow(int row)
+  public void insertRow(int row) throws RowsExceededException
   {
-    if (row < 0 || row >= numRows)
-    {
-      return;
-    }
+    if (numRows >= MAX_ROWS_PER_SHEET)
+      throw new RowsExceededException();
 
-    // Create a new array to hold the new rows.  Grow it if need be
+    if (row < 0)
+      return;
+
+    // drawings are not tracked by numRows and have to be managed outside of
+    // the RowRecords
+    for (DrawingGroupObject dgo : drawings)
+      if (dgo.getY() >= row)
+        if (dgo.getY() + dgo.getHeight() + 1 < MAX_ROWS_PER_SHEET)
+          dgo.setY(dgo.getY() + 1);
+
+    if (row >= numRows)
+      return;
 
     rows.add(row, null);
 
@@ -644,11 +653,6 @@ class WritableSheetImpl implements WritableSheet
 
     // Adjust the maximum row record
     numRows++;
-
-    for (DrawingGroupObject dgo : drawings)
-      if (dgo.getY() >= row)
-        dgo.setY(dgo.getY() + 1);
-
   }
 
   /**
@@ -1050,7 +1054,7 @@ class WritableSheetImpl implements WritableSheet
    */
   RowRecord getRowRecord(int row) throws RowsExceededException
   {
-    if (row >= numRowsPerSheet)
+    if (row >= MAX_ROWS_PER_SHEET)
     {
       throw new RowsExceededException();
     }

@@ -39,7 +39,7 @@ public interface WritableSheet extends Sheet
    * class of RowsExceededException
    *
    * @param cell the cell to add
-   * @exception jxl.write..WriteException
+   * @exception jxl.write.WriteException
    * @exception jxl.write.biff.RowsExceededException
    */
   public void addCell(WritableCell cell)
@@ -168,12 +168,13 @@ public interface WritableSheet extends Sheet
   public WritableHyperlink[] getWritableHyperlinks();
 
   /**
-   * Inserts a blank row into this spreadsheet.  If the row is out of range
+   * Inserts a blank row into this spreadsheet. If the row is out of range
    * of the rows in the sheet, then no action is taken
    *
    * @param row the row to insert
+   * @throws jxl.write.biff.RowsExceededException
    */
-  public void insertRow(int row);
+  public void insertRow(int row) throws RowsExceededException;
 
   /**
    * Inserts a blank column into this spreadsheet.  If the column is out of
@@ -214,7 +215,7 @@ public interface WritableSheet extends Sheet
   public Range mergeCells(int col1, int row1, int col2, int row2)
     throws WriteException, RowsExceededException;
 
-  /** 
+  /**
    * Sets a row grouping
    *
    * @param row1 the first row of the group
@@ -226,7 +227,7 @@ public interface WritableSheet extends Sheet
   public void setRowGroup(int row1, int row2, boolean collapsed)
     throws WriteException, RowsExceededException;
 
-  /** 
+  /**
    * Unsets a row grouping
    *
    * @param row1 the first row to unset
@@ -237,7 +238,7 @@ public interface WritableSheet extends Sheet
   public void unsetRowGroup(int row1, int row2)
     throws WriteException, RowsExceededException;
 
-  /** 
+  /**
    * Sets a column grouping
    *
    * @param col1 the first column of the group
@@ -249,7 +250,7 @@ public interface WritableSheet extends Sheet
   public void setColumnGroup(int col1, int col2, boolean collapsed)
     throws WriteException, RowsExceededException;
 
-  /** 
+  /**
    * Unsets a column grouping
    *
    * @param col1 the first column to unset
@@ -259,7 +260,7 @@ public interface WritableSheet extends Sheet
    */
   public void unsetColumnGroup(int col1, int col2)
     throws WriteException, RowsExceededException;
-    
+
   /**
    * Unmerges the specified cells.  The Range passed in should be one that
    * has been previously returned as a result of the getMergedCells method
@@ -363,7 +364,7 @@ public interface WritableSheet extends Sheet
    * @param row the row to break at
    */
   public void addRowPageBreak(int row);
-  
+
   /**
    * Forces a page break at the specified column
    *
@@ -404,7 +405,7 @@ public interface WritableSheet extends Sheet
   public void removeImage(WritableImage wi);
 
   /**
-   * Extend the data validation contained in the specified cell across and 
+   * Extend the data validation contained in the specified cell across and
    * downwards.
    * NOTE:  The source cell (top left) must have been added to the sheet prior
    * to this method being called
@@ -412,12 +413,12 @@ public interface WritableSheet extends Sheet
    * @param col the number of cells accross to apply this data validation
    * @param row the number of cells downwards to apply this data validation
    */
-  public void applySharedDataValidation(WritableCell cell, int col, int row) 
+  public void applySharedDataValidation(WritableCell cell, int col, int row)
     throws WriteException;
 
   /**
-   * Remove the shared data validation from multiple cells.  The cell passed 
-   * in is the top left cell.  The data validation is removed from this 
+   * Remove the shared data validation from multiple cells.  The cell passed
+   * in is the top left cell.  The data validation is removed from this
    * cell and all cells which share the same validation.
    *
    * @param cell the top left cell containing the shared data validation
