@@ -887,7 +887,17 @@ class WritableSheetImpl implements WritableSheet
   @Override
   public void removeRow(int row)
   {
-    if (row < 0 || row >= numRows)
+    if (row < 0)
+      return;
+
+    // drawings are not tracked by numRows and have to be managed outside of
+    // the RowRecords
+    for (DrawingGroupObject dgo : drawings)
+      if (dgo.getY() >= row)
+        if (dgo.getY() + dgo.getHeight() - 1 >= 0)
+          dgo.setY(dgo.getY() - 1);
+
+    if (row >= numRows)
     {
       // Call rowRemoved anyway, to adjust the named cells
       if (workbookSettings.getFormulaAdjust())

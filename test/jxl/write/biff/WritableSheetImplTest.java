@@ -54,7 +54,7 @@ public class WritableSheetImplTest {
   }
 
   @Test
-  public void addingALineInAnAlmostFullSheet_MovesFollowingCellsDown() throws IOException, WriteException {
+  public void addingALineInAnAlmostFullSheet_MovesCellsToTheLastRow() throws IOException, WriteException {
     Label label = new Label(0, WritableSheetImpl.MAX_ROWS_PER_SHEET-2, "content");
     sheet.addCell(label);
     assertThat(label.getRow(), is(WritableSheetImpl.MAX_ROWS_PER_SHEET-2));
@@ -79,7 +79,26 @@ public class WritableSheetImplTest {
   }
 
   @Test
-  public void addingALine_MovesImagesDown() throws RowsExceededException {
+  public void removingALine_MovesFollowingCellsUp() throws IOException, WriteException {
+    Label label = new Label(0, 1, "content");
+    sheet.addCell(label);
+    assertThat(label.getRow(), is(1));
+    sheet.removeRow(0);
+    assertThat(label.getRow(), is(0));
+  }
+
+  @Test
+  public void removingALine_DoesntTouchTheCellsAbove() throws WriteException {
+    Label label = new Label(0, 0, "content");
+    sheet.addCell(label);
+    assertThat(label.getRow(), is(0));
+    sheet.addCell(new Label(0, 2, "beneath"));
+    sheet.removeRow(1);
+    assertThat(label.getRow(), is(0));
+  }
+
+  @Test
+  public void addingALine_MovesFollowingImagesDown() throws RowsExceededException, InterruptedException {
     WritableImage image = new WritableImage(0, 0, 1, 1, new byte[] {});
     sheet.addImage(image);
     assertThat(image.getY(), is(0d));
@@ -106,12 +125,30 @@ public class WritableSheetImplTest {
   }
 
   @Test
-  public void addingALine_AndAnImageIsAtTheSheetBottom_TheImageWillNotBeTouched() throws RowsExceededException, WriteException {
+  public void addingALine_AndAnImageIsAtTheSheetBottom_TheImageWillNotBeMoved() throws RowsExceededException, WriteException {
     WritableImage image = new WritableImage(0, WritableSheetImpl.MAX_ROWS_PER_SHEET - 2, 1, 1, new byte[] {});
     sheet.addImage(image);
     assertThat(image.getY(), is(WritableSheetImpl.MAX_ROWS_PER_SHEET - 2d));
     sheet.insertRow(0);
     assertThat(image.getY(), is(WritableSheetImpl.MAX_ROWS_PER_SHEET - 2d));
+  }
+
+  @Test
+  public void removingALine_MovesFollowingImagesUp() throws IOException, WriteException {
+    WritableImage image = new WritableImage(0, 1, 1, 1, new byte[] {});
+    sheet.addImage(image);
+    assertThat(image.getY(), is(1d));
+    sheet.removeRow(0);
+    assertThat(image.getY(), is(0d));
+  }
+
+  @Test
+  public void removingALine_DoesntTouchTheImagesAbove() throws WriteException {
+    WritableImage image = new WritableImage(0, 0, 1, 1, new byte[] {});
+    sheet.addImage(image);
+    assertThat(image.getRow(), is(0d));
+    sheet.removeRow(1);
+    assertThat(image.getRow(), is(0d));
   }
 
 }
