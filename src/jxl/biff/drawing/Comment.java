@@ -20,6 +20,7 @@
 package jxl.biff.drawing;
 
 import java.io.IOException;
+import java.util.*;
 
 import jxl.common.Assert;
 import jxl.common.Logger;
@@ -405,7 +406,7 @@ public class Comment implements DrawingGroupObject
       ClientAnchor clientAnchor = new ClientAnchor(column + 1.3,
                                                    Math.max(0, row - 0.6),
                                                    column + 1.3 + width,
-                                                   row + height, 
+                                                   row + height,
                                                    0x1);
 
       spContainer.add(clientAnchor);
@@ -850,7 +851,7 @@ public class Comment implements DrawingGroupObject
       else
       {
         commentText = StringHelper.getUnicodeString
-          (td, (td.length - 1) / 2, 1);
+          (td, 1, (td.length - 1) / 2);
       }
     }
 
@@ -862,8 +863,21 @@ public class Comment implements DrawingGroupObject
    *
    * @return the hash code
    */
-  public int hashCode()
+  @Override
+  public boolean equals(Object obj)
   {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    final Comment other = (Comment) obj;
+    return Objects.equals(this.commentText, other.commentText);
+  }
+
+  @Override
+  public int hashCode() {
     return commentText.hashCode();
   }
 

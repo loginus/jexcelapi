@@ -53,28 +53,11 @@ public class HeaderRecord extends RecordData
    * @param t the record data
    * @param ws the workbook settings
    */
-  HeaderRecord(Record t, WorkbookSettings ws)
+  HeaderRecord(Record t)
   {
     super(t);
-    byte[] data = getRecord().getData();
-
-    if (data.length == 0)
-    {
-      return;
-    }
-
-    int chars = IntegerHelper.getInt(data[0], data[1]);
-
-    boolean unicode = data[2] == 1;
-
-    if (unicode)
-    {
-      header = StringHelper.getUnicodeString(data, chars, 3);
-    }
-    else
-    {
-      header = StringHelper.getString(data, chars, 3, ws);
-    }
+    if (t.getData().length > 0)
+      header = StringHelper.readBiff8String(t.getData());
   }
 
   /**

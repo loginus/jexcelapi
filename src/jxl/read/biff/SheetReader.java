@@ -597,7 +597,7 @@ final class SheetReader
 
         case LABEL:
           addCell(workbookBof.isBiff8()
-                  ? new LabelRecord(r, formattingRecords, sheet, workbookSettings)
+                  ? new LabelRecord(r, formattingRecords, sheet)
                   : new LabelRecord(r, formattingRecords, sheet, workbookSettings,
                           LabelRecord.biff7));
           break;
@@ -669,7 +669,7 @@ final class SheetReader
 
         case HEADER: {
           HeaderRecord hr = workbookBof.isBiff8()
-                  ? new HeaderRecord(r, workbookSettings)
+                  ? new HeaderRecord(r)
                   : new HeaderRecord(r, workbookSettings, HeaderRecord.biff7);
           HeaderFooter header = new HeaderFooter(hr.getHeader());
           settings.setHeader(header);
@@ -678,7 +678,7 @@ final class SheetReader
 
         case FOOTER: {
           FooterRecord fr = workbookBof.isBiff8()
-                  ? new FooterRecord(r, workbookSettings)
+                  ? new FooterRecord(r)
                   : new FooterRecord(r, workbookSettings, FooterRecord.biff7);
           HeaderFooter footer = new HeaderFooter(fr.getFooter());
           settings.setFooter(footer);

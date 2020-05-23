@@ -168,7 +168,7 @@ public class FontRecord extends WritableRecordData implements Font
     }
     else if (data[15] == 1)
     {
-      name = StringHelper.getUnicodeString(data, numChars, 16);
+      name = StringHelper.getUnicodeString(data, 16, numChars);
     }
     else
     {
@@ -222,7 +222,7 @@ public class FontRecord extends WritableRecordData implements Font
   protected FontRecord(Font f)
   {
     super(Type.FONT);
-   
+
     Assert.verify(f != null);
 
     pointHeight = f.getPointSize();

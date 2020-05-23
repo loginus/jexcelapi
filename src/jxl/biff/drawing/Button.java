@@ -20,6 +20,7 @@
 package jxl.biff.drawing;
 
 import java.io.IOException;
+import java.util.*;
 
 import jxl.common.Assert;
 import jxl.common.Logger;
@@ -806,7 +807,7 @@ public class Button implements DrawingGroupObject
       else
       {
         commentText = StringHelper.getUnicodeString
-          (td, (td.length - 1) / 2, 1);
+          (td, 1, (td.length - 1) / 2);
       }
     }
 
@@ -818,8 +819,21 @@ public class Button implements DrawingGroupObject
    *
    * @return the hash code
    */
-  public int hashCode()
+  @Override
+  public boolean equals(Object obj)
   {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    final Button other = (Button) obj;
+    return Objects.equals(this.commentText, other.commentText);
+  }
+
+  @Override
+  public int hashCode() {
     return commentText.hashCode();
   }
 

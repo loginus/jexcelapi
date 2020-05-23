@@ -354,7 +354,7 @@ public class DVParser
     }
     else if (length > 0)
     {
-      promptTitle = StringHelper.getUnicodeString(data, length, pos + 3);
+      promptTitle = StringHelper.getUnicodeString(data, pos + 3, length);
       pos += length * 2 + 3;
     }
     else
@@ -370,7 +370,7 @@ public class DVParser
     }
     else if (length > 0)
     {
-      errorTitle = StringHelper.getUnicodeString(data, length, pos + 3);
+      errorTitle = StringHelper.getUnicodeString(data, pos + 3, length);
       pos += length * 2 + 3;
     }
     else
@@ -386,7 +386,7 @@ public class DVParser
     }
     else if (length > 0)
     {
-      promptText = StringHelper.getUnicodeString(data, length, pos + 3);
+      promptText = StringHelper.getUnicodeString(data, pos + 3, length);
       pos += length * 2 + 3;
     }
     else
@@ -402,7 +402,7 @@ public class DVParser
     }
     else if (length > 0)
     {
-      errorText = StringHelper.getUnicodeString(data, length, pos + 3);
+      errorText = StringHelper.getUnicodeString(data, pos + 3, length);
       pos += length * 2 + 3;
     }
     else

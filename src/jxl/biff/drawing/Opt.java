@@ -126,8 +126,8 @@ class Opt extends EscherAtom
     for (Property p : properties)
       if (p.complex)
       {
-        p.stringValue = StringHelper.getUnicodeString(bytes, p.value / 2,
-                pos);
+        p.stringValue = StringHelper.getUnicodeString(bytes,
+                pos, p.value / 2);
         pos += p.value;
       }
   }

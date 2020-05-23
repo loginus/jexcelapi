@@ -91,7 +91,7 @@ class FormulaRecord extends CellValue
       {
         // It is a shared string formula
         formula = new SharedStringFormulaRecord
-          (t, excelFile, fr, es, nt, si, ws);
+          (t, excelFile, fr, es, nt, si);
       }
       else if (data[6]  == 3 && data[12] == -1 &&  data[13] == -1)
       {

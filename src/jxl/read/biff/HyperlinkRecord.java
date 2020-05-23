@@ -179,8 +179,8 @@ public class HyperlinkRecord extends RecordData implements Hyperlink
                                          data[startpos + 2],
                                          data[startpos + 3]);
 
-        urlString = StringHelper.getUnicodeString(data, bytes / 2 - 1,
-                                                  startpos + 4);
+        urlString = StringHelper.getUnicodeString(data,
+                                                  startpos + 4, bytes / 2 - 1);
         url = new URL(urlString);
       }
       catch (MalformedURLException e)
@@ -266,7 +266,7 @@ public class HyperlinkRecord extends RecordData implements Hyperlink
     else if (linkType == workbookLink)
     {
       int chars = IntegerHelper.getInt(data[32], data[33], data[34], data[35]);
-      location  = StringHelper.getUnicodeString(data, chars - 1, 36);
+      location  = StringHelper.getUnicodeString(data, 36, chars - 1);
     }
     else
     {

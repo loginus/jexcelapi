@@ -211,7 +211,7 @@ class StringFormulaRecord extends CellValue
     }
     else
     {
-      value = StringHelper.getUnicodeString(d, chars, pos);
+      value = StringHelper.getUnicodeString(d, pos, chars);
     }
   }
 

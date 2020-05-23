@@ -70,8 +70,7 @@ public class SharedStringFormulaRecord extends BaseSharedFormulaRecord
                                    FormattingRecords fr,
                                    ExternalSheet es,
                                    WorkbookMethods nt,
-                                   SheetImpl si,
-                                   WorkbookSettings ws)
+                                   SheetImpl si)
   {
     super(t, fr, es, nt, si, excelFile.getPos());
     int pos = excelFile.getPos();
@@ -105,38 +104,7 @@ public class SharedStringFormulaRecord extends BaseSharedFormulaRecord
 			nextRecord = excelFile.peek();
 		}
 
-    int chars = IntegerHelper.getInt(stringData[0], stringData[1]);
-
-    boolean unicode;
-    int startpos;
-    if (stringData.length == chars + 2)
-    {
-      // String might only consist of a one byte length indicator, instead
-      // of the more normal 2
-      startpos = 2;
-      unicode = false;
-    }
-    else if (stringData[2] == 0x1)
-    {
-      // unicode string, two byte length indicator
-      startpos = 3;
-      unicode = true;
-    }
-    else
-    {
-      // ascii string, two byte length indicator
-      startpos = 3;
-      unicode = false;
-    }
-
-    if (!unicode)
-    {
-      value = StringHelper.getString(stringData, chars, startpos, ws);
-    }
-    else
-    {
-      value = StringHelper.getUnicodeString(stringData, chars, startpos);
-    }
+    value = StringHelper.readBiff8String(stringData);
 
     // Restore the position in the excel file, to enable the SHRFMLA
     // record to be picked up

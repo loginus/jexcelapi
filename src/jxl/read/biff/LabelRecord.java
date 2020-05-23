@@ -31,10 +31,6 @@ import jxl.biff.StringHelper;
  */
 class LabelRecord extends CellValue implements LabelCell
 {
-  /**
-   * The length of the label in characters
-   */
-  private final int length;
 
   /**
    * The label
@@ -50,43 +46,33 @@ class LabelRecord extends CellValue implements LabelCell
   /**
    * Constructs this object from the raw data
    *
-   * @param t the raw data
+   * @param r the raw data
    * @param fr the formatting records
    * @param si the sheet
    * @param ws the workbook settings
    */
-  public LabelRecord(Record t, FormattingRecords fr,
-                     SheetImpl si, WorkbookSettings ws)
+  public LabelRecord(Record r, FormattingRecords fr, SheetImpl si)
   {
-    super(t, fr, si);
-    byte[] data = getRecord().getData();
-    length = IntegerHelper.getInt(data[6], data[7]);
-
-    if (data[8] == 0x0)
-    {
-      string = StringHelper.getString(data, length, 9, ws);
-    }
-    else
-    {
-      string = StringHelper.getUnicodeString(data, length, 9);
-    }
+    super(r, fr, si);
+    byte[] data = r.getData();
+    string = StringHelper.readBiff8String(data, 6);
   }
 
   /**
    * Constructs this object from the raw data
    *
-   * @param t the raw data
+   * @param r the raw data
    * @param fr the formatting records
    * @param si the sheet
    * @param ws the workbook settings
    * @param dummy dummy overload to indicate a biff 7 workbook
    */
-  public LabelRecord(Record t, FormattingRecords fr, SheetImpl si,
+  public LabelRecord(Record r, FormattingRecords fr, SheetImpl si,
                      WorkbookSettings ws, Biff7 dummy)
   {
-    super(t, fr, si);
-    byte[] data = getRecord().getData();
-    length = IntegerHelper.getInt(data[6], data[7]);
+    super(r, fr, si);
+    byte[] data = r.getData();
+    int length = IntegerHelper.getInt(data[6], data[7]);
 
     string = StringHelper.getString(data, length, 8, ws);
   }

@@ -178,9 +178,9 @@ class SSTRecord extends RecordData
       compressedUTF16 = bh.value;
 
       if (compressedUTF16)
-        s = StringHelper.getCompressedUnicodeString(bah.bytes, numChars, 0);
+        s = StringHelper.getCompressedUnicodeString(bah.bytes, 0, numChars);
       else
-        s = StringHelper.getUnicodeString(bah.bytes, numChars, 0);
+        s = StringHelper.getUnicodeString(bah.bytes, 0, numChars);
 
       strings[i] = s;
 

@@ -83,7 +83,7 @@ class BoundsheetRecord extends RecordData
       // little endian Unicode encoding
       byte[] bytes = new byte[length * 2];
       System.arraycopy(data, 8, bytes, 0, length * 2);
-      name = StringHelper.getUnicodeString(bytes, length, 0);
+      name = StringHelper.getUnicodeString(bytes, 0, length);
     }
   }
 

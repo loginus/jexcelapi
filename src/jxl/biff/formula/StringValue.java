@@ -84,7 +84,7 @@ class StringValue extends Operand implements ParsedThing
     }
     else
     {
-      value = StringHelper.getUnicodeString(data, length, pos+2);
+      value = StringHelper.getUnicodeString(data, pos+2, length);
       consumed += length * 2;
     }
 

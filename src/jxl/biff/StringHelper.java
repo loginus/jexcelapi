@@ -187,6 +187,21 @@ public final class StringHelper
     }
   }
 
+  public static String readBiff8String(byte[] data) {
+    return readBiff8String(data, 0);
+  }
+
+  public static String readBiff8String(byte[] data, int offset) {
+    int length = IntegerHelper.getInt(data[offset], data[offset+1]);
+
+    boolean compressedUFT16 = (data[offset+2] & 0x01) == 0;
+
+    if (compressedUFT16)
+      return getCompressedUnicodeString(data, offset+3, length);
+    else
+      return getUnicodeString(data, offset+3, length);
+  }
+
   /**
    * Gets a string from the data array when compressed
    *
@@ -196,31 +211,31 @@ public final class StringHelper
    *
    * @param d The byte data
    * @param length The number of characters to be converted into a string
-   * @param pos The start position of the string
+   * @param start The start position of the string
    * @return the string built up from the unicode characters
    */
-  public static String getCompressedUnicodeString(byte[] d, int length, int pos) {
-    byte[] b = new byte[d.length * 2];
-    for (int i = 0; i < d.length; i++)
-      b[i*2] = d[i];
+  public static String getCompressedUnicodeString(byte[] d, int start, int length) {
+    byte[] b = new byte[length * 2];
+    for (int i = 0; i < length; i++)
+      b[i*2] = d[i + start];
 
-    return getUnicodeString(b, length, pos);
+    return getUnicodeString(b, 0, length);
   }
 
   /**
    * Gets a string from the data array
    *
-   * @param pos The start position of the string
+   * @param start The start position of the string
    * @param length The number of characters to be converted into a string
    * @param d The byte data
    * @return the string built up from the unicode characters
    */
-  public static String getUnicodeString(byte[] d, int length, int pos)
+  public static String getUnicodeString(byte[] d, int start, int length)
   {
     try
     {
       byte[] b = new byte[length * 2];
-      System.arraycopy(d, pos, b, 0, length * 2);
+      System.arraycopy(d, start, b, 0, length * 2);
       return new String(b, UNICODE_ENCODING);
     }
     catch (UnsupportedEncodingException e)
