@@ -39,7 +39,7 @@ class FormulaRecord extends CellValue
   /**
    * The "real" formula record - will be either a string a or a number
    */
-  private CellValue formula;
+  private final CellValue formula;
 
   /**
    * Flag to indicate whether this is a shared formula
@@ -73,11 +73,12 @@ class FormulaRecord extends CellValue
                        ExternalSheet es,
                        WorkbookMethods nt,
                        SheetImpl si,
-                       WorkbookSettings ws)
+                       WorkbookSettings ws,
+                       boolean isBiff8)
   {
     super(t, fr, si);
 
-    byte[] data = getRecord().getData();
+    byte[] data = t.getData();
 
     shared = false;
 
@@ -113,7 +114,7 @@ class FormulaRecord extends CellValue
                data[12] == -1 &&
                data[13] == -1)
       {
-        boolean value = data[8] == 1 ? true : false;
+        boolean value = data[8] == 1;
         formula = new SharedBooleanFormulaRecord
           (t, excelFile, value, fr, es, nt, si);
       }
@@ -135,7 +136,9 @@ class FormulaRecord extends CellValue
     if (data[6] == 0 && data[12] == -1 && data[13] == -1)
     {
       // we have a string
-      formula = new StringFormulaRecord(t, excelFile, fr, es, nt, si, ws);
+      formula = isBiff8
+              ? new StringFormulaRecordBiff8(t, excelFile, fr, es, nt, si)
+              : new StringFormulaRecordBiff7(t, excelFile, fr, es, nt, si, ws);
     }
     else if (data[6]  == 1  &&
              data[12] == -1 &&
@@ -155,7 +158,9 @@ class FormulaRecord extends CellValue
     else if (data[6] == 3 && data[12] == -1 && data[13] == -1)
     {
       // we have a string which evaluates to null
-      formula = new StringFormulaRecord(t, fr, es, nt, si);
+      formula = isBiff8
+              ? new StringFormulaRecordBiff8(t, fr, es, nt, si)
+              : new StringFormulaRecordBiff7(t, fr, es, nt, si);
     }
     else
     {
@@ -186,10 +191,11 @@ class FormulaRecord extends CellValue
                        WorkbookMethods nt,
                        IgnoreSharedFormula i,
                        SheetImpl si,
-                       WorkbookSettings ws)
+                       WorkbookSettings ws,
+                       boolean isBiff8)
   {
     super(t, fr, si);
-    byte[] data = getRecord().getData();
+    byte[] data = t.getData();
 
     shared = false;
 
@@ -198,7 +204,9 @@ class FormulaRecord extends CellValue
     if (data[6] == 0 && data[12] == -1 && data[13] == -1)
     {
       // we have a string
-      formula = new StringFormulaRecord(t, excelFile, fr, es, nt, si, ws);
+      formula = isBiff8
+              ? new StringFormulaRecordBiff8(t, excelFile, fr, es, nt, si)
+              : new StringFormulaRecordBiff7(t, excelFile, fr, es, nt, si, ws);
     }
     else if (data[6]  == 1  &&
              data[12] == -1 &&

@@ -5,6 +5,7 @@ import java.net.*;
 import java.nio.file.*;
 import jxl.*;
 import static jxl.Workbook.getWorkbook;
+import jxl.biff.formula.*;
 import jxl.read.biff.*;
 import jxl.write.*;
 import static org.hamcrest.core.Is.is;
@@ -76,7 +77,7 @@ public class StringHelperTest {
   }
 
   @Test
-  public void testNonAsciiInComments() throws IOException, BiffException {
+  public void testUtf16InComments() throws IOException, BiffException {
     Path source = Path.of(URI.create(getClass().getResource("/testdata/utf16InComments.xls").toString()));
     Path destination = Files.createTempFile("test", ".xls");
     try (
@@ -92,5 +93,26 @@ public class StringHelperTest {
       assertThat(ws.getCell(0, 0).getCellFeatures().getComment(), is("äöüß"));
       assertThat(ws.getCell(0, 1).getCellFeatures().getComment(), is("Ă"));
     }
+    Files.delete(destination);
   }
+
+  @Test
+  public void testUft16InFormulas() throws IOException, BiffException, FormulaException {
+    Path source = Path.of(URI.create(getClass().getResource("/testdata/utf16InFormulas.xls").toString()));
+    Path destination = Files.createTempFile("test", ".xls");
+    try (
+            Workbook wb = getWorkbook(source);
+            WritableWorkbook ww = Workbook.createWorkbook(destination, wb)
+            ) {
+      Sheet s = wb.getSheet(0);
+      assertThat(((StringFormulaCell) s.getCell(0, 0)).getString(), is("öäüß"));
+      assertThat(((StringFormulaCell) s.getCell(0, 1)).getString(), is("Ă"));
+
+      ww.write();
+      WritableSheet ws = ww.getSheet(0);
+      assertThat(((StringFormulaCell) ws.getCell(0, 0)).getString(), is("öäüß"));
+      assertThat(((StringFormulaCell) ws.getCell(0, 1)).getString(), is("Ă"));
+    }
+  }
+
 }

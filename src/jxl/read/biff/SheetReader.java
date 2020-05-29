@@ -548,7 +548,8 @@ final class SheetReader
                   workbook,
                   workbook,
                   sheet,
-                  workbookSettings);
+                  workbookSettings,
+                  workbook.getWorkbookBof().isBiff8());
           if (fr.isShared()) {
             BaseSharedFormulaRecord prevSharedFormula = sharedFormula;
             sharedFormula = (BaseSharedFormulaRecord) fr.getFormula();
@@ -1043,7 +1044,8 @@ final class SheetReader
                                          workbook,
                                          FormulaRecord.ignoreSharedFormula,
                                          sheet,
-                                         workbookSettings);
+                                         workbookSettings,
+                                         workbook.getWorkbookBof().isBiff8());
 
     try
     {
