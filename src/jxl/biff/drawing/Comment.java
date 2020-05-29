@@ -839,21 +839,7 @@ public class Comment implements DrawingGroupObject
   public String getText()
   {
     if (commentText == null)
-    {
-      Assert.verify(text != null);
-
-      byte[] td = text.getData();
-      if (td[0] == 0)
-      {
-        commentText = StringHelper.getString
-          (td, td.length - 1, 1, workbookSettings);
-      }
-      else
-      {
-        commentText = StringHelper.getUnicodeString
-          (td, 1, (td.length - 1) / 2);
-      }
-    }
+      commentText = StringHelper.readShortBiff8String(text.getData());
 
     return commentText;
   }

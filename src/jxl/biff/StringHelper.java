@@ -202,6 +202,16 @@ public final class StringHelper
       return getUnicodeString(data, offset+3, length);
   }
 
+  public static String readShortBiff8String(byte[] data) {
+    int length = data.length;
+    boolean compressedUFT16 = (data[0] & 0x01) == 0;
+    if (compressedUFT16)
+      return getCompressedUnicodeString(data, 1, length - 1);
+    else
+      return getUnicodeString(data, 1, (length-1) / 2);
+  }
+
+
   /**
    * Gets a string from the data array when compressed
    *
