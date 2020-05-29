@@ -267,10 +267,9 @@ class SheetCopier
         images.add(wi);
       }
       else if (dgo instanceof jxl.biff.drawing.Comment) {
-        jxl.biff.drawing.Comment c =
-                new jxl.biff.drawing.Comment(dgo,
-                                             toSheet.getWorkbook().getDrawingGroup(),
-                                             workbookSettings);
+        jxl.biff.drawing.Comment c = dgo instanceof jxl.biff.drawing.CommentBiff7
+                ? new jxl.biff.drawing.CommentBiff7(dgo, toSheet.getWorkbook().getDrawingGroup(), workbookSettings)
+                : new jxl.biff.drawing.CommentBiff8(dgo, toSheet.getWorkbook().getDrawingGroup());
         drawings.add(c);
         // Set up the reference on the cell value
         CellValue cv = (CellValue) toSheet.getWritableCell(c.getColumn(),
@@ -616,7 +615,9 @@ class SheetCopier
         images.add(wi);
       }
       else if (dgo instanceof jxl.biff.drawing.Comment) {
-        jxl.biff.drawing.Comment c = new jxl.biff.drawing.Comment(dgo, toSheet.getWorkbook().getDrawingGroup(), workbookSettings);
+        jxl.biff.drawing.Comment c = dgo instanceof jxl.biff.drawing.CommentBiff7
+                ? new jxl.biff.drawing.CommentBiff7(dgo, toSheet.getWorkbook().getDrawingGroup(), workbookSettings)
+                : new jxl.biff.drawing.CommentBiff8(dgo, toSheet.getWorkbook().getDrawingGroup());
         drawings.add(c);
         // Set up the reference on the cell value
         CellValue cv = (CellValue) toSheet.getWritableCell(c.getColumn(),

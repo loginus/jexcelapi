@@ -1275,6 +1275,7 @@ final class SheetReader
                               double width,
                               double height)
   {
+    // TODO: manage cells in a map
     Cell c = cells[row][col];
     if (c == null)
     {
@@ -1420,7 +1421,12 @@ final class SheetReader
           drawingData = new DrawingData();
         }
 
-        Comment comment = new Comment(msoRecord,
+        Comment comment = workbookBof.isBiff8()
+                ? new CommentBiff8(msoRecord,
+                                      objRecord,
+                                      drawingData,
+                                      workbook.getDrawingGroup())
+                : new CommentBiff7(msoRecord,
                                       objRecord,
                                       drawingData,
                                       workbook.getDrawingGroup(),

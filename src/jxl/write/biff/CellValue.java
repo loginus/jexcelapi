@@ -33,8 +33,7 @@ import jxl.biff.NumFormatRecordsException;
 import jxl.biff.Type;
 import jxl.biff.WritableRecordData;
 import jxl.biff.XFRecord;
-import jxl.biff.drawing.ComboBox;
-import jxl.biff.drawing.Comment;
+import jxl.biff.drawing.*;
 import jxl.format.CellFormat;
 import jxl.write.WritableCell;
 import jxl.write.WritableCellFeatures;
@@ -42,19 +41,19 @@ import jxl.write.WritableWorkbook;
 
 /**
  * Abstract class which stores the jxl.common.data used for cells, such
- * as row, column and formatting information.  
+ * as row, column and formatting information.
  * Any record which directly represents the contents of a cell, such
  * as labels and numbers, are derived from this class
  * data store
  */
-public abstract class CellValue extends WritableRecordData 
+public abstract class CellValue extends WritableRecordData
   implements WritableCell
 {
   /**
    * The logger
    */
   private static Logger logger = Logger.getLogger(CellValue.class);
-  
+
   /**
    * The row in the worksheet at which this cell is located
    */
@@ -69,7 +68,7 @@ public abstract class CellValue extends WritableRecordData
    * The format applied to this cell
    */
   private XFRecord format;
-  
+
   /**
    * A handle to the formatting records, used in case we want
    * to change the format of the cell once it has been added
@@ -101,7 +100,7 @@ public abstract class CellValue extends WritableRecordData
 
   /**
    * Constructor used when building writable cells from the Java API
-   * 
+   *
    * @param c the column
    * @param t the type indicator
    * @param r the row
@@ -113,9 +112,9 @@ public abstract class CellValue extends WritableRecordData
   }
 
   /**
-   * Constructor used when creating a writable cell from a read-only cell 
+   * Constructor used when creating a writable cell from a read-only cell
    * (when copying a workbook)
-   * 
+   *
    * @param c the cell to clone
    * @param t the type of this cell
    */
@@ -125,7 +124,7 @@ public abstract class CellValue extends WritableRecordData
     copied = true;
 
     format = (XFRecord) c.getCellFormat();
-    
+
     if (c.getCellFeatures() != null)
     {
       features = new WritableCellFeatures(c.getCellFeatures());
@@ -134,9 +133,9 @@ public abstract class CellValue extends WritableRecordData
   }
 
   /**
-   * Overloaded constructor used when building writable cells from the 
+   * Overloaded constructor used when building writable cells from the
    * Java API which also takes a format
-   * 
+   *
    * @param c the column
    * @param t the cell type
    * @param r the row
@@ -153,8 +152,8 @@ public abstract class CellValue extends WritableRecordData
   }
 
   /**
-   * Copy constructor 
-   * 
+   * Copy constructor
+   *
    * @param c the column
    * @param t the cell type
    * @param r the row
@@ -167,7 +166,7 @@ public abstract class CellValue extends WritableRecordData
     column = c;
     format = cv.format;
     referenced = false;
-    copied = false; // used during a deep copy, so the cell features need 
+    copied = false; // used during a deep copy, so the cell features need
                     // to be added again
 
     if (cv.features != null)
@@ -179,7 +178,7 @@ public abstract class CellValue extends WritableRecordData
 
   /**
    * An API function which sets the format to apply to this cell
-   * 
+   *
    * @param cf the format to apply to this cell
    */
   public void setCellFormat(CellFormat cf)
@@ -194,7 +193,7 @@ public abstract class CellValue extends WritableRecordData
       return;
     }
 
-    // The cell has already been added to the spreadsheet, so the 
+    // The cell has already been added to the spreadsheet, so the
     // formattingRecords reference must be initialized
     Assert.verify(formattingRecords != null);
 
@@ -203,7 +202,7 @@ public abstract class CellValue extends WritableRecordData
 
   /**
    * Returns the row number of this cell
-   * 
+   *
    * @return the row number of this cell
    */
   public int getRow()
@@ -213,7 +212,7 @@ public abstract class CellValue extends WritableRecordData
 
   /**
    * Returns the column number of this cell
-   * 
+   *
    * @return the column number of this cell
    */
   public int getColumn()
@@ -230,7 +229,7 @@ public abstract class CellValue extends WritableRecordData
   public boolean isHidden()
   {
     ColumnInfoRecord cir = sheet.getColumnInfo(column);
-    
+
     if (cir != null && cir.getWidth() == 0)
     {
       return true;
@@ -248,7 +247,7 @@ public abstract class CellValue extends WritableRecordData
 
   /**
    * Gets the data to write to the output file
-   * 
+   *
    * @return the binary data
    */
   public byte[] getData()
@@ -265,12 +264,12 @@ public abstract class CellValue extends WritableRecordData
    * that this object is already added to the worksheet
    * This method also verifies that the associated formats and formats
    * have been initialized correctly
-   * 
+   *
    * @param fr the formatting records
    * @param ss the shared strings used within the workbook
    * @param s the sheet this is being added to
    */
-  void setCellDetails(FormattingRecords fr, SharedStrings ss, 
+  void setCellDetails(FormattingRecords fr, SharedStrings ss,
                       WritableSheetImpl s)
   {
     referenced = true;
@@ -284,7 +283,7 @@ public abstract class CellValue extends WritableRecordData
   /**
    * Internal method to see if this cell is referenced within the workbook.
    * Once this has been placed in the workbook, it becomes immutable
-   * 
+   *
    * @return TRUE if this cell has been added to a sheet, FALSE otherwise
    */
   final boolean isReferenced()
@@ -294,7 +293,7 @@ public abstract class CellValue extends WritableRecordData
 
   /**
    * Gets the internal index of the formatting record
-   * 
+   *
    * @return the index of the format record
    */
   final int getXFIndex()
@@ -304,7 +303,7 @@ public abstract class CellValue extends WritableRecordData
 
   /**
    * API method which gets the format applied to this cell
-   * 
+   *
    * @return the format for this cell
    */
   public CellFormat getCellFormat()
@@ -313,7 +312,7 @@ public abstract class CellValue extends WritableRecordData
   }
 
   /**
-   * Increments the row of this cell by one.  Invoked by the sheet when 
+   * Increments the row of this cell by one.  Invoked by the sheet when
    * inserting rows
    */
   void incrementRow()
@@ -332,7 +331,7 @@ public abstract class CellValue extends WritableRecordData
   }
 
   /**
-   * Decrements the row of this cell by one.  Invoked by the sheet when 
+   * Decrements the row of this cell by one.  Invoked by the sheet when
    * removing rows
    */
   void decrementRow()
@@ -356,7 +355,7 @@ public abstract class CellValue extends WritableRecordData
   }
 
   /**
-   * Increments the column of this cell by one.  Invoked by the sheet when 
+   * Increments the column of this cell by one.  Invoked by the sheet when
    * inserting columns
    */
   void incrementColumn()
@@ -376,7 +375,7 @@ public abstract class CellValue extends WritableRecordData
   }
 
   /**
-   * Decrements the column of this cell by one.  Invoked by the sheet when 
+   * Decrements the column of this cell by one.  Invoked by the sheet when
    * removing columns
    */
   void decrementColumn()
@@ -466,7 +465,7 @@ public abstract class CellValue extends WritableRecordData
     format = styles.getFormat(format);
 
     try
-    {      
+    {
       if (!format.isInitialized())
       {
         formattingRecords.addStyle(format);
@@ -507,10 +506,10 @@ public abstract class CellValue extends WritableRecordData
    */
   public void setCellFeatures(WritableCellFeatures cf)
   {
-    if (features != null) 
+    if (features != null)
     {
-      logger.warn("current cell features for " + 
-                  CellReferenceHelper.getCellReference(this) + 
+      logger.warn("current cell features for " +
+                  CellReferenceHelper.getCellReference(this) +
                   " not null - overwriting");
 
       // Check to see if the features include a shared data validation
@@ -519,8 +518,8 @@ public abstract class CellValue extends WritableRecordData
           features.getDVParser().extendedCellsValidation())
       {
         DVParser dvp = features.getDVParser();
-        logger.warn("Cannot add cell features to " + 
-                    CellReferenceHelper.getCellReference(this) + 
+        logger.warn("Cannot add cell features to " +
+                    CellReferenceHelper.getCellReference(this) +
                     " because it is part of the shared cell validation " +
                     "group " +
                     CellReferenceHelper.getCellReference(dvp.getFirstColumn(),
@@ -544,8 +543,8 @@ public abstract class CellValue extends WritableRecordData
   }
 
   /**
-   * Handles any addition cell features, such as comments or data 
-   * validation.  Called internally from this class when a cell is 
+   * Handles any addition cell features, such as comments or data
+   * validation.  Called internally from this class when a cell is
    * added to the workbook, and also externally from BaseCellFeatures
    * following a call to setComment
    */
@@ -565,11 +564,12 @@ public abstract class CellValue extends WritableRecordData
 
     if (features.getComment() != null)
     {
-      Comment comment = new Comment(features.getComment(), 
-                                    column, row);
+      Comment comment = sheet.getWorkbook().getWorkbookBof().isBiff8()
+              ? new CommentBiff8(features.getComment(), column, row)
+              : new CommentBiff7(features.getComment(), column, row, sheet.getWorkbook().getSettings());
       comment.setWidth(features.getCommentWidth());
       comment.setHeight(features.getCommentHeight());
-      sheet.addDrawing(comment);      
+      sheet.addDrawing(comment);
       sheet.getWorkbook().addDrawing(comment);
       features.setCommentDrawing(comment);
     }
@@ -578,9 +578,9 @@ public abstract class CellValue extends WritableRecordData
     {
       try
       {
-        features.getDVParser().setCell(column, 
-                                       row, 
-                                       sheet.getWorkbook(), 
+        features.getDVParser().setCell(column,
+                                       row,
+                                       sheet.getWorkbook(),
                                        sheet.getWorkbook(),
                                        sheet.getWorkbookSettings());
       }
@@ -594,7 +594,7 @@ public abstract class CellValue extends WritableRecordData
       {
         return;
       }
-      
+
       // Get the combo box drawing object for list validations
       if (sheet.getComboBox() == null)
       {
@@ -612,7 +612,7 @@ public abstract class CellValue extends WritableRecordData
   }
 
   /**
-   * Internal function invoked by WritableSheetImpl called when shared data 
+   * Internal function invoked by WritableSheetImpl called when shared data
    * validation is removed
    */
   public final void removeCellFeatures()
