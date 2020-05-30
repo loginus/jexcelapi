@@ -41,6 +41,10 @@ public interface Cell
    */
   public int getColumn();
 
+  public default CellCoordinate getCoordinate() {
+    return new CellCoordinate(getColumn(), getRow());
+  }
+
   /**
    * Returns the content type of this cell
    *

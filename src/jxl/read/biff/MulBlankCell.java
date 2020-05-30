@@ -19,11 +19,9 @@
 
 package jxl.read.biff;
 
+import jxl.*;
 import jxl.common.Logger;
 
-import jxl.Cell;
-import jxl.CellFeatures;
-import jxl.CellType;
 import jxl.biff.FormattingRecords;
 import jxl.format.CellFormat;
 
@@ -94,6 +92,19 @@ class MulBlankCell implements Cell, CellFeaturesAccessor
   {
     row = r;
     column = c;
+    xfIndex = xfi;
+    formattingRecords = fr;
+    sheet = si;
+    initialized = false;
+  }
+
+  public MulBlankCell(CellCoordinate coord,
+                      int xfi,
+                      FormattingRecords fr,
+                      SheetImpl si)
+  {
+    row = coord.getRow();
+    column = coord.getColumn();
     xfIndex = xfi;
     formattingRecords = fr;
     sheet = si;

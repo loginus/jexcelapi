@@ -113,6 +113,7 @@ public class StringHelperTest {
       assertThat(((StringFormulaCell) ws.getCell(0, 0)).getString(), is("öäüß"));
       assertThat(((StringFormulaCell) ws.getCell(0, 1)).getString(), is("Ă"));
     }
+    Files.delete(destination);
   }
 
 }

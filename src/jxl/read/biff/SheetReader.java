@@ -79,12 +79,7 @@ final class SheetReader
   /**
    * The cells
    */
-  private Cell[][] cells;
-
-  /**
-   * Any cells which are out of the defined bounds
-   */
-  private final ArrayList<Cell> outOfBoundsCells = new ArrayList<>();
+  private final Map<CellCoordinate, Cell> cells = new HashMap<>();
 
   /**
    * The start position in the stream of this sheet
@@ -245,11 +240,6 @@ final class SheetReader
     workbookSettings = workbook.getSettings();
   }
 
-  private void addCells(Collection<Cell> cells) {
-    for (Cell cell : cells)
-      addCell(cell);
-  }
-
   /**
    * Adds the cell to the array
    *
@@ -257,31 +247,15 @@ final class SheetReader
    */
   private void addCell(Cell cell)
   {
-    // Sometimes multiple cells (eg. MULBLANK) can exceed the
-    // column/row boundaries.  Ignore these
-    if (cell.getRow() < numRows && cell.getColumn() < numCols)
+    jxl.CellCoordinate coord = cell.getCoordinate();
+    if (cells.put(coord, cell) != null)
     {
-      if (cells[cell.getRow()][cell.getColumn()] != null)
-      {
-        StringBuffer sb = new StringBuffer();
-        CellReferenceHelper.getCellReference
-          (cell.getColumn(), cell.getRow(), sb);
-        LOGGER.warn("Cell " + sb.toString() +
-                    " already contains data");
-      }
-      cells[cell.getRow()][cell.getColumn()] = cell;
+      StringBuffer sb = new StringBuffer();
+      CellReferenceHelper.getCellReference(cell.getColumn(), cell.getRow(), sb);
+      LOGGER.warn("Cell " + sb.toString() + " already contains data");
     }
-    else
-    {
-      outOfBoundsCells.add(cell);
-      /*
-        logger.warn("Cell " +
-        CellReferenceHelper.getCellReference
-        (cell.getColumn(), cell.getRow()) +
-        " exceeds defined cell boundaries in Dimension record " +
-        "(" + numCols + "x" + numRows + ")");
-      */
-    }
+    numRows = Math.max(numRows, cell.getRow() + 1);
+    numCols = Math.max(numCols, cell.getColumn() + 1);
   }
 
   /**
@@ -348,7 +322,6 @@ final class SheetReader
       if (first && type != Type.DIMENSION) {
         numRows = workbookSettings.getStartRowCount();
         numCols = workbookSettings.getStartColumnCount();
-        cells = new Cell[numRows][numCols];
         first = false;
       }
 
@@ -359,7 +332,6 @@ final class SheetReader
                   : new DimensionRecord(r, DimensionRecord.biff7);
           numRows = dr.getNumberOfRows();
           numCols = dr.getNumberOfColumns();
-          cells = new Cell[numRows][numCols];
           break;
 
         case LABELSST:
@@ -969,12 +941,6 @@ final class SheetReader
     // Restore the file to its accurate position
     excelFile.restorePos();
 
-    // Add any out of bounds cells
-    if (outOfBoundsCells.size() > 0)
-    {
-      handleOutOfBoundsCells();
-    }
-
     // Add all the shared formulas to the sheet as individual formulas
     for (SharedFormulaRecord sfr : sharedFormulas) {
       Cell[] sfnr = sfr.getFormulas(formattingRecords, nineteenFour);
@@ -1107,9 +1073,9 @@ final class SheetReader
    *
    * @return the cells
    */
-  final Cell[][] getCells()
+  final Map<CellCoordinate, Cell> getCells()
   {
-    return cells;
+    return Collections.unmodifiableMap(cells);
   }
 
   /**
@@ -1277,24 +1243,13 @@ final class SheetReader
                               double width,
                               double height)
   {
-    // TODO: manage cells in a map
-    Cell c = cells[row][col];
-    if (c == null)
-    {
-      LOGGER.warn("Cell at " + CellReferenceHelper.getCellReference(col, row) +
-                  " not present - adding a blank");
-      MulBlankCell mbc = new MulBlankCell(row,
-                                          col,
-                                          0,
-                                          formattingRecords,
-                                          sheet);
-      CellFeatures cf = new CellFeatures();
-      cf.setReadComment(text, width, height);
-      mbc.setCellFeatures(cf);
-      addCell(mbc);
-
-      return;
-    }
+    Cell c = cells.computeIfAbsent(
+            new CellCoordinate(col, row),
+            coord -> new MulBlankCell(
+                    coord,
+                    0,
+                    formattingRecords,
+                    sheet));
 
     if (c instanceof CellFeaturesAccessor)
     {
@@ -1336,15 +1291,9 @@ final class SheetReader
     {
       for (int col = col1; col <= col2; col++)
       {
-        Cell c = null;
+        Cell c = cells.get(new CellCoordinate(col, row));
 
-        if (cells.length > row && cells[row].length > col)
-        {
-          c = cells[row][col];
-        }
-
-        if (c == null)
-        {
+        if (c == null) {
           MulBlankCell mbc = new MulBlankCell(row,
                                               col,
                                               0,
@@ -1354,9 +1303,8 @@ final class SheetReader
           cf.setValidationSettings(dvsr);
           mbc.setCellFeatures(cf);
           addCell(mbc);
-        }
-        else if (c instanceof CellFeaturesAccessor)
-        {          // Check to see if the cell already contains a comment
+        } else if (c instanceof CellFeaturesAccessor) {
+          // Check to see if the cell already contains a comment
           CellFeaturesAccessor cv = (CellFeaturesAccessor) c;
           CellFeatures cf = cv.getCellFeatures();
 
@@ -1650,61 +1598,6 @@ final class SheetReader
   DrawingData getDrawingData()
   {
     return drawingData;
-  }
-
-  /**
-   * Handle any cells which fall outside of the bounds specified within
-   * the dimension record
-   */
-  private void handleOutOfBoundsCells()
-  {
-    int resizedRows = numRows;
-    int resizedCols = numCols;
-
-    // First, determine the new bounds
-    for (Cell cell : outOfBoundsCells) {
-      resizedRows = Math.max(resizedRows, cell.getRow() + 1);
-      resizedCols = Math.max(resizedCols, cell.getColumn() + 1);
-    }
-
-    // There used to be a warning here about exceeding the sheet dimensions,
-    // but removed it when I added the ability to perform data validation
-    // on entire rows or columns - in which case it would blow out any
-    // existing dimensions
-
-    // Resize the columns, if necessary
-    if (resizedCols > numCols)
-    {
-      for (int r = 0 ; r < numRows ; r++)
-      {
-        Cell[] newRow = new Cell[resizedCols];
-        Cell[] oldRow = cells[r];
-        System.arraycopy(oldRow, 0, newRow, 0, oldRow.length);
-        cells[r] = newRow;
-      }
-    }
-
-    // Resize the rows, if necessary
-    if (resizedRows > numRows)
-    {
-      Cell[][] newCells = new Cell[resizedRows][];
-      System.arraycopy(cells, 0, newCells, 0, cells.length);
-      cells = newCells;
-
-      // Create the new rows
-      for (int i = numRows; i < resizedRows; i++)
-      {
-        newCells[i] = new Cell[resizedCols];
-      }
-    }
-
-    numRows = resizedRows;
-    numCols = resizedCols;
-
-    // Now add all the out of bounds cells into the new cells
-    addCells(outOfBoundsCells);
-
-    outOfBoundsCells.clear();
   }
 
   /**

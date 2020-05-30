@@ -80,7 +80,7 @@ public class SheetImpl implements Sheet
   /**
    * The cells
    */
-  private Cell[][] cells;
+  private final Map<CellCoordinate, Cell> cells = new HashMap<>();
 
   /**
    * The start position in the stream of this sheet
@@ -320,20 +320,10 @@ public class SheetImpl implements Sheet
   {
     // just in case this has been cleared, but something else holds
     // a reference to it
-    if (cells == null)
-    {
+    if (cells.isEmpty())
       readSheet();
-    }
 
-    Cell c = cells[row][column];
-
-    if (c == null)
-    {
-      c = new EmptyCell(column, row);
-      cells[row][column] = c;
-    }
-
-    return c;
+    return cells.computeIfAbsent(new CellCoordinate(column, row), EmptyCell::new);
   }
 
   /**
@@ -357,7 +347,7 @@ public class SheetImpl implements Sheet
    * If no match is found, then null is returned.  The search is performed
    * on a row by row basis, so the lower the row number, the more
    * efficiently the algorithm will perform
-   * 
+   *
    * @param contents the string to match
    * @param firstCol the first column within the range
    * @param firstRow the first row of the range
@@ -367,19 +357,19 @@ public class SheetImpl implements Sheet
    * @return the Cell whose contents match the parameter, null if not found
    */
   @Override
-  public Cell findCell(String contents, 
-                       int firstCol, 
-                       int firstRow, 
-                       int lastCol, 
-                       int lastRow, 
+  public Cell findCell(String contents,
+                       int firstCol,
+                       int firstRow,
+                       int lastCol,
+                       int lastRow,
                        boolean reverse)
   {
     CellFinder cellFinder = new CellFinder(this);
     return cellFinder.findCell(contents,
-                               firstCol, 
-                               firstRow, 
+                               firstCol,
+                               firstRow,
                                lastCol,
-                               lastRow, 
+                               lastRow,
                                reverse);
   }
 
@@ -388,7 +378,7 @@ public class SheetImpl implements Sheet
    * If no match is found, then null is returned.  The search is performed
    * on a row by row basis, so the lower the row number, the more
    * efficiently the algorithm will perform
-   * 
+   *
    * @param pattern the regular expression string to match
    * @param firstCol the first column within the range
    * @param firstRow the first row of the range
@@ -398,19 +388,19 @@ public class SheetImpl implements Sheet
    * @return the Cell whose contents match the parameter, null if not found
    */
   @Override
-  public Cell findCell(Pattern pattern, 
-                       int firstCol, 
-                       int firstRow, 
-                       int lastCol, 
-                       int lastRow, 
+  public Cell findCell(Pattern pattern,
+                       int firstCol,
+                       int firstRow,
+                       int lastCol,
+                       int lastRow,
                        boolean reverse)
   {
     CellFinder cellFinder = new CellFinder(this);
     return cellFinder.findCell(pattern,
-                               firstCol, 
-                               firstRow, 
+                               firstCol,
+                               firstRow,
                                lastCol,
-                               lastRow, 
+                               lastRow,
                                reverse);
   }
 
@@ -443,10 +433,8 @@ public class SheetImpl implements Sheet
   {
     // just in case this has been cleared, but something else holds
     // a reference to it
-    if (cells == null)
-    {
+    if (cells.isEmpty())
       readSheet();
-    }
 
     return numRows;
   }
@@ -461,10 +449,8 @@ public class SheetImpl implements Sheet
   {
     // just in case this has been cleared, but something else holds
     // a reference to it
-    if (cells == null)
-    {
+    if (cells.isEmpty())
       readSheet();
-    }
 
     return numCols;
   }
@@ -481,25 +467,14 @@ public class SheetImpl implements Sheet
   {
     // just in case this has been cleared, but something else holds
     // a reference to it
-    if (cells == null)
-    {
+    if (cells.isEmpty())
       readSheet();
-    }
 
-    // Find the last non-null cell
-    boolean found = false;
-    int col = numCols - 1;
-    while (col >= 0 && !found)
-    {
-      if (cells[row][col] != null)
-      {
-        found = true;
-      }
-      else
-      {
-        col--;
-      }
-    }
+    int col = cells.keySet().stream()
+            .filter(coord -> coord.getRow() == row)
+            .mapToInt(CellCoordinate::getColumn)
+            .max()
+            .orElse(-1);
 
     // Only create entries for non-null cells
     Cell[] c = new Cell[col + 1];
@@ -523,25 +498,14 @@ public class SheetImpl implements Sheet
   {
     // just in case this has been cleared, but something else holds
     // a reference to it
-    if (cells == null)
-    {
+    if (cells.isEmpty())
       readSheet();
-    }
 
-    // Find the last non-null cell
-    boolean found = false;
-    int row = numRows - 1;
-    while (row >= 0 && !found)
-    {
-      if (cells[row][col] != null)
-      {
-        found = true;
-      }
-      else
-      {
-        row--;
-      }
-    }
+    int row = cells.keySet().stream()
+            .filter(coord -> coord.getColumn() == col)
+            .mapToInt(CellCoordinate::getRow)
+            .max()
+            .orElse(-1);
 
     // Only create entries for non-null cells
     Cell[] c = new Cell[row + 1];
@@ -646,7 +610,7 @@ public class SheetImpl implements Sheet
    */
   final void clear()
   {
-    cells = null;
+    cells.clear();
     mergedCells = null;
     columnInfosArray.clear();
     sharedFormulas.clear();
@@ -664,17 +628,6 @@ public class SheetImpl implements Sheet
    */
   final void readSheet()
   {
-    // If this sheet contains only a chart, then set everything to
-    // empty and do not bother parsing the sheet
-    // Thanks to steve.brophy for spotting this
-    if (!sheetBof.isWorksheet())
-    {
-      numRows = 0;
-      numCols = 0;
-      cells = new Cell[0][0];
-      //      return;
-    }
-
     SheetReader reader = new SheetReader(excelFile,
                                          sharedStrings,
                                          formattingRecords,
@@ -689,7 +642,7 @@ public class SheetImpl implements Sheet
     // Take stuff that was read in
     numRows = reader.getNumRows();
     numCols = reader.getNumCols();
-    cells = reader.getCells();
+    cells.putAll(reader.getCells());
     rowProperties = reader.getRowProperties();
     columnInfosArray = reader.getColumnInfosArray();
     hyperlinks = reader.getHyperlinks();
@@ -741,10 +694,10 @@ public class SheetImpl implements Sheet
         }
         else if (nr.getBuiltInName() == BuiltInName.PRINT_TITLES)
        	{
-          // There can be 1 or 2 entries.  
+          // There can be 1 or 2 entries.
           // Row entries have hardwired column entries (first and last
           //  possible column)
-          // Column entries have hardwired row entries (first and last 
+          // Column entries have hardwired row entries (first and last
           // possible row)
           for (NameRecord.NameRange rng : nr.getRanges())
             if (rng.getFirstColumn() == 0 && rng.getLastColumn() == 255)
@@ -1155,7 +1108,7 @@ public class SheetImpl implements Sheet
    */
   public ConditionalFormat[] getConditionalFormats()
   {
-    ConditionalFormat[] formats = 
+    ConditionalFormat[] formats =
       new ConditionalFormat[conditionalFormats.size()];
     formats = conditionalFormats.toArray(formats);
     return formats;
@@ -1171,22 +1124,22 @@ public class SheetImpl implements Sheet
     return autoFilter;
   }
 
-  /** 
+  /**
    * Accessor for the maximum column outline level.  Used during a copy
    *
    * @return the maximum column outline level, or 0 if no outlines/groups
    */
-  public int getMaxColumnOutlineLevel() 
+  public int getMaxColumnOutlineLevel()
   {
     return maxColumnOutlineLevel;
   }
 
-  /** 
+  /**
    * Accessor for the maximum row outline level.  Used during a copy
    *
    * @return the maximum row outline level, or 0 if no outlines/groups
    */
-  public int getMaxRowOutlineLevel() 
+  public int getMaxRowOutlineLevel()
   {
     return maxRowOutlineLevel;
   }
