@@ -51,4 +51,9 @@ public class CellCoordinate implements Comparable<CellCoordinate> {
       return Integer.compare(this.column, that.column);
   }
 
+  @Override
+  public String toString() {
+    return "Coord(" + column + "," + row + ')';
+  }
+
 }
