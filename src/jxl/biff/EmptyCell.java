@@ -19,8 +19,7 @@
 
 package jxl.biff;
 
-import jxl.CellFeatures;
-import jxl.CellType;
+import jxl.*;
 import jxl.format.Alignment;
 import jxl.format.CellFormat;
 import jxl.format.Border;
@@ -35,14 +34,8 @@ import jxl.write.WritableCellFeatures;
  */
 public class EmptyCell implements WritableCell
 {
-  /**
-   * The row of this empty cell
-   */
-  private int row;
-  /**
-   * The column number of this empty cell
-   */
-  private int col;
+
+  private final CellCoordinate coord;
 
   /**
    * Constructs an empty cell at the specified position
@@ -52,8 +45,11 @@ public class EmptyCell implements WritableCell
    */
   public EmptyCell(int c, int r)
   {
-    row = r;
-    col = c;
+    this(new CellCoordinate(c, r));
+  }
+
+  public EmptyCell(CellCoordinate coord) {
+    this.coord = coord;
   }
 
   /**
@@ -61,9 +57,10 @@ public class EmptyCell implements WritableCell
    *
    * @return the row number of this cell
    */
+  @Override
   public int getRow()
   {
-    return row;
+    return coord.getRow();
   }
 
   /**
@@ -71,9 +68,10 @@ public class EmptyCell implements WritableCell
    *
    * @return the column number of this cell
    */
+  @Override
   public int getColumn()
   {
-    return col;
+    return coord.getColumn();
   }
 
   /**
@@ -81,6 +79,7 @@ public class EmptyCell implements WritableCell
    *
    * @return the content type for this cell
    */
+  @Override
   public CellType getType()
   {
     return CellType.EMPTY;
@@ -91,6 +90,7 @@ public class EmptyCell implements WritableCell
    *
    * @return an empty string
    */
+  @Override
   public String getContents()
   {
     return "";
@@ -101,6 +101,7 @@ public class EmptyCell implements WritableCell
    *
    * @return the format applied to this cell
    */
+  @Override
   public CellFormat getCellFormat()
   {
     return null;
@@ -151,6 +152,7 @@ public class EmptyCell implements WritableCell
    * Dummy override
    * @param cf dummy
    */
+  @Override
   public void setCellFormat(CellFormat cf)
   {
   }
@@ -158,8 +160,8 @@ public class EmptyCell implements WritableCell
   /**
    * Dummy override
    * @param cf dummy
-   * @deprecated
    */
+  @Deprecated
   public void setCellFormat(jxl.CellFormat cf)
   {
   }
@@ -170,6 +172,7 @@ public class EmptyCell implements WritableCell
    *
    * @return TRUE if this cell is hidden, FALSE otherwise
    */
+  @Override
   public boolean isHidden()
   {
     return false;
@@ -182,6 +185,7 @@ public class EmptyCell implements WritableCell
    * @param r the row which the new cell will occupy
    * @return  a copy of this cell, which can then be added to the sheet
    */
+  @Override
   public WritableCell copyTo(int c, int r)
   {
     return new EmptyCell(c, r);
@@ -192,6 +196,7 @@ public class EmptyCell implements WritableCell
    *
    * @return the cell features or NULL if this cell doesn't have any
    */
+  @Override
   public CellFeatures getCellFeatures()
   {
     return null;
@@ -202,6 +207,7 @@ public class EmptyCell implements WritableCell
    *
    * @return the cell features or NULL if this cell doesn't have any
    */
+  @Override
   public WritableCellFeatures getWritableCellFeatures()
   {
     return null;
@@ -210,6 +216,7 @@ public class EmptyCell implements WritableCell
   /**
    * Accessor for the cell features
    */
+  @Override
   public void setCellFeatures(WritableCellFeatures wcf)
   {
   }
