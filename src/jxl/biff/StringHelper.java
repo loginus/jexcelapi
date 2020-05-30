@@ -192,14 +192,31 @@ public final class StringHelper
   }
 
   public static String readBiff8String(byte[] data, int offset) {
-    int length = IntegerHelper.getInt(data[offset], data[offset+1]);
+    int numberOfChars = IntegerHelper.getInt(data[offset], data[offset+1]);
 
-    boolean compressedUFT16 = (data[offset+2] & 0x01) == 0;
+    if (numberOfChars == 0)
+      return "";
+
+    int optionFlags = data[offset+2];
+    boolean compressedUFT16 = (optionFlags & 0x01) == 0;
+    boolean containsAsianPhoneticSettings = ((optionFlags & 0x04) != 0);
+    boolean containsRichTextSettings = ((optionFlags & 0x08) != 0);
+
+    int start = 3;
+    if (containsRichTextSettings) {
+      int numberOfRtRuns = IntegerHelper.getInt(data[offset+start], data[offset+start+1]);
+      start += 2;
+    }
+
+    if (containsAsianPhoneticSettings) {
+      int phoneticSize = IntegerHelper.getInt(data[offset+start], data[offset+start+1], data[offset+start+2], data[offset+start+3]);
+      start += 4;
+    }
 
     if (compressedUFT16)
-      return getCompressedUnicodeString(data, offset+3, length);
+      return getCompressedUnicodeString(data, offset+start, numberOfChars);
     else
-      return getUnicodeString(data, offset+3, length);
+      return getUnicodeString(data, offset+start, numberOfChars);
   }
 
   public static String readShortBiff8String(byte[] data) {

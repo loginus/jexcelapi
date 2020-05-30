@@ -29,35 +29,6 @@ public class StringFormulaRecordBiff8 extends StringFormulaRecord {
    */
   private String readString(byte[] d)
   {
-    int chars = IntegerHelper.getInt(d[0], d[1]);
-
-    if (chars == 0)
-      return "";
-
-    int optionFlags = d[2];
-
-    int pos = 3;
-    if ((optionFlags & 0xf) != optionFlags)
-    {
-      // Uh oh - looks like a plain old string, not unicode
-      // Recalculate all the positions
-      chars = IntegerHelper.getInt(d[0], (byte) 0);
-      optionFlags = d[1];
-      pos = 2;
-    }
-
-    // See if it is an extended string
-    boolean extendedString = ((optionFlags & 0x04) != 0);
-
-    // See if string contains formatting information
-    boolean richString = ((optionFlags & 0x08) != 0);
-
-    if (richString)
-      pos += 2;
-
-    if (extendedString)
-      pos += 4;
-
     return StringHelper.readBiff8String(d);
   }
 }
