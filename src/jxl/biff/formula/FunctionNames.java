@@ -32,22 +32,18 @@ import jxl.common.Logger;
  */
 public class FunctionNames
 {
-  /**
-   * The logger class
-   */
-  private static Logger logger = Logger.getLogger(FunctionNames.class);
 
   /**
    * A hash mapping keyed on the function and returning its locale specific
    * name
    */
-  private HashMap names;
+  private final HashMap<Function, String> names = new HashMap<>(Function.getFunctions().length);
 
   /**
    * A hash mapping keyed on the locale specific name and returning the
    * function
    */
-  private HashMap functions;
+  private final HashMap<String, Function> functions = new HashMap<>(Function.getFunctions().length);
 
   /**
    * Constructor
@@ -57,21 +53,11 @@ public class FunctionNames
   public FunctionNames(Locale l)
   {
     ResourceBundle rb = ResourceBundle.getBundle("functions", l);
-    Function[] allfunctions = Function.getFunctions();
-    names = new HashMap(allfunctions.length);
-    functions = new HashMap(allfunctions.length);
 
     // Iterate through all the functions, adding them to the hash maps
-    Function f = null;
-    String n = null;
-    String propname = null;
-    for (int i =  0; i < allfunctions.length; i++)
-    {
-      f = allfunctions[i];
-      propname = f.getPropertyName();
-
-      n = propname.length() != 0 ? rb.getString(propname) : null;
-
+    for (Function f : Function.getFunctions()) {
+      String propname = f.getPropertyName();
+      String n = propname.length() != 0 ? rb.getString(propname) : null;
       if (n != null)
       {
         names.put(f, n);
@@ -86,9 +72,8 @@ public class FunctionNames
    * @param s the string
    * @return  the function
    */
-  Function getFunction(String s)
-  {
-    return (Function) functions.get(s);
+  Function getFunction(String s) {
+    return functions.get(s);
   }
 
   /**
@@ -97,8 +82,7 @@ public class FunctionNames
    * @param f the function
    * @return  the string
    */
-  String getName(Function f)
-  {
-    return (String) names.get(f);
+  String getName(Function f) {
+    return names.get(f);
   }
 }
