@@ -219,19 +219,13 @@ public class SheetRangeImpl implements Range
   public void insertColumn(int c)
   {
     if (c > column2)
-    {
       return;
-    }
 
     if (c <= column1)
-    {
       column1++;
-    }
 
     if (c <= column2)
-    {
       column2++;
-    }
   }
 
   /**
@@ -242,19 +236,13 @@ public class SheetRangeImpl implements Range
   public void removeRow(int r)
   {
     if (r > row2)
-    {
       return;
-    }
 
     if (r < row1)
-    {
       row1--;
-    }
 
-    if (r < row2)
-    {
+    if (r <= row2 && row2 > 0)
       row2--;
-    }
   }
 
   /**
@@ -265,19 +253,13 @@ public class SheetRangeImpl implements Range
   public void removeColumn(int c)
   {
     if (c > column2)
-    {
       return;
-    }
 
     if (c < column1)
-    {
       column1--;
-    }
 
-    if (c < column2)
-    {
+    if (c <= column2 && column2 > 0)
       column2--;
-    }
   }
 
   /**
@@ -285,6 +267,7 @@ public class SheetRangeImpl implements Range
    *
    * @return the hash code
    */
+  @Override
   public int hashCode()
   {
     return 0xffff ^ row1 ^ row2 ^ column1 ^ column2;
@@ -296,6 +279,7 @@ public class SheetRangeImpl implements Range
    * @param o the object to compare
    * @return TRUE if the two objects are the same, FALSE otherwise
    */
+  @Override
   public boolean equals(Object o)
   {
     if (o == this)
