@@ -1138,51 +1138,6 @@ class WritableSheetImpl implements WritableSheet
   }
 
   /**
-   * Sets the hidden status of this sheet
-   *
-   * @param h the hiden flag
-   * @deprecated Use the settings bean instead
-   */
-  @Override
-  public void setHidden(boolean h)
-  {
-    settings.setHidden(h);
-  }
-
-  /**
-   * Indicates whether or not this sheet is protected
-   *
-   * @param prot protected flag
-   * @deprecated Use the settings bean instead
-   */
-  @Override
-  public void setProtected(boolean prot)
-  {
-    settings.setProtected(prot);
-  }
-
-  /**
-   * Sets this sheet as selected
-   * @deprecated Use the settings bean
-   */
-  public void setSelected()
-  {
-    settings.setSelected();
-  }
-
-  /**
-   * Retrieves the hidden status of this sheet
-   *
-   * @return TRUE if hidden, FALSE otherwise
-   * @deprecated Use the sheet settings bean instead
-   */
-  @Override
-  public boolean isHidden()
-  {
-    return settings.isHidden();
-  }
-
-  /**
    * Sets the width (in characters) for a particular column in this sheet
    *
    * @param col the column whose width to set
@@ -1193,23 +1148,6 @@ class WritableSheetImpl implements WritableSheet
   {
     CellView cv = new CellView();
     cv.setSize(width * 256);
-    setColumnView(col, cv);
-  }
-
-  /**
-   * Sets the width (in characters) and format options for a
-   * particular column in this sheet
-   *
-   * @param col the column to set
-   * @param width the width in characters
-   * @param format the formt details for the column
-   */
-  @Override
-  public void setColumnView(int col, int width, CellFormat format)
-  {
-    CellView cv = new CellView();
-    cv.setSize(width * 256);
-    cv.setFormat(format);
     setColumnView(col, cv);
   }
 
@@ -1270,7 +1208,6 @@ class WritableSheetImpl implements WritableSheet
     }
   }
 
-
   /**
    * Sets the height of the specified row, as well as its collapse status
    *
@@ -1301,27 +1238,6 @@ class WritableSheetImpl implements WritableSheet
     throws RowsExceededException
   {
     CellView cv = new CellView();
-    cv.setHidden(collapsed);
-    setRowView(row, cv);
-  }
-
-  /**
-   * Sets the height of the specified row, as well as its collapse status
-   *
-   * @param row the row to be formatted
-   * @param height the row height in 1/20th of a point
-   * @param collapsed indicates whether the row is collapsed
-   * @param zeroHeight indicates that the row has zero height
-   * @exception RowsExceededException
-   * @deprecated use the override which takes a CellView object
-   */
-  @Override
-  public void setRowView(int row, int height,
-                         boolean collapsed)
-                         throws RowsExceededException
-  {
-    CellView cv = new CellView();
-    cv.setSize(height);
     cv.setHidden(collapsed);
     setRowView(row, cv);
   }
@@ -1491,17 +1407,6 @@ class WritableSheetImpl implements WritableSheet
   final FooterRecord getFooter()
   {
     return sheetWriter.getFooter();
-  }
-  /**
-   * Determines whether the sheet is protected
-   *
-   * @return whether or not the sheet is protected
-   * @deprecated Use the SheetSettings bean instead
-   */
-  @Override
-  public boolean isProtected()
-  {
-    return settings.isProtected();
   }
 
   /**

@@ -50,20 +50,6 @@ public interface WritableSheet extends Sheet
    * @param name the name of the sheet
    */
   public void setName(String name);
-  /**
-   * Indicates whether or not this sheet is hidden
-   *
-   * @param hidden hidden flag
-   * @deprecated use the SheetSettings bean instead
-   */
-  public void setHidden(boolean hidden);
-  /**
-   * Indicates whether or not this sheet is protected
-   *
-   * @param prot Protected flag
-   * @deprecated use the SheetSettings bean instead
-   */
-  public void setProtected(boolean prot);
 
   /**
    * Sets the width of the column on this sheet, in characters.  This causes
@@ -75,18 +61,6 @@ public interface WritableSheet extends Sheet
    * @param width the width of the column
    */
   public void setColumnView(int col, int width);
-
-  /**
-   * Sets the width and style of every cell in the specified column.
-   * If the columns specified already has view information associated
-   * with it, then it is replaced by the new data
-   *
-   * @param col the column to be formatted
-   * @param format the format of every cell in the column
-   * @param width the width of the column, in characters
-   * @deprecated Use the CellView bean instead
-   */
-  public void setColumnView(int col, int width, CellFormat format);
 
   /**
    * Sets the view for this column
@@ -115,18 +89,6 @@ public interface WritableSheet extends Sheet
    */
   public void setRowView(int row, boolean collapsed)
     throws RowsExceededException;
-
-  /**
-   * Sets the height of the specified row, as well as its collapse status
-   *
-   * @param row the row to be formatted
-   * @param height the row height in 1/20th of a point
-   * @param collapsed indicates whether the row is collapsed
-   * @exception jxl.write.biff.RowsExceededException
-   */
-  public void setRowView(int row, int height,
-                         boolean collapsed)
-                         throws RowsExceededException;
 
   /**
    * Sets the view for this column

@@ -539,18 +539,6 @@ public class SheetImpl implements Sheet
   }
 
   /**
-   * Determines whether the sheet is hidden
-   *
-   * @return whether or not the sheet is hidden
-   * @deprecated in favour of the getSettings function
-   */
-  @Override
-  public boolean isHidden()
-  {
-    return hidden;
-  }
-
-  /**
    * Gets the column info record for the specified column.  If no
    * column is specified, null is returned
    *
@@ -824,18 +812,6 @@ public class SheetImpl implements Sheet
   public final DrawingGroupObject[] getDrawings()
   {
     return drawings.toArray(new DrawingGroupObject[drawings.size()]);
-  }
-
-  /**
-   * Determines whether the sheet is protected
-   *
-   * @return whether or not the sheet is protected
-   * @deprecated in favour of the getSettings() api
-   */
-  @Override
-  public boolean isProtected()
-  {
-    return settings.isProtected();
   }
 
   /**
