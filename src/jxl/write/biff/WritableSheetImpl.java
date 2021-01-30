@@ -647,9 +647,9 @@ class WritableSheetImpl implements WritableSheet
 
     // Handle interested cell references on the main workbook
     if (workbookSettings.getFormulaAdjust())
-    {
       workbook.rowInserted(this, row);
-    }
+
+    settings.insertRowInPrintArea(row);
 
     // Adjust the maximum row record
     numRows++;
@@ -748,6 +748,8 @@ class WritableSheetImpl implements WritableSheet
     {
       workbook.columnInserted(this, col);
     }
+
+    settings.insertColumnInPrintArea(col);
 
     numColumns++;
 
@@ -871,6 +873,8 @@ class WritableSheetImpl implements WritableSheet
       workbook.columnRemoved(this, col);
     }
 
+    settings.removeColumnFromPrintArea(col);
+
     numColumns--;
 
     for (DrawingGroupObject dgo : drawings)
@@ -959,6 +963,8 @@ class WritableSheetImpl implements WritableSheet
     {
       workbook.rowRemoved(this, row);
     }
+
+    settings.removeRowFromPrintArea(row);
 
     // Adjust the maximum row record
     numRows--;
