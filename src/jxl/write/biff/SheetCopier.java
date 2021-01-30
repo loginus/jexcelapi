@@ -935,7 +935,7 @@ class SheetCopier
     WritableWorkbook toWorkbook = toSheet.getWorkbook();
     int fromSheetIndex = fromWorkbook.getIndex(fromSheet);
     List<NameRecord> nameRecords = fromWorkbook.getNameRecords();
-    String[] names = toWorkbook.getRangeNames();
+    var rangeNames = toWorkbook.getRangeNames();
 
     for (var nameRecord : nameRecords) {
       NameRecord.NameRange[] nameRanges = nameRecord.getRanges();
@@ -945,7 +945,10 @@ class SheetCopier
 
         if (fromSheetIndex == nameSheetIndex) {
           String name = nameRecord.getName();
-          if (Arrays.binarySearch(names, name) < 0)
+          if (rangeNames.contains(name))
+            LOGGER.warn("Named range " + name +
+                    " is already present in the destination workbook");
+          else
             toWorkbook.addNameArea(
                     name,
                     toSheet,
@@ -953,9 +956,6 @@ class SheetCopier
                     nameRange.getFirstRow(),
                     nameRange.getLastColumn(),
                     nameRange.getLastRow());
-          else
-            LOGGER.warn("Named range " + name +
-                    " is already present in the destination workbook");
         }
       }
     }

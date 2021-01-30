@@ -24,6 +24,7 @@ import java.nio.file.*;
 import java.util.*;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
+import static java.util.stream.Collectors.toSet;
 import jxl.*;
 import jxl.biff.*;
 import jxl.biff.CellReferenceHelper;
@@ -1565,13 +1566,10 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * @return the list of named cells within the workbook
    */
   @Override
-  public String[] getRangeNames() {
-    String[] n = new String[names.size()];
-    for (int i = 0 ; i < names.size() ; i++) {
-      n[i] = names.get(i).getName();
-    }
-
-    return n;
+  public Set<String> getRangeNames() {
+    return names.stream()
+            .map(NameRecord::getName)
+            .collect(toSet());
   }
 
   /**

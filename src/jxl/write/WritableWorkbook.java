@@ -282,7 +282,7 @@ public abstract class WritableWorkbook implements Closeable
    *
    * @return the list of named cells within the workbook
    */
-  public abstract String[] getRangeNames();
+  public abstract Set<String> getRangeNames();
 
   /**
    * Removes the specified named range from the workbook.  Note that
