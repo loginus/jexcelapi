@@ -76,7 +76,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
   /**
    * The name records
    */
-  private ArrayList<NameRecord> names;
+  private final List<NameRecord> names = new ArrayList<>();
 
   /**
    * A lookup hash map of the name records
@@ -295,7 +295,6 @@ public class WritableWorkbookImpl extends WritableWorkbook
     if (!settings.getNamesDisabled())
     {
       List<jxl.read.biff.NameRecord> na = wp.getNameRecords();
-      names = new ArrayList<>(na.size());
 
       for (int i = 0; i < na.size(); i++)
       {
@@ -563,7 +562,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
       }
     }
 
-    if (names != null && names.size() > 0)
+    if (names.size() > 0)
     {
       for (NameRecord n : names) {
         int oldRef = n.getSheetRef();
@@ -827,17 +826,14 @@ public class WritableWorkbookImpl extends WritableWorkbook
     }
 
     // Write out the names, if any exists
-    if (names != null) {
-      for (NameRecord n : names) {
+    for (NameRecord n : names) {
+      // filter print names, they will be written based on the sheet settings
+      if (BuiltInName.PRINT_AREA.equals(n.getBuiltInName()))
+        continue;
+      if (BuiltInName.PRINT_TITLES.equals(n.getBuiltInName()))
+        continue;
 
-        // filter print names, they will be written based on the sheet settings
-        if (BuiltInName.PRINT_AREA.equals(n.getBuiltInName()))
-          continue;
-        if (BuiltInName.PRINT_TITLES.equals(n.getBuiltInName()))
-          continue;
-
-        outputFile.write(n);
-      }
+      outputFile.write(n);
     }
 
     for (var wsi : sheets) {
@@ -1361,11 +1357,8 @@ public class WritableWorkbookImpl extends WritableWorkbook
       cv.columnInserted(s, externalSheetIndex, col);
 
     // Adjust any named cells
-    if (names != null)
-    {
-      for (NameRecord nameRecord : names)
-        nameRecord.columnInserted(externalSheetIndex, col);
-    }
+    for (NameRecord nameRecord : names)
+      nameRecord.columnInserted(externalSheetIndex, col);
   }
 
   /**
@@ -1383,14 +1376,10 @@ public class WritableWorkbookImpl extends WritableWorkbook
 
     // Adjust any named cells
     ArrayList<NameRecord> removedNames = new ArrayList<>();
-    if (names != null)
-    {
-      for (NameRecord nameRecord : names)
-        if (nameRecord.columnRemoved(externalSheetIndex, col))
-          removedNames.add(nameRecord);
-
-      names.removeAll(removedNames);
-    }
+    for (NameRecord nameRecord : names)
+      if (nameRecord.columnRemoved(externalSheetIndex, col))
+        removedNames.add(nameRecord);
+    names.removeAll(removedNames);
   }
 
   /**
@@ -1409,9 +1398,8 @@ public class WritableWorkbookImpl extends WritableWorkbook
       cv.rowInserted(s, externalSheetIndex, row);
 
     // Adjust any named cells
-    if (names != null)
-      for (NameRecord nameRecord : names)
-        nameRecord.rowInserted(externalSheetIndex, row);
+    for (NameRecord nameRecord : names)
+      nameRecord.rowInserted(externalSheetIndex, row);
   }
 
   /**
@@ -1429,15 +1417,11 @@ public class WritableWorkbookImpl extends WritableWorkbook
 
     // Adjust any named cells
     ArrayList<NameRecord> removedNames = new ArrayList<>();
-    if (names != null)
-    {
-      for (NameRecord nameRecord : names)
-        if (nameRecord.rowRemoved(externalSheetIndex, row))
-          removedNames.add(nameRecord);
-
-      // Remove any names which have been deleted
-      names.removeAll(removedNames);
-    }
+    for (NameRecord nameRecord : names)
+      if (nameRecord.rowRemoved(externalSheetIndex, row))
+        removedNames.add(nameRecord);
+    // Remove any names which have been deleted
+    names.removeAll(removedNames);
   }
 
   @Override
@@ -1581,16 +1565,10 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * @return the list of named cells within the workbook
    */
   @Override
-  public String[] getRangeNames()
-  {
-    if (names == null)
-      return new String[0];
-
+  public String[] getRangeNames() {
     String[] n = new String[names.size()];
-    for (int i = 0 ; i < names.size() ; i++)
-    {
-      NameRecord nr = names.get(i);
-      n[i] = nr.getName();
+    for (int i = 0 ; i < names.size() ; i++) {
+      n[i] = names.get(i).getName();
     }
 
     return n;
@@ -1679,9 +1657,6 @@ public class WritableWorkbookImpl extends WritableWorkbook
                    int lastRow,
                    boolean global)
   {
-    if (names == null)
-      names = new ArrayList<>();
-
     int externalSheetIndex = getExternalSheetIndex(sheet.getName());
 
     // Create a new name record.
