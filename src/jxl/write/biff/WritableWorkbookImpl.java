@@ -22,6 +22,8 @@ package jxl.write.biff;
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
 import jxl.*;
 import jxl.biff.*;
 import jxl.biff.CellReferenceHelper;
@@ -33,7 +35,6 @@ import jxl.format.Colour;
 import static jxl.read.biff.SupbookRecord.*;
 import jxl.read.biff.WorkbookParser;
 import jxl.write.*;
-import jxl.write.biff.File;
 
 
 /**
@@ -622,59 +623,6 @@ public class WritableWorkbookImpl extends WritableWorkbook
       // Check the merged records.  This has to be done before the
       // globals are written out because some more XF formats might be created
       wsi.checkMergedBorders();
-
-      // Check to see if there are any predefined names
-      Range range = wsi.getSettings().getPrintArea();
-      if (range != null)
-      {
-        addNameArea(BuiltInName.PRINT_AREA,
-                    wsi,
-                    range.getTopLeft().getColumn(),
-                    range.getTopLeft().getRow(),
-                    range.getBottomRight().getColumn(),
-                    range.getBottomRight().getRow(),
-                    false);
-      }
-
-      // Check to see if print titles by row were set
-      Range rangeR = wsi.getSettings().getPrintTitlesRow();
-      Range rangeC = wsi.getSettings().getPrintTitlesCol();
-      if (rangeR != null && rangeC != null)
-      {
-        addNameArea(BuiltInName.PRINT_TITLES,
-                    wsi,
-                    rangeR.getTopLeft().getColumn(),
-                    rangeR.getTopLeft().getRow(),
-                    rangeR.getBottomRight().getColumn(),
-                    rangeR.getBottomRight().getRow(),
-                    rangeC.getTopLeft().getColumn(),
-                    rangeC.getTopLeft().getRow(),
-                    rangeC.getBottomRight().getColumn(),
-                    rangeC.getBottomRight().getRow(),
-                    false);
-      }
-      // Check to see if print titles by row were set
-      else if (rangeR != null)
-      {
-    	  addNameArea(BuiltInName.PRINT_TITLES,
-                    wsi,
-                    rangeR.getTopLeft().getColumn(),
-                    rangeR.getTopLeft().getRow(),
-                    rangeR.getBottomRight().getColumn(),
-                    rangeR.getBottomRight().getRow(),
-                    false);
-      }
-      // Check to see if print titles by column were set
-      else if (rangeC != null)
-      {
-        addNameArea(BuiltInName.PRINT_TITLES,
-                    wsi,
-                    rangeC.getTopLeft().getColumn(),
-                    rangeC.getTopLeft().getRow(),
-                    rangeC.getBottomRight().getColumn(),
-                    rangeC.getBottomRight().getRow(),
-                    false);
-      }
     }
 
     // Rationalize all the XF and number formats
@@ -879,10 +827,22 @@ public class WritableWorkbookImpl extends WritableWorkbook
     }
 
     // Write out the names, if any exists
-    if (names != null)
-    {
-      for (NameRecord n : names)
+    if (names != null) {
+      for (NameRecord n : names) {
+
+        // filter print names, they will be written based on the sheet settings
+        if (BuiltInName.PRINT_AREA.equals(n.getBuiltInName()))
+          continue;
+        if (BuiltInName.PRINT_TITLES.equals(n.getBuiltInName()))
+          continue;
+
         outputFile.write(n);
+      }
+    }
+
+    for (var wsi : sheets) {
+      writePrintAreaIfPresent(wsi);
+      writePrintTitlesIfPresent(wsi);
     }
 
     // Write out the mso drawing group, if it exists
@@ -909,6 +869,74 @@ public class WritableWorkbookImpl extends WritableWorkbook
       wsheet = (WritableSheetImpl) getSheet(i);
       wsheet.write();
     }
+  }
+
+  private void writePrintAreaIfPresent(WritableSheetImpl wsi) throws IOException {
+    // Check to see if there are any predefined names
+    Range range = wsi.getSettings().getPrintArea();
+    if (range != null) {
+      var printArea = createNameRecord(
+              BuiltInName.PRINT_AREA,
+              wsi,
+              range.getTopLeft().getColumn(),
+              range.getTopLeft().getRow(),
+              range.getBottomRight().getColumn(),
+              range.getBottomRight().getRow(),
+              false);
+      outputFile.write(printArea);
+    }
+  }
+
+  private void writePrintTitlesIfPresent(WritableSheetImpl wsi) throws IOException {
+    var mayBePrintTitle = getPrintTitles(wsi);
+    if (mayBePrintTitle.isPresent())
+      outputFile.write(mayBePrintTitle.orElseThrow());
+  }
+
+  private Optional<NameRecord> getPrintTitles(WritableSheetImpl wsi) {
+    // Check to see if print titles by row were set
+    Range rangeR = wsi.getSettings().getPrintTitlesRow();
+    Range rangeC = wsi.getSettings().getPrintTitlesCol();
+    if (rangeR != null && rangeC != null) {
+      return of(createNameRecord(
+              BuiltInName.PRINT_TITLES,
+              wsi,
+              rangeR.getTopLeft().getColumn(),
+              rangeR.getTopLeft().getRow(),
+              rangeR.getBottomRight().getColumn(),
+              rangeR.getBottomRight().getRow(),
+              rangeC.getTopLeft().getColumn(),
+              rangeC.getTopLeft().getRow(),
+              rangeC.getBottomRight().getColumn(),
+              rangeC.getBottomRight().getRow(),
+              false));
+    }
+
+    // Check to see if print titles by row were set
+    else if (rangeR != null) {
+      return of(createNameRecord(
+              BuiltInName.PRINT_TITLES,
+              wsi,
+              rangeR.getTopLeft().getColumn(),
+              rangeR.getTopLeft().getRow(),
+              rangeR.getBottomRight().getColumn(),
+              rangeR.getBottomRight().getRow(),
+              false));
+    }
+
+    // Check to see if print titles by column were set
+    else if (rangeC != null) {
+      return of(createNameRecord(
+              BuiltInName.PRINT_TITLES,
+              wsi,
+              rangeC.getTopLeft().getColumn(),
+              rangeC.getTopLeft().getRow(),
+              rangeC.getBottomRight().getColumn(),
+              rangeC.getBottomRight().getRow(),
+              false));
+    }
+
+    return empty();
   }
 
   /**
@@ -1676,8 +1704,6 @@ public class WritableWorkbookImpl extends WritableWorkbook
   }
 
   /**
-   * Add new named area to this workbook with the given information.
-   *
    * @param name name to be created.
    * @param sheet sheet containing the name
    * @param firstCol  first column this name refers to.
@@ -1687,41 +1713,20 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * @param global   TRUE if this is a global name, FALSE if this is tied to
    *                 the sheet
    */
-  void addNameArea(BuiltInName name,
-                   WritableSheet sheet,
-                   int firstCol,
-                   int firstRow,
-                   int lastCol,
-                   int lastRow,
-                   boolean global)
-  {
-    if (names == null)
-    {
-      names = new ArrayList<>();
-    }
-
+  private NameRecord createNameRecord(
+          BuiltInName name, WritableSheet sheet, int firstCol, int firstRow, int lastCol, int lastRow, boolean global) {
     int index = getInternalSheetIndex(sheet.getName());
     int externalSheetIndex = getExternalSheetIndex(sheet.getName());
 
-    // Create a new name record.
-    NameRecord nr =
-      new NameRecord(name,
-                     index,
-                     externalSheetIndex,
-                     firstRow, lastRow,
-                     firstCol, lastCol,
-                     global);
-
-    // Add new name to name array.
-    names.add(nr);
-
-    // Add new name to name hash table.
-    nameRecords.put(name.getName(), nr);
+    return new NameRecord(name,
+            index,
+            externalSheetIndex,
+            firstRow, lastRow,
+            firstCol, lastCol,
+            global);
   }
 
   /**
-   * Add new named area to this workbook with the given information.
-   *
    * @param name name to be created.
    * @param sheet sheet containing the name
    * @param firstCol  first column this name refers to.
@@ -1735,42 +1740,18 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * @param global   TRUE if this is a global name, FALSE if this is tied to
    *                 the sheet
    */
-  void addNameArea(BuiltInName name,
-                   WritableSheet sheet,
-                   int firstCol,
-                   int firstRow,
-                   int lastCol,
-                   int lastRow,
-                   int firstCol2,
-                   int firstRow2,
-                   int lastCol2,
-                   int lastRow2,
-                   boolean global)
-  {
-    if (names == null)
-    {
-      names = new ArrayList<>();
-    }
-
+  private NameRecord createNameRecord(BuiltInName name, WritableSheet sheet, int firstCol, int firstRow, int lastCol, int lastRow, int firstCol2, int firstRow2, int lastCol2, int lastRow2, boolean global) {
     int index = getInternalSheetIndex(sheet.getName());
     int externalSheetIndex = getExternalSheetIndex(sheet.getName());
 
-    // Create a new name record.
-    NameRecord nr =
-      new NameRecord(name,
-                     index,
-                     externalSheetIndex,
-                     firstRow2, lastRow2,
-                     firstCol2, lastCol2,
-                     firstRow, lastRow,
-                     firstCol, lastCol,
-                     global);
-
-    // Add new name to name array.
-    names.add(nr);
-
-    // Add new name to name hash table.
-    nameRecords.put(name.toString(), nr);
+    return new NameRecord(name,
+                    index,
+                    externalSheetIndex,
+                    firstRow2, lastRow2,
+                    firstCol2, lastCol2,
+                    firstRow, lastRow,
+                    firstCol, lastCol,
+                    global);
   }
 
   /**
