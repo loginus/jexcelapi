@@ -48,7 +48,7 @@ class NameRecord extends WritableRecordData
    * The index into the name table
    */
   private int index;
-  
+
   /**
    * The 0-based index sheet reference for a record name
    *     0 is for a global reference
@@ -60,7 +60,7 @@ class NameRecord extends WritableRecordData
    */
   private boolean modified;
 
-  /** 
+  /**
    * A nested class to hold range information
    */
   static class NameRange
@@ -79,14 +79,14 @@ class NameRecord extends WritableRecordData
       rowLast = nr.getLastRow();
       externalSheet = nr.getExternalSheet();
     }
-    
+
     /**
      * Create a new range for the name record.
      */
-    NameRange(int extSheet, 
-              int theStartRow, 
+    NameRange(int extSheet,
+              int theStartRow,
               int theEndRow,
-              int theStartCol, 
+              int theStartCol,
               int theEndCol)
     {
       columnFirst = theStartCol;
@@ -101,7 +101,7 @@ class NameRecord extends WritableRecordData
     int getLastColumn() {return columnLast;}
     int getLastRow() {return rowLast;}
     int getExternalSheet() { return externalSheet;}
-    
+
     void incrementFirstRow() { rowFirst++ ; }
     void incrementLastRow() { rowLast++ ; }
     void decrementFirstRow() { rowFirst-- ; }
@@ -120,10 +120,10 @@ class NameRecord extends WritableRecordData
 
       // Starting row
       IntegerHelper.getTwoBytes(rowFirst, d, 2);
-      
+
       // End row
       IntegerHelper.getTwoBytes(rowLast, d, 4);
-      
+
       // Start column
       IntegerHelper.getTwoBytes(columnFirst & 0xff, d, 6);
 
@@ -149,7 +149,7 @@ class NameRecord extends WritableRecordData
   private static final NameRange EMPTY_RANGE = new NameRange(0,0,0,0,0);
 
   private final WorkbookSettings settings;
-  
+
   /**
    * Constructor - used when copying sheets
    *
@@ -161,7 +161,7 @@ class NameRecord extends WritableRecordData
     super(Type.NAME);
 
     data = sr.getData();
-    
+
     if (sr.getBuiltInName() != null)
       builtInName = sr.getBuiltInName();
     else
@@ -182,7 +182,7 @@ class NameRecord extends WritableRecordData
 
   /**
    * Create a new name record with the given information.
-   * 
+   *
    * @param theName      Name to be created.
    * @param theIndex     Index of this name.
    * @param extSheet     External sheet index this name refers to.
@@ -192,15 +192,15 @@ class NameRecord extends WritableRecordData
    * @param theEndCol    Last column this name refers to.
    * @param global       TRUE if this is a global name
    */
-  NameRecord(String theName, 
-             int theIndex, 
-             int extSheet, 
-             int theStartRow, 
-             int theEndRow, 
-             int theStartCol, 
+  NameRecord(String theName,
+             int theIndex,
+             int extSheet,
+             int theStartRow,
+             int theEndRow,
+             int theStartCol,
              int theEndCol,
              boolean global)
-  { 
+  {
     super(Type.NAME);
 
     Objects.requireNonNull(theName);
@@ -210,10 +210,10 @@ class NameRecord extends WritableRecordData
                                      // the 1-based index of the sheet
 
     ranges = new NameRange[1];
-    ranges[0] = new NameRange(extSheet, 
-                              theStartRow, 
-                              theEndRow, 
-                              theStartCol, 
+    ranges[0] = new NameRange(extSheet,
+                              theStartRow,
+                              theEndRow,
+                              theStartCol,
                               theEndCol);
     modified = true;
     settings = null;
@@ -221,7 +221,7 @@ class NameRecord extends WritableRecordData
 
   /**
    * Create a new name record with the given information.
-   * 
+   *
    * @param theName      Name to be created.
    * @param theIndex     Index of this name.
    * @param extSheet     External sheet index this name refers to.
@@ -231,15 +231,15 @@ class NameRecord extends WritableRecordData
    * @param theEndCol    Last column this name refers to.
    * @param global       TRUE if this is a global name
    */
-  NameRecord(BuiltInName theName, 
-             int theIndex, 
-             int extSheet, 
-             int theStartRow, 
-             int theEndRow, 
-             int theStartCol, 
+  NameRecord(BuiltInName theName,
+             int theIndex,
+             int extSheet,
+             int theStartRow,
+             int theEndRow,
+             int theStartCol,
              int theEndCol,
              boolean global)
-  { 
+  {
     super(Type.NAME);
 
     Objects.requireNonNull(theName);
@@ -249,17 +249,17 @@ class NameRecord extends WritableRecordData
                                        // the 1-based index of the sheet
 
     ranges = new NameRange[1];
-    ranges[0] = new NameRange(extSheet, 
-                              theStartRow, 
-                              theEndRow, 
-                              theStartCol, 
+    ranges[0] = new NameRange(extSheet,
+                              theStartRow,
+                              theEndRow,
+                              theStartCol,
                               theEndCol);
     settings = null;
   }
 
   /**
    * Create a new name record with the given information for 2-range entities.
-   * 
+   *
    * @param theName      Name to be created.
    * @param theIndex     Index of this name.
    * @param extSheet     External sheet index this name refers to.
@@ -270,22 +270,22 @@ class NameRecord extends WritableRecordData
    * @param theStartRow2 First row this name refers to (2nd instance).
    * @param theEndRow2   Last row this name refers to (2nd instance).
    * @param theStartCol2 First column this name refers to (2nd instance).
-   * @param theEndCol2   Last column this name refers to (2nd instance). 
+   * @param theEndCol2   Last column this name refers to (2nd instance).
    * @param global       TRUE if this is a global name
    */
-  NameRecord(BuiltInName theName, 
-             int theIndex, 
-             int extSheet, 
-             int theStartRow, 
-             int theEndRow, 
-             int theStartCol, 
+  NameRecord(BuiltInName theName,
+             int theIndex,
+             int extSheet,
+             int theStartRow,
+             int theEndRow,
+             int theStartCol,
              int theEndCol,
-             int theStartRow2,             
-             int theEndRow2, 
-             int theStartCol2, 
+             int theStartRow2,
+             int theEndRow2,
+             int theStartCol2,
              int theEndCol2,
              boolean global)
-  { 
+  {
     super(Type.NAME);
 
     Objects.requireNonNull(theName);
@@ -295,20 +295,20 @@ class NameRecord extends WritableRecordData
                                        // the 1-based index of the sheet
 
     ranges = new NameRange[2];
-    ranges[0] = new NameRange(extSheet, 
-                              theStartRow, 
-                              theEndRow, 
-                              theStartCol, 
+    ranges[0] = new NameRange(extSheet,
+                              theStartRow,
+                              theEndRow,
+                              theStartCol,
                               theEndCol);
-    ranges[1] = new NameRange(extSheet, 
-            				  theStartRow2, 
-            				  theEndRow2, 
-            				  theStartCol2, 
+    ranges[1] = new NameRange(extSheet,
+            				  theStartRow2,
+            				  theEndRow2,
+            				  theStartCol2,
             				  theEndCol2);
     settings = null;
   }
-  
-  
+
+
   /**
    * Gets the binary data for output to file
    *
@@ -327,7 +327,7 @@ class NameRecord extends WritableRecordData
     final byte AREA_REFERENCE = 0x3b;
 
     int detailLength;
-    
+
     if (ranges.length > 1)
     {
       detailLength = (ranges.length * AREA_RANGE_LENGTH) + 4;
@@ -337,7 +337,7 @@ class NameRecord extends WritableRecordData
       detailLength = AREA_RANGE_LENGTH;
     }
 
-    int length = NAME_HEADER_LENGTH + detailLength; 
+    int length = NAME_HEADER_LENGTH + detailLength;
     length += builtInName != null ? 1 : name.length();
     data = new byte[length];
 
@@ -360,7 +360,7 @@ class NameRecord extends WritableRecordData
     }
     else
     {
-      data[3] = (byte) name.length();    
+      data[3] = (byte) name.length();
     }
 
     // Size of the definitions
@@ -370,8 +370,8 @@ class NameRecord extends WritableRecordData
     IntegerHelper.getTwoBytes(sheetRef, data, 6);
     IntegerHelper.getTwoBytes(sheetRef, data, 8);
 
-    // Byte 10-13 are optional lengths [0,0,0,0]    
-    // Byte 14 is length of name which is not used.    
+    // Byte 10-13 are optional lengths [0,0,0,0]
+    // Byte 14 is length of name which is not used.
 
     // The name
     if (builtInName != null)
@@ -389,8 +389,8 @@ class NameRecord extends WritableRecordData
     // The actual range definition.
     int pos = builtInName != null ? 16 : name.length() + 15;
 
-    // If there are multiple ranges for the name, we must specify a 
-    // subExpression type rather than areaReference and then put out 
+    // If there are multiple ranges for the name, we must specify a
+    // subExpression type rather than areaReference and then put out
     // multiple areaReference entries with an end byte.
     if (ranges.length > 1)
     {
@@ -402,7 +402,7 @@ class NameRecord extends WritableRecordData
       for (int i = 0 ; i < ranges.length ; i++)
       {
         data[pos++] = areaReference;
-        rd = ranges[i].getData();        
+        rd = ranges[i].getData();
         System.arraycopy(rd, 0, data, pos, rd.length);
         pos += rd.length;
       }
@@ -422,7 +422,7 @@ class NameRecord extends WritableRecordData
   }
 
   /**
-   * Accessor for the name 
+   * Accessor for the name
    *
    * @return the name
    */
@@ -440,7 +440,7 @@ class NameRecord extends WritableRecordData
   {
     return index;
   }
-  
+
   /**
    * The 0-based index sheet reference for a record name
    *     0 is for a global reference
@@ -451,7 +451,7 @@ class NameRecord extends WritableRecordData
   {
     return sheetRef;
   }
-  
+
   /**
    * Set the index sheet reference for a record name
    *     0 is for a global reference
@@ -473,7 +473,7 @@ class NameRecord extends WritableRecordData
   }
 
   /**
-   * Called when a row is inserted on the 
+   * Called when a row is inserted on the
    *
    * @param sheetIndex the sheet index on which the column was inserted
    * @param row the column number which was inserted
@@ -550,7 +550,7 @@ class NameRecord extends WritableRecordData
     {
       return true;
     }
-   
+
     // otherwise just remove the empty ones
     NameRange[] newRanges = new NameRange[ranges.length - emptyRanges];
     for (int i = 0 ; i < ranges.length ; i++)
@@ -582,7 +582,7 @@ class NameRecord extends WritableRecordData
         continue; // shame on me - this is no better than a goto
       }
 
-      if (col == ranges[i].getFirstColumn() && col == 
+      if (col == ranges[i].getFirstColumn() && col ==
           ranges[i].getLastColumn())
       {
         // remove the range
@@ -616,7 +616,7 @@ class NameRecord extends WritableRecordData
     {
       return true;
     }
-   
+
     // otherwise just remove the empty ones
     NameRange[] newRanges = new NameRange[ranges.length - emptyRanges];
     for (int i = 0 ; i < ranges.length ; i++)
@@ -634,7 +634,7 @@ class NameRecord extends WritableRecordData
 
 
   /**
-   * Called when a row is inserted on the 
+   * Called when a row is inserted on the
    *
    * @param sheetIndex the sheet index on which the column was inserted
    * @param col the column number which was inserted
@@ -660,6 +660,10 @@ class NameRecord extends WritableRecordData
         modified = true;
       }
     }
+  }
+
+  public BuiltInName getBuiltInName() {
+    return builtInName;
   }
 
 }
