@@ -58,7 +58,7 @@ final class SheetWriter
    * The logger
    */
   private static Logger logger = Logger.getLogger(SheetWriter.class);
-    
+
   /**
    * A handle to the output file which the binary data is written to
    */
@@ -143,7 +143,7 @@ final class SheetWriter
    * The workspace options
    */
   private WorkspaceInformationRecord workspaceOptions;
-  /** 
+  /**
    * The column format overrides
    */
   private TreeSet<ColumnInfoRecord> columnFormats;
@@ -198,8 +198,8 @@ final class SheetWriter
    * information then writes out each row in turn.
    * Once all the rows have been written out, it retrospectively adjusts
    * the offset references in the file
-   * 
-   * @exception IOException 
+   *
+   * @exception IOException
    */
   public void write() throws IOException
   {
@@ -223,7 +223,7 @@ final class SheetWriter
     }
 
     int indexPos = outputFile.getPos();
-   
+
     // Write the index record out now in order to serve as a place holder
     // The bof passed in is the bof of the workbook, not this sheet
     IndexRecord indexRecord = new IndexRecord(0, numRows, numBlocks);
@@ -245,7 +245,7 @@ final class SheetWriter
 
     RefModeRecord rmr = new RefModeRecord();
     outputFile.write(rmr);
-    
+
     IterationRecord itr = new IterationRecord(false);
     outputFile.write(itr);
 
@@ -254,7 +254,7 @@ final class SheetWriter
 
     SaveRecalcRecord srr = new SaveRecalcRecord
       (settings.getRecalculateFormulasBeforeSave());
-    outputFile.write(srr);  
+    outputFile.write(srr);
 
     PrintHeadersRecord phr = new PrintHeadersRecord
       (settings.getPrintHeaders());
@@ -274,8 +274,8 @@ final class SheetWriter
     outputFile.write(gutr);
 
     DefaultRowHeightRecord drhr = new DefaultRowHeightRecord
-     (settings.getDefaultRowHeight(), 
-      settings.getDefaultRowHeight() != 
+     (settings.getDefaultRowHeight(),
+      settings.getDefaultRowHeight() !=
                 SheetSettings.DEFAULT_DEFAULT_ROW_HEIGHT);
     outputFile.write(drhr);
 
@@ -368,22 +368,18 @@ final class SheetWriter
     }
 
     indexRecord.setDataStartPosition(outputFile.getPos());
-    DefaultColumnWidth dcw = 
+    DefaultColumnWidth dcw =
       new DefaultColumnWidth(settings.getDefaultColumnWidth());
     outputFile.write(dcw);
-    
+
     // Get a handle to the normal styles
-    WritableCellFormat normalStyle = 
+    WritableCellFormat normalStyle =
       sheet.getWorkbook().getStyles().getNormalStyle();
-    WritableCellFormat defaultDateFormat = 
+    WritableCellFormat defaultDateFormat =
       sheet.getWorkbook().getStyles().getDefaultDateFormat();
 
     // Write out all the column formats
-    ColumnInfoRecord cir = null;
-    for (Iterator<ColumnInfoRecord> colit = columnFormats.iterator(); colit.hasNext() ; )
-    {
-      cir = colit.next();
-
+    for (ColumnInfoRecord cir : columnFormats) {
       // Writing out the column info with index 0x100 causes excel to crash
       if (cir.getColumn() < 0x100)
       {
@@ -391,7 +387,7 @@ final class SheetWriter
       }
 
       XFRecord xfr = cir.getCellFormat();
-      
+
       if (xfr != normalStyle && cir.getColumn() < 0x100)
       {
         // Make this the format for every cell in the column
@@ -450,13 +446,13 @@ final class SheetWriter
 
       // Now set the current file position in the index record
       indexRecord.addBlockPosition(outputFile.getPos());
-      
+
       // Set the position of the file pointer and write out the DBCell
       // record
       dbcell.setPosition(outputFile.getPos());
       outputFile.write(dbcell);
     }
-    
+
     // Do the drawings and charts if enabled
     if (!workbookSettings.getDrawingsDisabled())
     {
@@ -500,8 +496,8 @@ final class SheetWriter
           settings.getVerticalFreeze() != 0)
       {
         sr = new SelectionRecord
-          (SelectionRecord.lowerRight, 
-           settings.getHorizontalFreeze(), 
+          (SelectionRecord.lowerRight,
+           settings.getHorizontalFreeze(),
            settings.getVerticalFreeze());
         outputFile.write(sr);
       }
@@ -511,7 +507,7 @@ final class SheetWriter
     }
     else
     {
-      // No frozen panes - just write out the selection record for the 
+      // No frozen panes - just write out the selection record for the
       // whole sheet
       SelectionRecord sr = new SelectionRecord
         (SelectionRecord.upperLeft, 0, 0);
@@ -584,7 +580,7 @@ final class SheetWriter
    *
    * @param rws the rows in the spreadsheet
    */
-  void setWriteData(RowRecord[] rws, 
+  void setWriteData(RowRecord[] rws,
                     HorizontalPageBreaksRecord rb,
                     VerticalPageBreaksRecord   cb,
                     ArrayList<? extends HyperlinkRecord>   hl,
@@ -604,7 +600,7 @@ final class SheetWriter
   }
 
   /**
-   * Sets the dimensions of this spreadsheet.  This method must be called 
+   * Sets the dimensions of this spreadsheet.  This method must be called
    * immediately prior to writing
    *
    * @param rws the number of rows
@@ -619,7 +615,7 @@ final class SheetWriter
   /**
    * Sets the sheet settings for this particular sheet.  Must be
    * called immediately prior to writing
-   * 
+   *
    * @param sr the sheet settings
    */
   void setSettings(SheetSettings sr)
@@ -698,8 +694,8 @@ final class SheetWriter
       Cell topLeft = range.getTopLeft();
       XFRecord tlformat = (XFRecord) topLeft.getCellFormat();
 
-      if (tlformat != null && 
-          tlformat.hasBorders() == true && 
+      if (tlformat != null &&
+          tlformat.hasBorders() == true &&
           !tlformat.isRead())
       {
         try
@@ -708,23 +704,23 @@ final class SheetWriter
           Cell bottomRight = range.getBottomRight();
 
           cf1.setBorder(Border.ALL, BorderLineStyle.NONE, Colour.BLACK);
-          cf1.setBorder(Border.LEFT, 
-                        tlformat.getBorderLine(Border.LEFT), 
+          cf1.setBorder(Border.LEFT,
+                        tlformat.getBorderLine(Border.LEFT),
                         tlformat.getBorderColour(Border.LEFT));
-          cf1.setBorder(Border.TOP,  
+          cf1.setBorder(Border.TOP,
                         tlformat.getBorderLine(Border.TOP),
                         tlformat.getBorderColour(Border.TOP));
 
           if (topLeft.getRow() == bottomRight.getRow())
           {
-            cf1.setBorder(Border.BOTTOM, 
+            cf1.setBorder(Border.BOTTOM,
                           tlformat.getBorderLine(Border.BOTTOM),
                           tlformat.getBorderColour(Border.BOTTOM));
           }
 
           if (topLeft.getColumn() == bottomRight.getColumn())
           {
-            cf1.setBorder(Border.RIGHT, 
+            cf1.setBorder(Border.RIGHT,
                           tlformat.getBorderLine(Border.RIGHT),
                           tlformat.getBorderColour(Border.RIGHT));
           }
@@ -748,13 +744,13 @@ final class SheetWriter
             {
               CellXFRecord cf2 = new CellXFRecord(tlformat);
               cf2.setBorder(Border.ALL, BorderLineStyle.NONE, Colour.BLACK);
-              cf2.setBorder(Border.LEFT, 
+              cf2.setBorder(Border.LEFT,
                             tlformat.getBorderLine(Border.LEFT),
                             tlformat.getBorderColour(Border.LEFT));
-              cf2.setBorder(Border.BOTTOM,  
+              cf2.setBorder(Border.BOTTOM,
                             tlformat.getBorderLine(Border.BOTTOM),
                             tlformat.getBorderColour(Border.BOTTOM));
-            
+
               index = borderFormats.indexOf(cf2);
               if (index != -1)
               {
@@ -765,7 +761,7 @@ final class SheetWriter
                 borderFormats.add(cf2);
               }
 
-              sheet.addCell(new Blank(topLeft.getColumn(), 
+              sheet.addCell(new Blank(topLeft.getColumn(),
                                       bottomRight.getRow(), cf2));
             }
 
@@ -775,13 +771,13 @@ final class SheetWriter
             {
               CellXFRecord cf3 = new CellXFRecord(tlformat);
               cf3.setBorder(Border.ALL, BorderLineStyle.NONE, Colour.BLACK);
-              cf3.setBorder(Border.LEFT, 
+              cf3.setBorder(Border.LEFT,
                             tlformat.getBorderLine(Border.LEFT),
                             tlformat.getBorderColour(Border.LEFT));
 
               if (topLeft.getColumn() == bottomRight.getColumn())
               {
-                cf3.setBorder(Border.RIGHT, 
+                cf3.setBorder(Border.RIGHT,
                               tlformat.getBorderLine(Border.RIGHT),
                               tlformat.getBorderColour(Border.RIGHT));
               }
@@ -808,10 +804,10 @@ final class SheetWriter
               // Handle the corner cell
               CellXFRecord cf6 = new CellXFRecord(tlformat);
               cf6.setBorder(Border.ALL, BorderLineStyle.NONE, Colour.BLACK);
-              cf6.setBorder(Border.RIGHT, 
+              cf6.setBorder(Border.RIGHT,
                             tlformat.getBorderLine(Border.RIGHT),
                             tlformat.getBorderColour(Border.RIGHT));
-              cf6.setBorder(Border.TOP,  
+              cf6.setBorder(Border.TOP,
                             tlformat.getBorderLine(Border.TOP),
                             tlformat.getBorderColour(Border.TOP));
               index = borderFormats.indexOf(cf6);
@@ -823,18 +819,18 @@ final class SheetWriter
               {
                 borderFormats.add(cf6);
               }
-              
-              sheet.addCell(new Blank(bottomRight.getColumn(), 
+
+              sheet.addCell(new Blank(bottomRight.getColumn(),
                                       topLeft.getRow(), cf6));
             }
 
             // Handle the cells along the right
-            for (int i = topLeft.getRow() + 1; 
+            for (int i = topLeft.getRow() + 1;
                      i < bottomRight.getRow() ;i++)
             {
               CellXFRecord cf7 = new CellXFRecord(tlformat);
               cf7.setBorder(Border.ALL, BorderLineStyle.NONE, Colour.BLACK);
-              cf7.setBorder(Border.RIGHT, 
+              cf7.setBorder(Border.RIGHT,
                             tlformat.getBorderLine(Border.RIGHT),
                             tlformat.getBorderColour(Border.RIGHT));
 
@@ -847,23 +843,23 @@ final class SheetWriter
               {
                 borderFormats.add(cf7);
               }
-              
+
               sheet.addCell(new Blank(bottomRight.getColumn(), i, cf7));
             }
 
             // Handle the cells along the top, and along the bottom too
-            for (int i = topLeft.getColumn() + 1; 
+            for (int i = topLeft.getColumn() + 1;
                      i < bottomRight.getColumn() ;i++)
             {
               CellXFRecord cf8 = new CellXFRecord(tlformat);
               cf8.setBorder(Border.ALL, BorderLineStyle.NONE, Colour.BLACK);
-              cf8.setBorder(Border.TOP, 
+              cf8.setBorder(Border.TOP,
                             tlformat.getBorderLine(Border.TOP),
                             tlformat.getBorderColour(Border.TOP));
-              
+
               if (topLeft.getRow() == bottomRight.getRow())
               {
-                cf8.setBorder(Border.BOTTOM, 
+                cf8.setBorder(Border.BOTTOM,
                               tlformat.getBorderLine(Border.BOTTOM),
                               tlformat.getBorderColour(Border.BOTTOM));
               }
@@ -877,7 +873,7 @@ final class SheetWriter
               {
                 borderFormats.add(cf8);
               }
-              
+
               sheet.addCell(new Blank(i, topLeft.getRow(), cf8));
             }
           }
@@ -889,23 +885,23 @@ final class SheetWriter
             // Handle the corner cell
             CellXFRecord cf4 = new CellXFRecord(tlformat);
             cf4.setBorder(Border.ALL, BorderLineStyle.NONE, Colour.BLACK);
-            cf4.setBorder(Border.RIGHT,  
+            cf4.setBorder(Border.RIGHT,
                           tlformat.getBorderLine(Border.RIGHT),
                           tlformat.getBorderColour(Border.RIGHT));
-            cf4.setBorder(Border.BOTTOM, 
+            cf4.setBorder(Border.BOTTOM,
                           tlformat.getBorderLine(Border.BOTTOM),
                           tlformat.getBorderColour(Border.BOTTOM));
 
             if (bottomRight.getRow() == topLeft.getRow())
             {
-              cf4.setBorder(Border.TOP, 
+              cf4.setBorder(Border.TOP,
                             tlformat.getBorderLine(Border.TOP),
                             tlformat.getBorderColour(Border.TOP));
             }
 
             if (bottomRight.getColumn() == topLeft.getColumn())
             {
-              cf4.setBorder(Border.LEFT, 
+              cf4.setBorder(Border.LEFT,
                             tlformat.getBorderLine(Border.LEFT),
                             tlformat.getBorderColour(Border.LEFT));
             }
@@ -920,23 +916,23 @@ final class SheetWriter
               borderFormats.add(cf4);
             }
 
-            sheet.addCell(new Blank(bottomRight.getColumn(), 
+            sheet.addCell(new Blank(bottomRight.getColumn(),
                                     bottomRight.getRow(), cf4));
 
             // Handle the cells along the bottom (and along the top
             // as well, if appropriate)
-            for (int i = topLeft.getColumn() + 1; 
+            for (int i = topLeft.getColumn() + 1;
                      i < bottomRight.getColumn() ;i++)
             {
               CellXFRecord cf5 = new CellXFRecord(tlformat);
               cf5.setBorder(Border.ALL, BorderLineStyle.NONE, Colour.BLACK);
-              cf5.setBorder(Border.BOTTOM, 
+              cf5.setBorder(Border.BOTTOM,
                             tlformat.getBorderLine(Border.BOTTOM),
                             tlformat.getBorderColour(Border.BOTTOM));
 
               if (topLeft.getRow() == bottomRight.getRow())
               {
-                cf5.setBorder(Border.TOP, 
+                cf5.setBorder(Border.TOP,
                               tlformat.getBorderLine(Border.TOP),
                               tlformat.getBorderColour(Border.TOP));
               }
@@ -950,7 +946,7 @@ final class SheetWriter
               {
                 borderFormats.add(cf5);
               }
-              
+
               sheet.addCell(new Blank(i, bottomRight.getRow(), cf5));
             }
           }
@@ -958,7 +954,7 @@ final class SheetWriter
         catch (WriteException e)
         {
           // just log e.toString(), not the whole stack trace
-          logger.warn(e.toString());  
+          logger.warn(e.toString());
         }
       }
     }
@@ -1069,7 +1065,7 @@ final class SheetWriter
       // the only data validations are those read in - this should
       // never be the case now that shared data validations add
       // to the validatedCells list
-      dataValidation.write(outputFile); 
+      dataValidation.write(outputFile);
       return;
     }
 
@@ -1077,7 +1073,7 @@ final class SheetWriter
     {
       // the only data validations are those which have been added by the
       // write API.  Need to sort out the combo box id
-      int comboBoxId = sheet.getComboBox() != null ? 
+      int comboBoxId = sheet.getComboBox() != null ?
         sheet.getComboBox().getObjectId() : DataValidation.DEFAULT_OBJECT_ID;
       dataValidation = new DataValidation(comboBoxId,
                                           sheet.getWorkbook(),
@@ -1098,18 +1094,18 @@ final class SheetWriter
         if (!cf.getDVParser().extendedCellsValidation())
         {
           // DVParser is specific for a single cell validation - just add it
-          DataValiditySettingsRecord dvsr = 
+          DataValiditySettingsRecord dvsr =
             new DataValiditySettingsRecord(cf.getDVParser());
           dataValidation.add(dvsr);
         }
         else
         {
           // Only add the DVParser once for shared validations
-          // only add it if it is the top left cell 
+          // only add it if it is the top left cell
           if (cv.getColumn() == cf.getDVParser().getFirstColumn() &&
               cv.getRow()    == cf.getDVParser().getFirstRow())
           {
-            DataValiditySettingsRecord dvsr = 
+            DataValiditySettingsRecord dvsr =
               new DataValiditySettingsRecord(cf.getDVParser());
             dataValidation.add(dvsr);
           }
@@ -1125,7 +1121,7 @@ final class SheetWriter
     {
     CellValue cv = (CellValue) i.next();
     CellFeatures cf = cv.getCellFeatures();
-    DataValiditySettingsRecord dvsr = 
+    DataValiditySettingsRecord dvsr =
     new DataValiditySettingsRecord(cf.getDVParser());
     dataValidation.add(dvsr);
     }
