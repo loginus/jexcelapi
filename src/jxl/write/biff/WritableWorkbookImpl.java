@@ -1480,13 +1480,12 @@ public class WritableWorkbookImpl extends WritableWorkbook
   @Override
   public WritableCell findCellByName(String name)
   {
-    CellLocation cl = null;
     try {
-      cl = findCellLocationByName(name);
+      CellLocation cl = findCellLocationByName(name);
+      return cl.getSheet().getWritableCell(cl.getColumn(), cl.getRow());
     } catch (NoSuchElementException ex) {
       return null;
     }
-    return cl.getSheet().getWritableCell(cl.getColumn(), cl.getRow());
   }
 
   /**
