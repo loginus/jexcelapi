@@ -22,15 +22,7 @@ package jxl.biff.formula;
 /**
  * Enumeration type for the context in which this formula is being parsed
  */
-public class ParseContext
-{
-  public static ParseContext DEFAULT = new ParseContext();
-  public static ParseContext DATA_VALIDATION = new ParseContext();
-
-  /**
-   * Private constructor
-   */
-  private ParseContext()
-  {
-  }
+public enum ParseContext {
+  DEFAULT,
+  DATA_VALIDATION
 }
