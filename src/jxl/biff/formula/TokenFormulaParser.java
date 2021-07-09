@@ -62,7 +62,7 @@ class TokenFormulaParser implements Parser
   /**
    * The hash table of items that have been parsed
    */
-  private Stack tokenStack;
+  private Stack<ParseItem> tokenStack = new Stack<>();
 
   /**
    * A reference to the workbook which holds the external sheet
@@ -88,9 +88,9 @@ class TokenFormulaParser implements Parser
   /**
    * Constructor
    */
-  public TokenFormulaParser(byte[] data, 
-                            Cell c, 
-                            ExternalSheet es, 
+  public TokenFormulaParser(byte[] data,
+                            Cell c,
+                            ExternalSheet es,
                             WorkbookMethods nt,
                             WorkbookSettings ws,
                             ParseContext pc)
@@ -100,10 +100,9 @@ class TokenFormulaParser implements Parser
     relativeTo = c;
     workbook = es;
     nameTable = nt;
-    tokenStack = new Stack();
     settings = ws;
     parseContext = pc;
-    
+
     Assert.verify(nameTable != null);
   }
 
@@ -119,7 +118,7 @@ class TokenFormulaParser implements Parser
 
     // Finally, there should be one thing left on the stack.  Get that
     // and add it to the root node
-    root = (ParseItem) tokenStack.pop();
+    root = tokenStack.pop();
 
     Assert.verify(tokenStack.empty());
 
@@ -136,10 +135,10 @@ class TokenFormulaParser implements Parser
   {
     int tokenVal = 0;
     Token t = null;
-    
+
     // Indicates that we are parsing the incredibly complicated and
     // hacky if construct that MS saw fit to include, the gits
-    Stack ifStack = new Stack();
+    Stack<Attribute> ifStack = new Stack<>();
 
     // The end position of the sub-expression
     int endpos = pos + len;
@@ -180,7 +179,7 @@ class TokenFormulaParser implements Parser
       }
       else if (t == Token.REFV)
       {
-        SharedFormulaCellReference cr = 
+        SharedFormulaCellReference cr =
           new SharedFormulaCellReference(relativeTo);
         pos += cr.read(tokenData, pos);
         tokenStack.push(cr);
@@ -392,16 +391,10 @@ class TokenFormulaParser implements Parser
           // add it to the top of the if stack
           vaf.getOperands(tokenStack);
 
-          Attribute ifattr = null;
-          if (ifStack.empty())
-          {
-            ifattr = new Attribute(settings);
-          }
-          else
-          {
-            ifattr = (Attribute) ifStack.pop();
-          }
-          
+          Attribute ifattr = ifStack.empty()
+                  ? new Attribute(settings)
+                  : ifStack.pop();
+
           ifattr.setIfConditions(vaf);
           tokenStack.push(ifattr);
         }
@@ -424,14 +417,14 @@ class TokenFormulaParser implements Parser
   /**
    * Handles a memory function
    */
-  private void handleMemoryFunction(SubExpression subxp) 
+  private void handleMemoryFunction(SubExpression subxp)
     throws FormulaException
   {
     pos += subxp.read(tokenData, pos);
 
     // Create new tokenStack for the sub expression
-    Stack oldStack = tokenStack;
-    tokenStack = new Stack();
+    Stack<ParseItem> oldStack = tokenStack;
+    tokenStack = new Stack<>();
 
     parseSubExpression(subxp.getLength());
 
@@ -439,12 +432,12 @@ class TokenFormulaParser implements Parser
     int i = 0;
     while (!tokenStack.isEmpty())
     {
-      subexpr[i] = (ParseItem) tokenStack.pop();
+      subexpr[i] = tokenStack.pop();
       i++;
     }
 
     subxp.setSubExpression(subexpr);
-        
+
     tokenStack = oldStack;
     tokenStack.push(subxp);
   }
