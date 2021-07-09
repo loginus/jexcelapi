@@ -45,17 +45,17 @@ class DateFormulaRecord extends DateRecord
   /**
    * A handle to the class needed to access external sheets
    */
-  private ExternalSheet externalSheet;
+  private final ExternalSheet externalSheet;
 
   /**
    * A handle to the name table
    */
-  private WorkbookMethods nameTable;
+  private final WorkbookMethods nameTable;
 
   /**
    * The raw data
    */
-  private byte[] data;
+  private final byte[] data;
 
   /**
    * Constructs this object from the raw data
@@ -83,6 +83,7 @@ class DateFormulaRecord extends DateRecord
    *
    * @return The cell type
    */
+  @Override
   public CellType getType()
   {
     return CellType.DATE_FORMULA;
@@ -94,6 +95,7 @@ class DateFormulaRecord extends DateRecord
    *
    * @return the raw record data
    */
+  @Override
   public byte[] getFormulaData() throws FormulaException
   {
     if (!getSheet().getWorkbookBof().isBiff8())
@@ -111,6 +113,7 @@ class DateFormulaRecord extends DateRecord
    * @return the formula as an excel string
    * @exception FormulaException
    */
+  @Override
   public String getFormula() throws FormulaException
   {
     // Note that the standard information was lopped off by the NumberFormula
