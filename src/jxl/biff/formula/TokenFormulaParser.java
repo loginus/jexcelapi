@@ -22,7 +22,6 @@ package jxl.biff.formula;
 import java.util.Stack;
 
 import jxl.common.Assert;
-import jxl.common.Logger;
 
 import jxl.Cell;
 import jxl.WorkbookSettings;
@@ -34,20 +33,15 @@ import jxl.biff.WorkbookMethods;
 class TokenFormulaParser implements Parser
 {
   /**
-   * The logger
-   */
-  private static Logger logger = Logger.getLogger(TokenFormulaParser.class);
-
-  /**
    * The Excel ptgs
    */
-  private byte[] tokenData;
+  private final byte[] tokenData;
 
   /**
    * The cell containing the formula.  This is used in order to determine
    * relative cell values
    */
-  private Cell relativeTo;
+  private final Cell relativeTo;
 
   /**
    * The current position within the array
@@ -68,22 +62,22 @@ class TokenFormulaParser implements Parser
    * A reference to the workbook which holds the external sheet
    * information
    */
-  private ExternalSheet workbook;
+  private final ExternalSheet workbook;
 
   /**
    * A reference to the name table
    */
-  private WorkbookMethods nameTable;
+  private final WorkbookMethods nameTable;
 
   /**
    * The workbook settings
    */
-  private WorkbookSettings settings;
+  private final WorkbookSettings settings;
 
   /**
    * The parse context
    */
-  private ParseContext parseContext;
+  private final ParseContext parseContext;
 
   /**
    * Constructor
@@ -112,6 +106,7 @@ class TokenFormulaParser implements Parser
    *
    * @exception FormulaException
    */
+  @Override
   public void parse() throws FormulaException
   {
     parseSubExpression(tokenData.length);
@@ -133,8 +128,8 @@ class TokenFormulaParser implements Parser
    */
   private void parseSubExpression(int len) throws FormulaException
   {
-    int tokenVal = 0;
-    Token t = null;
+    int tokenVal;
+    Token t;
 
     // Indicates that we are parsing the incredibly complicated and
     // hacky if construct that MS saw fit to include, the gits
@@ -458,6 +453,7 @@ class TokenFormulaParser implements Parser
   /**
    * Gets the formula as a string
    */
+  @Override
   public String getFormula()
   {
     StringBuffer sb = new StringBuffer();
@@ -472,6 +468,7 @@ class TokenFormulaParser implements Parser
    * @param colAdjust the amount to add on to each relative cell reference
    * @param rowAdjust the amount to add on to each relative row reference
    */
+  @Override
   public void adjustRelativeCellReferences(int colAdjust, int rowAdjust)
   {
     root.adjustRelativeCellReferences(colAdjust, rowAdjust);
@@ -483,6 +480,7 @@ class TokenFormulaParser implements Parser
    *
    * @return the bytes in RPN
    */
+  @Override
   public byte[] getBytes()
   {
     return root.getBytes();
@@ -498,6 +496,7 @@ class TokenFormulaParser implements Parser
    * @param currentSheet TRUE if this formula is on the sheet in which the
    * column was inserted, FALSE otherwise
    */
+  @Override
   public void columnInserted(int sheetIndex, int col, boolean currentSheet)
   {
     root.columnInserted(sheetIndex, col, currentSheet);
@@ -512,6 +511,7 @@ class TokenFormulaParser implements Parser
    * @param currentSheet TRUE if this formula is on the sheet in which the
    * column was inserted, FALSE otherwise
    */
+  @Override
   public void columnRemoved(int sheetIndex, int col, boolean currentSheet)
   {
     root.columnRemoved(sheetIndex, col, currentSheet);
@@ -527,6 +527,7 @@ class TokenFormulaParser implements Parser
    * @param currentSheet TRUE if this formula is on the sheet in which the
    * column was inserted, FALSE otherwise
    */
+  @Override
   public void rowInserted(int sheetIndex, int row, boolean currentSheet)
   {
     root.rowInserted(sheetIndex, row, currentSheet);
@@ -542,6 +543,7 @@ class TokenFormulaParser implements Parser
    * @param currentSheet TRUE if this formula is on the sheet in which the
    * column was inserted, FALSE otherwise
    */
+  @Override
   public void rowRemoved(int sheetIndex, int row, boolean currentSheet)
   {
     root.rowRemoved(sheetIndex, row, currentSheet);
@@ -553,6 +555,7 @@ class TokenFormulaParser implements Parser
    *
    * @return TRUE if the formula is valid import, FALSE otherwise
    */
+  @Override
   public boolean handleImportedCellReferences()
   {
     root.handleImportedCellReferences();
