@@ -20,7 +20,6 @@
 package jxl.biff.formula;
 
 import jxl.common.Assert;
-import jxl.common.Logger;
 
 import jxl.biff.IntegerHelper;
 import jxl.biff.NameRangeException;
@@ -31,21 +30,17 @@ import jxl.biff.WorkbookMethods;
  */
 class NameRange extends Operand implements ParsedThing
 {
-  /**
-   * The logger
-   */
-  private static Logger logger = Logger.getLogger(NameRange.class);
 
   /**
    * A handle to the name table
    */
-  private WorkbookMethods nameTable;
+  private final WorkbookMethods nameTable;
 
   /**
    * The string name
    */
   private String name;
-  
+
   /**
    * The index into the name table
    */
@@ -62,7 +57,7 @@ class NameRange extends Operand implements ParsedThing
 
   /**
    * Constructor when parsing a string via the api
-   * 
+   *
    * @param nm the name string
    * @param nt the name table
    */
@@ -81,21 +76,22 @@ class NameRange extends Operand implements ParsedThing
     index += 1; // indexes are 1-based
   }
 
-  /** 
+  /**
    * Reads the ptg data from the array starting at the specified position
    *
    * @param data the RPN array
    * @param pos the current position in the array, excluding the ptg identifier
    * @return the number of bytes read
    */
-  public int read(byte[] data, int pos) throws FormulaException 
+  @Override
+  public int read(byte[] data, int pos) throws FormulaException
   {
     try
     {
       index = IntegerHelper.getInt(data[pos], data[pos+1]);
 
       name = nameTable.getName(index - 1); // ilbl is 1-based
-      
+
       return 4;
     }
     catch (NameRangeException e)
@@ -109,12 +105,13 @@ class NameRange extends Operand implements ParsedThing
    *
    * @return the bytes applicable to this formula
    */
+  @Override
   byte[] getBytes()
   {
     byte[] data = new byte[5];
 
     data[0] = Token.NAMED_RANGE.getValueCode();
-    
+
     if (getParseContext() == ParseContext.DATA_VALIDATION)
     {
       data[0] = Token.NAMED_RANGE.getReferenceCode();
@@ -128,9 +125,10 @@ class NameRange extends Operand implements ParsedThing
   /**
    * Abstract method implementation to get the string equivalent of this
    * token
-   * 
+   *
    * @param buf the string to append to
    */
+  @Override
   public void getString(StringBuffer buf)
   {
     buf.append(name);
@@ -142,6 +140,7 @@ class NameRange extends Operand implements ParsedThing
    * cell references to another sheet are warned appropriately
    * Flags the formula as invalid
    */
+  @Override
   void handleImportedCellReferences()
   {
     setInvalid();
