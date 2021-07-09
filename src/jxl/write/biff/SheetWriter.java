@@ -43,7 +43,6 @@ import jxl.format.Colour;
 import jxl.write.Blank;
 import jxl.write.WritableCell;
 import jxl.write.WritableCellFormat;
-import jxl.write.WritableHyperlink;
 import jxl.write.WriteException;
 
 /**
@@ -57,7 +56,7 @@ final class SheetWriter
   /**
    * The logger
    */
-  private static Logger logger = Logger.getLogger(SheetWriter.class);
+  private static final Logger logger = Logger.getLogger(SheetWriter.class);
 
   /**
    * A handle to the output file which the binary data is written to
