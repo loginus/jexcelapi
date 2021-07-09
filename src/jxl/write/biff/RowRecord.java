@@ -87,27 +87,27 @@ class RowRecord extends WritableRecordData
   /**
    * The amount to grow the cells array by
    */
-  private static final int growSize = 10;
+  private static final int GROW_SIZE = 10;
 
   /**
    * The maximum integer value that can be squeezed into 30 bits
    */
-  private static final int maxRKValue = 0x1fffffff;
+  private static final int MAX_RK_VALUE = 0x1fffffff;
 
   /**
    * The minimum integer value that can be squeezed into 30 bits
    */
-  private static final int minRKValue = -0x20000000;
+  private static final int MIN_RK_VALUE = -0x20000000;
 
   /**
    * Indicates that the row is default height
    */
-  private static final int defaultHeightIndicator = 0xff;
+  private static final int DEFAULT_HEIGHT_INDICATOR = 0xff;
 
   /**
    * The maximum number of columns
    */
-  private static final int maxColumns = 256;
+  private static final int MAX_COLUMNS = 256;
 
   /**
    * The outline level of the row
@@ -135,7 +135,7 @@ class RowRecord extends WritableRecordData
     rowNumber  = rn;
     cells      = new CellValue[0];
     numColumns  = 0;
-    rowHeight  = defaultHeightIndicator;
+    rowHeight  = DEFAULT_HEIGHT_INDICATOR;
     collapsed  = false;
     matchesDefFontHeight = true;
     sheet = ws;
@@ -221,7 +221,7 @@ class RowRecord extends WritableRecordData
   {
     int col = cv.getColumn();
 
-    if (col >= maxColumns)
+    if (col >= MAX_COLUMNS)
     {
       logger.warn("Could not add cell at " +
                   CellReferenceHelper.getCellReference(cv.getRow(),
@@ -234,7 +234,7 @@ class RowRecord extends WritableRecordData
     if (col >= cells.length)
     {
       CellValue[] oldCells = cells;
-      cells = new CellValue[Math.max(oldCells.length + growSize, col+1)];
+      cells = new CellValue[Math.max(oldCells.length + GROW_SIZE, col+1)];
       System.arraycopy(oldCells, 0, cells, 0, oldCells.length);
     }
 
@@ -315,8 +315,8 @@ class RowRecord extends WritableRecordData
         {
           Number nc = (Number) cells[i];
           if (nc.getValue() == (int) nc.getValue() &&
-              nc.getValue() < maxRKValue &&
-              nc.getValue() > minRKValue &&
+              nc.getValue() < MAX_RK_VALUE &&
+              nc.getValue() > MIN_RK_VALUE &&
               nc.getCellFeatures() == null)
           {
             integerValue = true;
@@ -412,7 +412,7 @@ class RowRecord extends WritableRecordData
     {
       // the default row height has been changed.  If this row does not
       // have a specific row height set on it, then set it to the default
-      if (rh == defaultHeightIndicator)
+      if (rh == DEFAULT_HEIGHT_INDICATOR)
       {
         rh = sheet.getSettings().getDefaultRowHeight();
       }
@@ -517,7 +517,7 @@ class RowRecord extends WritableRecordData
 
     if (numColumns  >= cells.length - 1)
     {
-      cells = new CellValue[oldCells.length + growSize];
+      cells = new CellValue[oldCells.length + GROW_SIZE];
     }
     else
     {
@@ -540,7 +540,7 @@ class RowRecord extends WritableRecordData
     }
 
     // Adjust the maximum column record
-    numColumns = Math.min(numColumns+1, maxColumns);
+    numColumns = Math.min(numColumns+1, MAX_COLUMNS);
   }
 
   /**
@@ -588,7 +588,7 @@ class RowRecord extends WritableRecordData
    */
   public boolean isDefaultHeight()
   {
-    return rowHeight == defaultHeightIndicator;
+    return rowHeight == DEFAULT_HEIGHT_INDICATOR;
   }
 
   /**
