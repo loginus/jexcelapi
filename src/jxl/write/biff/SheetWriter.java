@@ -687,15 +687,13 @@ final class SheetWriter
   {
     Range[] mcells = mergedCells.getMergedCells();
     ArrayList<CellXFRecord> borderFormats = new ArrayList<>();
-    for (int mci = 0 ; mci < mcells.length ; mci++)
-    {
-      Range range = mcells[mci];
+    for (Range range : mcells) {
       Cell topLeft = range.getTopLeft();
       XFRecord tlformat = (XFRecord) topLeft.getCellFormat();
 
       if (tlformat != null &&
-          tlformat.hasBorders() == true &&
-          !tlformat.isRead())
+              tlformat.hasBorders() == true &&
+              !tlformat.isRead())
       {
         try
         {
@@ -704,24 +702,24 @@ final class SheetWriter
 
           cf1.setBorder(Border.ALL, BorderLineStyle.NONE, Colour.BLACK);
           cf1.setBorder(Border.LEFT,
-                        tlformat.getBorderLine(Border.LEFT),
-                        tlformat.getBorderColour(Border.LEFT));
+                  tlformat.getBorderLine(Border.LEFT),
+                  tlformat.getBorderColour(Border.LEFT));
           cf1.setBorder(Border.TOP,
-                        tlformat.getBorderLine(Border.TOP),
-                        tlformat.getBorderColour(Border.TOP));
+                  tlformat.getBorderLine(Border.TOP),
+                  tlformat.getBorderColour(Border.TOP));
 
           if (topLeft.getRow() == bottomRight.getRow())
           {
             cf1.setBorder(Border.BOTTOM,
-                          tlformat.getBorderLine(Border.BOTTOM),
-                          tlformat.getBorderColour(Border.BOTTOM));
+                    tlformat.getBorderLine(Border.BOTTOM),
+                    tlformat.getBorderColour(Border.BOTTOM));
           }
 
           if (topLeft.getColumn() == bottomRight.getColumn())
           {
             cf1.setBorder(Border.RIGHT,
-                          tlformat.getBorderLine(Border.RIGHT),
-                          tlformat.getBorderColour(Border.RIGHT));
+                    tlformat.getBorderLine(Border.RIGHT),
+                    tlformat.getBorderColour(Border.RIGHT));
           }
 
           int index = borderFormats.indexOf(cf1);
@@ -744,11 +742,11 @@ final class SheetWriter
               CellXFRecord cf2 = new CellXFRecord(tlformat);
               cf2.setBorder(Border.ALL, BorderLineStyle.NONE, Colour.BLACK);
               cf2.setBorder(Border.LEFT,
-                            tlformat.getBorderLine(Border.LEFT),
-                            tlformat.getBorderColour(Border.LEFT));
+                      tlformat.getBorderLine(Border.LEFT),
+                      tlformat.getBorderColour(Border.LEFT));
               cf2.setBorder(Border.BOTTOM,
-                            tlformat.getBorderLine(Border.BOTTOM),
-                            tlformat.getBorderColour(Border.BOTTOM));
+                      tlformat.getBorderLine(Border.BOTTOM),
+                      tlformat.getBorderColour(Border.BOTTOM));
 
               index = borderFormats.indexOf(cf2);
               if (index != -1)
@@ -761,7 +759,7 @@ final class SheetWriter
               }
 
               sheet.addCell(new Blank(topLeft.getColumn(),
-                                      bottomRight.getRow(), cf2));
+                      bottomRight.getRow(), cf2));
             }
 
             // Handle the cells down the left hand side (and along the
@@ -771,14 +769,14 @@ final class SheetWriter
               CellXFRecord cf3 = new CellXFRecord(tlformat);
               cf3.setBorder(Border.ALL, BorderLineStyle.NONE, Colour.BLACK);
               cf3.setBorder(Border.LEFT,
-                            tlformat.getBorderLine(Border.LEFT),
-                            tlformat.getBorderColour(Border.LEFT));
+                      tlformat.getBorderLine(Border.LEFT),
+                      tlformat.getBorderColour(Border.LEFT));
 
               if (topLeft.getColumn() == bottomRight.getColumn())
               {
                 cf3.setBorder(Border.RIGHT,
-                              tlformat.getBorderLine(Border.RIGHT),
-                              tlformat.getBorderColour(Border.RIGHT));
+                        tlformat.getBorderLine(Border.RIGHT),
+                        tlformat.getBorderColour(Border.RIGHT));
               }
 
               index = borderFormats.indexOf(cf3);
@@ -804,11 +802,11 @@ final class SheetWriter
               CellXFRecord cf6 = new CellXFRecord(tlformat);
               cf6.setBorder(Border.ALL, BorderLineStyle.NONE, Colour.BLACK);
               cf6.setBorder(Border.RIGHT,
-                            tlformat.getBorderLine(Border.RIGHT),
-                            tlformat.getBorderColour(Border.RIGHT));
+                      tlformat.getBorderLine(Border.RIGHT),
+                      tlformat.getBorderColour(Border.RIGHT));
               cf6.setBorder(Border.TOP,
-                            tlformat.getBorderLine(Border.TOP),
-                            tlformat.getBorderColour(Border.TOP));
+                      tlformat.getBorderLine(Border.TOP),
+                      tlformat.getBorderColour(Border.TOP));
               index = borderFormats.indexOf(cf6);
               if (index != -1)
               {
@@ -820,18 +818,18 @@ final class SheetWriter
               }
 
               sheet.addCell(new Blank(bottomRight.getColumn(),
-                                      topLeft.getRow(), cf6));
+                      topLeft.getRow(), cf6));
             }
 
             // Handle the cells along the right
             for (int i = topLeft.getRow() + 1;
-                     i < bottomRight.getRow() ;i++)
+                    i < bottomRight.getRow() ;i++)
             {
               CellXFRecord cf7 = new CellXFRecord(tlformat);
               cf7.setBorder(Border.ALL, BorderLineStyle.NONE, Colour.BLACK);
               cf7.setBorder(Border.RIGHT,
-                            tlformat.getBorderLine(Border.RIGHT),
-                            tlformat.getBorderColour(Border.RIGHT));
+                      tlformat.getBorderLine(Border.RIGHT),
+                      tlformat.getBorderColour(Border.RIGHT));
 
               index = borderFormats.indexOf(cf7);
               if (index != -1)
@@ -848,19 +846,19 @@ final class SheetWriter
 
             // Handle the cells along the top, and along the bottom too
             for (int i = topLeft.getColumn() + 1;
-                     i < bottomRight.getColumn() ;i++)
+                    i < bottomRight.getColumn() ;i++)
             {
               CellXFRecord cf8 = new CellXFRecord(tlformat);
               cf8.setBorder(Border.ALL, BorderLineStyle.NONE, Colour.BLACK);
               cf8.setBorder(Border.TOP,
-                            tlformat.getBorderLine(Border.TOP),
-                            tlformat.getBorderColour(Border.TOP));
+                      tlformat.getBorderLine(Border.TOP),
+                      tlformat.getBorderColour(Border.TOP));
 
               if (topLeft.getRow() == bottomRight.getRow())
               {
                 cf8.setBorder(Border.BOTTOM,
-                              tlformat.getBorderLine(Border.BOTTOM),
-                              tlformat.getBorderColour(Border.BOTTOM));
+                        tlformat.getBorderLine(Border.BOTTOM),
+                        tlformat.getBorderColour(Border.BOTTOM));
               }
 
               index = borderFormats.indexOf(cf8);
@@ -879,30 +877,30 @@ final class SheetWriter
 
           // Handle the bottom right corner
           if (bottomRight.getColumn() > topLeft.getColumn() ||
-              bottomRight.getRow() > topLeft.getRow())
+                  bottomRight.getRow() > topLeft.getRow())
           {
             // Handle the corner cell
             CellXFRecord cf4 = new CellXFRecord(tlformat);
             cf4.setBorder(Border.ALL, BorderLineStyle.NONE, Colour.BLACK);
             cf4.setBorder(Border.RIGHT,
-                          tlformat.getBorderLine(Border.RIGHT),
-                          tlformat.getBorderColour(Border.RIGHT));
+                    tlformat.getBorderLine(Border.RIGHT),
+                    tlformat.getBorderColour(Border.RIGHT));
             cf4.setBorder(Border.BOTTOM,
-                          tlformat.getBorderLine(Border.BOTTOM),
-                          tlformat.getBorderColour(Border.BOTTOM));
+                    tlformat.getBorderLine(Border.BOTTOM),
+                    tlformat.getBorderColour(Border.BOTTOM));
 
             if (bottomRight.getRow() == topLeft.getRow())
             {
               cf4.setBorder(Border.TOP,
-                            tlformat.getBorderLine(Border.TOP),
-                            tlformat.getBorderColour(Border.TOP));
+                      tlformat.getBorderLine(Border.TOP),
+                      tlformat.getBorderColour(Border.TOP));
             }
 
             if (bottomRight.getColumn() == topLeft.getColumn())
             {
               cf4.setBorder(Border.LEFT,
-                            tlformat.getBorderLine(Border.LEFT),
-                            tlformat.getBorderColour(Border.LEFT));
+                      tlformat.getBorderLine(Border.LEFT),
+                      tlformat.getBorderColour(Border.LEFT));
             }
 
             index = borderFormats.indexOf(cf4);
@@ -916,24 +914,24 @@ final class SheetWriter
             }
 
             sheet.addCell(new Blank(bottomRight.getColumn(),
-                                    bottomRight.getRow(), cf4));
+                    bottomRight.getRow(), cf4));
 
             // Handle the cells along the bottom (and along the top
             // as well, if appropriate)
             for (int i = topLeft.getColumn() + 1;
-                     i < bottomRight.getColumn() ;i++)
+                    i < bottomRight.getColumn() ;i++)
             {
               CellXFRecord cf5 = new CellXFRecord(tlformat);
               cf5.setBorder(Border.ALL, BorderLineStyle.NONE, Colour.BLACK);
               cf5.setBorder(Border.BOTTOM,
-                            tlformat.getBorderLine(Border.BOTTOM),
-                            tlformat.getBorderColour(Border.BOTTOM));
+                      tlformat.getBorderLine(Border.BOTTOM),
+                      tlformat.getBorderColour(Border.BOTTOM));
 
               if (topLeft.getRow() == bottomRight.getRow())
               {
                 cf5.setBorder(Border.TOP,
-                              tlformat.getBorderLine(Border.TOP),
-                              tlformat.getBorderColour(Border.TOP));
+                        tlformat.getBorderLine(Border.TOP),
+                        tlformat.getBorderColour(Border.TOP));
               }
 
               index = borderFormats.indexOf(cf5);
