@@ -138,7 +138,7 @@ class TokenFormulaParser implements Parser
 
     while (pos < endpos)
     {
-      int tokenVal = tokenData[pos];
+      byte tokenVal = tokenData[pos];
       pos++;
 
       Token t = Token.getToken(tokenVal);

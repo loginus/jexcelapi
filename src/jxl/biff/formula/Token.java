@@ -30,63 +30,53 @@ class Token
   /**
    * The array of values which apply to this token
    */
-  public final int[] value;
+  private final byte[] values;
 
   /**
    * All available tokens, keyed on value
    */
-  private static Map<Integer, Token> tokens = new HashMap<>(40);
+  private static Map<Byte, Token> tokens = new HashMap<>(40);
 
   /**
    * Constructor
    * Sets the token value and adds this token to the array of all token
    *
-   * @param v the biff code for the token
+   * @param reference the biff code for the token
    */
-  private Token(int v)
+  private Token(int reference)
   {
-    value = new int[] {v};
+    values = new byte[] {(byte) reference};
 
-    tokens.put(v, this);
+    tokens.put((byte) reference, this);
   }
 
   /**
    * Constructor
-   * Sets the token value and adds this token to the array of all token
+ Sets the token value and adds this token to the array of all token
    *
    * @param v the biff code for the token
    */
-  private Token(int v1, int v2)
+  private Token(int reference, int value)
   {
-    value = new int[] {v1, v2};
+    this.values = new byte[] {(byte) reference, (byte) value};
 
-    tokens.put(v1, this);
-    tokens.put(v2, this);
+    tokens.put((byte) reference, this);
+    tokens.put((byte) value, this);
   }
 
   /**
    * Constructor
-   * Sets the token value and adds this token to the array of all token
+ Sets the token value and adds this token to the array of all token
    *
    * @param v the biff code for the token
    */
-  private Token(int v1, int v2, int v3)
+  private Token(int reference, int value, int array)
   {
-    value = new int[] {v1, v2, v3};
+    this.values = new byte[] {(byte) reference, (byte) value, (byte) array};
 
-    tokens.put(v1, this);
-    tokens.put(v2, this);
-    tokens.put(v3, this);
-  }
-
-  /**
-   * Gets the token code for the specified token
-   *
-   * @return the token code.  This is the first item in the array
-   */
-  public byte getCode()
-  {
-    return (byte) value[0];
+    tokens.put((byte) reference, this);
+    tokens.put((byte) value, this);
+    tokens.put((byte) array, this);
   }
 
   /**
@@ -97,18 +87,7 @@ class Token
    */
   public byte getReferenceCode()
   {
-    return (byte) value[0];
-  }
-
-  /**
-   * Gets the an alternative token code for the specified token
-   * Used for certain types of volatile function
-   *
-   * @return the token code
-   */
-  public byte getCode2()
-  {
-    return (byte) (value.length > 0 ? value[1] : value[0]);
+    return values[0];
   }
 
   /**
@@ -119,13 +98,17 @@ class Token
    */
   public byte getValueCode()
   {
-    return (byte) (value.length > 0 ? value[1] : value[0]);
+    return values.length > 0 ? values[1] : values[0];
+  }
+
+  public byte getArrayCode() {
+    return values.length > 1 ? values[2] : getValueCode();
   }
 
   /**
    * Gets the type object from its integer value
    */
-  public static Token getToken(int v)
+  public static Token getToken(byte v)
   {
     Token t = tokens.get(v);
 
