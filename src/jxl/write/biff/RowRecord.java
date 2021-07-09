@@ -28,7 +28,6 @@ import jxl.common.Logger;
 
 import jxl.CellType;
 import jxl.SheetSettings;
-import jxl.WorkbookSettings;
 import jxl.biff.CellReferenceHelper;
 import jxl.biff.IndexMapping;
 import jxl.biff.IntegerHelper;
@@ -49,10 +48,6 @@ class RowRecord extends WritableRecordData
    */
   private static final Logger logger = Logger.getLogger(RowRecord.class);
 
-  /**
-   * The binary data
-   */
-  private byte[] data;
   /**
    * The cells which comprise this row
    */
@@ -107,12 +102,12 @@ class RowRecord extends WritableRecordData
   /**
    * Indicates that the row is default height
    */
-  private static int defaultHeightIndicator = 0xff;
+  private static final int defaultHeightIndicator = 0xff;
 
   /**
    * The maximum number of columns
    */
-  private static int maxColumns = 256;
+  private static final int maxColumns = 256;
 
   /**
    * The outline level of the row
@@ -127,7 +122,7 @@ class RowRecord extends WritableRecordData
   /**
    * A handle back to the sheet
    */
-  private WritableSheet sheet;
+  private final WritableSheet sheet;
 
   /**
    * Constructs an empty row which has the specified row number
@@ -241,7 +236,6 @@ class RowRecord extends WritableRecordData
       CellValue[] oldCells = cells;
       cells = new CellValue[Math.max(oldCells.length + growSize, col+1)];
       System.arraycopy(oldCells, 0, cells, 0, oldCells.length);
-      oldCells = null;
     }
 
     // Remove any cell features from the cell being replaced
@@ -308,12 +302,11 @@ class RowRecord extends WritableRecordData
   {
     // This is the list for integer values
     List<CellValue> integerValues = new ArrayList<>();
-    boolean integerValue = false;
 
     // Write out all the records
     for (int i = 0; i < numColumns; i++)
     {
-      integerValue = false;
+      boolean integerValue = false;
       if (cells[i] != null)
       {
         // See if this cell is a 30-bit integer value (without additional
@@ -404,6 +397,7 @@ class RowRecord extends WritableRecordData
    *
    * @return the binary data
    */
+  @Override
   public byte[] getData()
   {
     // Write out the row record
@@ -486,13 +480,9 @@ class RowRecord extends WritableRecordData
   {
     rowNumber++;
 
-    for (int i = 0; i < cells.length; i++)
-    {
-      if (cells[i] != null)
-      {
-        cells[i].incrementRow();
-      }
-    }
+    for (CellValue cell : cells)
+      if (cell != null)
+        cell.incrementRow();
   }
 
   /**
@@ -502,13 +492,9 @@ class RowRecord extends WritableRecordData
   void decrementRow()
   {
     rowNumber--;
-    for (int i = 0; i < cells.length; i++)
-    {
-      if (cells[i] != null)
-      {
-        cells[i].decrementRow();
-      }
-    }
+    for (CellValue cell : cells)
+      if (cell != null)
+        cell.decrementRow();
   }
 
   /**
