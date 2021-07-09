@@ -124,12 +124,14 @@ class Token
   public static final Token BOOL        = new Token(0x1d);
   public static final Token INTEGER     = new Token(0x1e);
   public static final Token DOUBLE      = new Token(0x1f);
+  public static final Token ARRAY       = new Token(0x20, 0x40, 0x60);
   public static final Token REFERR      = new Token(0x2a, 0x4a, 0x6a);
   public static final Token REFV        = new Token(0x2c, 0x4c, 0x6c);
   public static final Token AREAV       = new Token(0x2d, 0x4d, 0x6d);
   public static final Token MEM_AREA    = new Token(0x26, 0x46, 0x66);
   public static final Token AREA        = new Token(0x25, 0x65, 0x45);
   public static final Token NAMED_RANGE = new Token(0x23, 0x43, 0x63);
+  public static final Token CELL_REF    = new Token(0x24, 0x44, 0x64);
     //need 0x23 for data validation references
   public static final Token NAME        = new Token(0x39, 0x59);
   public static final Token AREA3D      = new Token(0x3b, 0x5b);
@@ -153,12 +155,14 @@ class Token
   public static final Token GREATER_EQUAL = new Token(0xc);
   public static final Token GREATER_THAN  = new Token(0xd);
   public static final Token NOT_EQUAL     = new Token(0xe);
+  public static final Token INTERSECTION  = new Token(0xf);
   public static final Token UNION         = new Token(0x10);
   public static final Token RANGE         = new Token(0x11);
 
   // Functions
-  public static final Token FUNCTION       = new Token(0x41, 0x21, 0x61);
-  public static final Token FUNCTIONVARARG = new Token(0x42, 0x22, 0x62);
+  public static final Token FUNCTION       = new Token(0x21, 0x41, 0x61);
+  public static final Token FUNCTIONVARARG = new Token(0x22, 0x42, 0x62);
+  public static final Token MACROCOMMAND   = new Token(0x38, 0x58, 0x78); // BIFF2,BIFF3
 
   // Control
   public static final Token ATTRIBUTE = new Token(0x19);
