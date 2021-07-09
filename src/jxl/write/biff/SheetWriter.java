@@ -294,11 +294,11 @@ final class SheetWriter
     rowBreaks.write(outputFile);
     columnBreaks.write(outputFile);
 
-    HeaderRecord header = new HeaderRecord(settings.getHeader().toString());
-    outputFile.write(header);
+    HeaderRecord hRecord = new HeaderRecord(settings.getHeader().toString());
+    outputFile.write(hRecord);
 
-    FooterRecord footer = new FooterRecord(settings.getFooter().toString());
-    outputFile.write(footer);
+    FooterRecord fRecord = new FooterRecord(settings.getFooter().toString());
+    outputFile.write(fRecord);
 
     HorizontalCentreRecord hcr = new HorizontalCentreRecord
       (settings.isHorizontalCentre());
