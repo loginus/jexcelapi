@@ -19,7 +19,7 @@
 
 package jxl.biff.formula;
 
-import java.util.HashMap;
+import java.util.*;
 
 /**
  * An enumeration detailing the Excel parsed tokens
@@ -35,7 +35,7 @@ class Token
   /**
    * All available tokens, keyed on value
    */
-  private static HashMap tokens = new HashMap(20);
+  private static Map<Integer, Token> tokens = new HashMap<>(40);
 
   /**
    * Constructor
@@ -47,7 +47,7 @@ class Token
   {
     value = new int[] {v};
 
-    tokens.put(new Integer(v), this);
+    tokens.put(v, this);
   }
 
   /**
@@ -60,8 +60,8 @@ class Token
   {
     value = new int[] {v1, v2};
 
-    tokens.put(new Integer(v1), this);
-    tokens.put(new Integer(v2), this);
+    tokens.put(v1, this);
+    tokens.put(v2, this);
   }
 
   /**
@@ -74,47 +74,14 @@ class Token
   {
     value = new int[] {v1, v2, v3};
 
-    tokens.put(new Integer(v1), this);
-    tokens.put(new Integer(v2), this);
-    tokens.put(new Integer(v3), this);
-  }
-
-  /**
-   * Constructor
-   * Sets the token value and adds this token to the array of all token
-   *
-   * @param v the biff code for the token
-   */
-  private Token(int v1, int v2, int v3, int v4)
-  {
-    value = new int[] {v1, v2, v3, v4};
-
-    tokens.put(new Integer(v1), this);
-    tokens.put(new Integer(v2), this);
-    tokens.put(new Integer(v3), this);
-    tokens.put(new Integer(v4), this);
-  }
-
-  /**
-   * Constructor
-   * Sets the token value and adds this token to the array of all token
-   *
-   * @param v the biff code for the token
-   */
-  private Token(int v1, int v2, int v3, int v4, int v5)
-  {
-    value = new int[] {v1, v2, v3, v4, v5};
-
-    tokens.put(new Integer(v1), this);
-    tokens.put(new Integer(v2), this);
-    tokens.put(new Integer(v3), this);
-    tokens.put(new Integer(v4), this);
-    tokens.put(new Integer(v5), this);
+    tokens.put(v1, this);
+    tokens.put(v2, this);
+    tokens.put(v3, this);
   }
 
   /**
    * Gets the token code for the specified token
-   * 
+   *
    * @return the token code.  This is the first item in the array
    */
   public byte getCode()
@@ -125,7 +92,7 @@ class Token
   /**
    * Gets the reference token code for the specified token.  This is always
    * the first on the list
-   * 
+   *
    * @return the token code.  This is the first item in the array
    */
   public byte getReferenceCode()
@@ -136,7 +103,7 @@ class Token
   /**
    * Gets the an alternative token code for the specified token
    * Used for certain types of volatile function
-   * 
+   *
    * @return the token code
    */
   public byte getCode2()
@@ -147,7 +114,7 @@ class Token
   /**
    * Gets the value token code for the specified token.  This is always
    * the second item on the list
-   * 
+   *
    * @return the token code
    */
   public byte getValueCode()
@@ -160,8 +127,8 @@ class Token
    */
   public static Token getToken(int v)
   {
-    Token t = (Token) tokens.get(new Integer(v));
-    
+    Token t = tokens.get(v);
+
     return t != null ? t : UNKNOWN;
   }
 
@@ -185,14 +152,14 @@ class Token
   public static final Token AREA3D      = new Token(0x3b, 0x5b);
 
   // Unary Operators
-  public static final Token UNARY_PLUS   = new Token(0x12);  
-  public static final Token UNARY_MINUS  = new Token(0x13);  
+  public static final Token UNARY_PLUS   = new Token(0x12);
+  public static final Token UNARY_MINUS  = new Token(0x13);
   public static final Token PERCENT      = new Token(0x14);
   public static final Token PARENTHESIS  = new Token(0x15);
 
   // Binary Operators
-  public static final Token ADD           = new Token(0x3);  
-  public static final Token SUBTRACT      = new Token(0x4);  
+  public static final Token ADD           = new Token(0x3);
+  public static final Token SUBTRACT      = new Token(0x4);
   public static final Token MULTIPLY      = new Token(0x5);
   public static final Token DIVIDE        = new Token(0x6);
   public static final Token POWER         = new Token(0x7);
