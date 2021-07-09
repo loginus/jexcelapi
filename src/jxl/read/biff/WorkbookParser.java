@@ -21,6 +21,7 @@ package jxl.read.biff;
 
 import java.nio.file.*;
 import java.util.*;
+import static java.util.stream.Collectors.toList;
 
 import jxl.common.Assert;
 import jxl.common.Logger;
@@ -295,12 +296,9 @@ public class WorkbookParser extends Workbook
   @Override
   public List<String> getSheetNames()
   {
-    List<String> names = new ArrayList<>(boundsheets.size());
-
-    for (BoundsheetRecord record : boundsheets)
-      names.add(record.getName());
-
-    return names;
+    return boundsheets.stream()
+            .map(BoundsheetRecord::getName)
+            .collect(toList());
   }
 
 
