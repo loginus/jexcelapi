@@ -128,8 +128,6 @@ class TokenFormulaParser implements Parser
    */
   private void parseSubExpression(int len) throws FormulaException
   {
-    int tokenVal;
-    Token t;
 
     // Indicates that we are parsing the incredibly complicated and
     // hacky if construct that MS saw fit to include, the gits
@@ -140,10 +138,10 @@ class TokenFormulaParser implements Parser
 
     while (pos < endpos)
     {
-      tokenVal = tokenData[pos];
+      int tokenVal = tokenData[pos];
       pos++;
 
-      t = Token.getToken(tokenVal);
+      Token t = Token.getToken(tokenVal);
 
       if (t == Token.UNKNOWN)
       {
@@ -151,10 +149,8 @@ class TokenFormulaParser implements Parser
           (FormulaException.UNRECOGNIZED_TOKEN, tokenVal);
       }
 
-      Assert.verify(t != Token.UNKNOWN);
-
       // Operands
-      if (t == Token.REF)
+      else if (t == Token.REF)
       {
         CellReference cr = new CellReference(relativeTo);
         pos += cr.read(tokenData, pos);
