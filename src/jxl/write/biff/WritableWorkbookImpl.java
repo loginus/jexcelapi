@@ -1311,13 +1311,15 @@ public class WritableWorkbookImpl extends WritableWorkbook
    *
    * @param index the index into the name table
    * @return the name of the cell
+   * @throws NameRangeException
    */
   @Override
-  public String getName(int index)
+  public String getName(int index) throws NameRangeException
   {
-    Assert.verify(index >= 0 && index < names.size());
-    NameRecord n = names.get(index);
-    return n.getName();
+    if (! (index >= 0 && index < names.size()))
+      throw new NameRangeException();
+
+    return names.get(index).getName();
   }
 
   /**
