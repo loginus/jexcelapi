@@ -826,21 +826,34 @@ public class WritableWorkbookImpl extends WritableWorkbook
       outputFile.write(externSheet);
     }
 
+    Map<Integer, NameRecord> printAreas = getPrintAreas(sheets);
+    Map<Integer, NameRecord> printTitles = getPrintTitles(sheets);
     // Write out the names, if any exists
     for (NameRecord n : names) {
-      // filter print names, they will be written based on the sheet settings
-      if (BuiltInName.PRINT_AREA.equals(n.getBuiltInName()))
+      // insert print area names in the original order to retain references to name table indices
+      if (BuiltInName.PRINT_AREA.equals(n.getBuiltInName())) {
+        var printArea = printAreas.remove(n.getIndex());
+        outputFile.write(printArea);
         continue;
-      if (BuiltInName.PRINT_TITLES.equals(n.getBuiltInName()))
+      }
+
+      // insert print title names in the original order to retain references to name table indices
+      if (BuiltInName.PRINT_TITLES.equals(n.getBuiltInName())) {
+        var printTitle = printTitles.remove(n.getIndex());
+        outputFile.write(printTitle);
         continue;
+      }
 
       outputFile.write(n);
     }
 
-    for (var wsi : sheets) {
-      writePrintAreaIfPresent(wsi);
-      writePrintTitlesIfPresent(wsi);
-    }
+    Set<Integer> remainingPrintAreas = printAreas.keySet();
+    while (! remainingPrintAreas.isEmpty())
+      outputFile.write(printAreas.remove(remainingPrintAreas.iterator().next()));
+
+    Set<Integer> remainingPrintTitles = printTitles.keySet();
+    while (! remainingPrintTitles.isEmpty())
+      outputFile.write(printTitles.remove(remainingPrintTitles.iterator().next()));
 
     // Write out the mso drawing group, if it exists
     if (drawingGroup != null)
@@ -868,26 +881,37 @@ public class WritableWorkbookImpl extends WritableWorkbook
     }
   }
 
-  private void writePrintAreaIfPresent(WritableSheetImpl wsi) throws IOException {
+  private Map<Integer, NameRecord> getPrintAreas(List<WritableSheetImpl> sheets) throws IOException {
+    Map<Integer, NameRecord> printAreas = new HashMap<>();
+
     // Check to see if there are any predefined names
-    Range range = wsi.getSettings().getPrintArea();
-    if (range != null) {
-      var printArea = createNameRecord(
-              BuiltInName.PRINT_AREA,
-              wsi,
-              range.getTopLeft().getColumn(),
-              range.getTopLeft().getRow(),
-              range.getBottomRight().getColumn(),
-              range.getBottomRight().getRow(),
-              false);
-      outputFile.write(printArea);
+    for (var wsi : sheets) {
+      Range range = wsi.getSettings().getPrintArea();
+      if (range != null) {
+        var printArea = createNameRecord(
+                BuiltInName.PRINT_AREA,
+                wsi,
+                range.getTopLeft().getColumn(),
+                range.getTopLeft().getRow(),
+                range.getBottomRight().getColumn(),
+                range.getBottomRight().getRow(),
+                false);
+        printAreas.put(printArea.getIndex(), printArea);
+      }
     }
+
+    return printAreas;
   }
 
-  private void writePrintTitlesIfPresent(WritableSheetImpl wsi) throws IOException {
-    var mayBePrintTitle = getPrintTitles(wsi);
-    if (mayBePrintTitle.isPresent())
-      outputFile.write(mayBePrintTitle.orElseThrow());
+  private Map<Integer, NameRecord> getPrintTitles(List<WritableSheetImpl> sheets) throws IOException {
+    Map<Integer, NameRecord> printTitles = new HashMap<>();
+    for (var wsi : sheets) {
+      var mayBePrintTitle = getPrintTitles(wsi);
+      if (mayBePrintTitle.isPresent())
+        printTitles.put(mayBePrintTitle.orElseThrow().getIndex(), mayBePrintTitle.orElseThrow());
+    }
+
+    return printTitles;
   }
 
   private Optional<NameRecord> getPrintTitles(WritableSheetImpl wsi) {
