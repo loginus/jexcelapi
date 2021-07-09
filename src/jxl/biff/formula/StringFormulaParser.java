@@ -79,16 +79,16 @@ class StringFormulaParser implements Parser
   /**
    * The parse context
    */
-  private ParseContext parseContext;
+  private final ParseContext parseContext;
 
   /**
    * Constructor
    * @param f
    * @param ws
    */
-  public StringFormulaParser(String f, 
-                             ExternalSheet es, 
-                             WorkbookMethods nt, 
+  public StringFormulaParser(String f,
+                             ExternalSheet es,
+                             WorkbookMethods nt,
                              WorkbookSettings ws,
                              ParseContext pc)
   {
@@ -107,9 +107,9 @@ class StringFormulaParser implements Parser
   public void parse() throws FormulaException
   {
     ArrayList tokens = getTokens();
-    
+
     Iterator i = tokens.iterator();
-    
+
     root = parseCurrent(i);
   }
 
@@ -129,7 +129,7 @@ class StringFormulaParser implements Parser
 
     boolean parenthesesClosed = false;
     ParseItem lastParseItem = null;
-    
+
     while (i.hasNext() && !parenthesesClosed)
     {
       ParseItem pi = (ParseItem) i.next();
@@ -146,7 +146,7 @@ class StringFormulaParser implements Parser
       else if (pi instanceof Operator)
       {
         Operator op = (Operator) pi;
-				
+
         // See if the operator is a binary or unary operator
         // It is a unary operator either if the stack is empty, or if
         // the last thing off the stack was another operator
@@ -172,7 +172,7 @@ class StringFormulaParser implements Parser
         {
           Operator operator = (Operator) operators.peek();
 
-          // If the last  operator has a higher precedence then add this to 
+          // If the last  operator has a higher precedence then add this to
           // the operator stack and wait
           if (op.getPrecedence() < operator.getPrecedence())
           {
@@ -185,7 +185,7 @@ class StringFormulaParser implements Parser
 						// unary operator the operand isn't available yet, so put it on
 						// the stack
 						operators.push(op);
-					}	
+					}
           else
           {
             // The operator is of a lower precedence so we can sort out
@@ -206,7 +206,7 @@ class StringFormulaParser implements Parser
           o.getOperands(stack);
           stack.push(o);
         }
-        
+
         // Add it to the argument stack.  Create the argument stack
         // if necessary.  Items will be stored on the argument stack in
         // reverse order
@@ -230,7 +230,7 @@ class StringFormulaParser implements Parser
       {
         parenthesesClosed = true;
       }
-      
+
       lastParseItem = pi;
     }
 
@@ -254,7 +254,7 @@ class StringFormulaParser implements Parser
 
     if (!stack.empty() || !operators.empty() )
     {
-      logger.warn("Formula " + formula + 
+      logger.warn("Formula " + formula +
                   " has a non-empty parse stack");
     }
 
@@ -293,7 +293,7 @@ class StringFormulaParser implements Parser
       throw new FormulaException(FormulaException.LEXICAL_ERROR,
                                  formula + " at char  " + lex.getPos());
     }
-      
+
     return tokens;
   }
 
@@ -321,7 +321,7 @@ class StringFormulaParser implements Parser
   public byte[] getBytes()
   {
     byte[] bytes = root.getBytes();
-    
+
     if (root.isVolatile())
     {
       byte[] newBytes = new byte[bytes.length + 4];
@@ -342,11 +342,11 @@ class StringFormulaParser implements Parser
    * @param stack the parse tree stack
    * @exception FormulaException if an error occurs
    */
-  private void handleFunction(StringFunction sf, Iterator i, 
+  private void handleFunction(StringFunction sf, Iterator i,
                               Stack stack)
     throws FormulaException
   {
-    ParseItem pi2 = parseCurrent(i); 
+    ParseItem pi2 = parseCurrent(i);
 
     // If the function is unknown, then throw an error
     if (sf.getFunction(settings) == Function.UNKNOWN)
@@ -369,7 +369,7 @@ class StringFormulaParser implements Parser
     {
       // this is handled by an attribute
       Attribute a = new Attribute(sf, settings);
-          
+
       // Add in the if conditions as a var arg function in
       // the correct order
       VariableArgFunction vaf = new VariableArgFunction(settings);
@@ -379,13 +379,13 @@ class StringFormulaParser implements Parser
         ParseItem pi3 = (ParseItem) arguments.get(j);
         vaf.add(pi3);
       }
-          
+
       a.setIfConditions(vaf);
       stack.push(a);
       return;
     }
 
-    // Function cannot be optimized.  See if it is a variable argument 
+    // Function cannot be optimized.  See if it is a variable argument
     // function or not
     if (sf.getFunction(settings).getNumArgs() == 0xff)
     {
@@ -411,7 +411,7 @@ class StringFormulaParser implements Parser
         int numargs = arguments.size();
         VariableArgFunction vaf = new VariableArgFunction
           (sf.getFunction(settings), numargs, settings);
-        
+
         ParseItem[] args = new ParseItem[numargs];
         for (int j = 0 ; j < numargs; j++)
         {
@@ -431,9 +431,9 @@ class StringFormulaParser implements Parser
     }
 
     // Function is a standard built in function
-    BuiltInFunction bif = new BuiltInFunction(sf.getFunction(settings), 
+    BuiltInFunction bif = new BuiltInFunction(sf.getFunction(settings),
                                               settings);
-      
+
     int numargs = sf.getFunction(settings).getNumArgs();
     if (numargs == 1)
     {
@@ -447,7 +447,7 @@ class StringFormulaParser implements Parser
       {
         throw new FormulaException(FormulaException.INCORRECT_ARGUMENTS);
       }
-      // multiple arguments so go to the arguments stack.  
+      // multiple arguments so go to the arguments stack.
       // Unlike the variable argument function, the args are
       // stored in reverse order
       for (int j = 0; j < numargs ; j++)
