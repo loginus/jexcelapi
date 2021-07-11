@@ -180,7 +180,7 @@ class CellReference3d extends Operand implements ParsedThing
   byte[] getBytes()
   {
     byte[] data = new byte[7];
-    data[0] = Token.REF3D.getCode();
+    data[0] = Token.REF3D.getReferenceCode();
 
     IntegerHelper.getTwoBytes(sheet, data, 1);
     IntegerHelper.getTwoBytes(row, data, 3);

@@ -268,8 +268,8 @@ class BuiltInFunction extends Operator implements ParsedThing
     // Add on the operator byte
     byte[] newdata = new byte[data.length + 3];
     System.arraycopy(data, 0, newdata, 0, data.length);
-    newdata[data.length] = !useAlternateCode() ? Token.FUNCTION.getCode() :
-                                                 Token.FUNCTION.getCode2();
+    newdata[data.length] = !useAlternateCode() ? Token.FUNCTION.getReferenceCode() :
+                                                 Token.FUNCTION.getValueCode();
     IntegerHelper.getTwoBytes(function.getCode(), newdata, data.length + 1);
 
     return newdata;

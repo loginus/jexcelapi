@@ -78,7 +78,7 @@ class RangeSeparator extends BinaryOperator implements ParsedThing
     System.arraycopy(funcBytes, 0, bytes, 3, funcBytes.length);
     
     // Indicate the mem func 
-    bytes[0] = Token.MEM_FUNC.getCode();
+    bytes[0] = Token.MEM_FUNC.getReferenceCode();
     IntegerHelper.getTwoBytes(funcBytes.length, bytes, 1);
 
     return bytes;

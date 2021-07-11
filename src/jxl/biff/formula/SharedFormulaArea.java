@@ -83,7 +83,7 @@ class SharedFormulaArea extends Operand implements ParsedThing
    */
   public int read(byte[] data, int pos)
   {
-    // Preserve signage on column and row values, because they will
+    // Preserve signage on column and row value, because they will
     // probably be relative
 
     rowFirst =  IntegerHelper.getShort(data[pos], data[pos+1]);
@@ -139,7 +139,7 @@ class SharedFormulaArea extends Operand implements ParsedThing
   byte[] getBytes()
   {
     byte[] data = new byte[9];
-    data[0] = Token.AREA.getCode();
+    data[0] = Token.AREA.getReferenceCode();
 
     // Use absolute references for columns, so don't bother about
     // the col relative/row relative bits

@@ -149,8 +149,8 @@ class CellReference extends Operand implements ParsedThing
   byte[] getBytes()
   {
     byte[] data = new byte[5];
-    data[0] = !useAlternateCode() ? Token.REF.getCode() :
-                                    Token.REF.getCode2();
+    data[0] = !useAlternateCode() ? Token.REF.getReferenceCode() :
+                                    Token.REF.getValueCode();
 
     IntegerHelper.getTwoBytes(row, data, 1);
 

@@ -99,7 +99,7 @@ class StringValue extends Operand implements ParsedThing
   byte[] getBytes()
   {
     byte[] data = new byte[value.length() * 2 + 3];
-    data[0] = Token.STRING.getCode();
+    data[0] = Token.STRING.getReferenceCode();
     data[1] = (byte) (value.length());
     data[2] = 0x01;
     StringHelper.getUnicodeBytes(value, data, 3);

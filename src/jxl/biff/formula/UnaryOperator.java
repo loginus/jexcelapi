@@ -158,7 +158,7 @@ abstract class UnaryOperator extends Operator implements ParsedThing
     // Add on the operator byte
     byte[] newdata = new byte[data.length + 1];
     System.arraycopy(data, 0, newdata, 0, data.length);
-    newdata[data.length] = getToken().getCode();
+    newdata[data.length] = getToken().getReferenceCode();
 
     return newdata;
   }

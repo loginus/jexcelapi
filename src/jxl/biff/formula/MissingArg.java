@@ -52,7 +52,7 @@ class MissingArg extends Operand implements ParsedThing
   byte[] getBytes()
   {
     byte[] data = new byte[1];
-    data[0] = Token.MISSING_ARG.getCode();
+    data[0] = Token.MISSING_ARG.getReferenceCode();
 
     return data;
   }

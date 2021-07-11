@@ -260,7 +260,7 @@ class Attribute extends Operator implements ParsedThing
       // Add on the operator byte
       byte[] newdata = new byte[data.length + 4];
       System.arraycopy(data, 0, newdata, 0, data.length);
-      newdata[data.length] = Token.ATTRIBUTE.getCode();
+      newdata[data.length] = Token.ATTRIBUTE.getReferenceCode();
       newdata[data.length + 1] = SUM_MASK;
       data = newdata;
     }
@@ -294,7 +294,7 @@ class Attribute extends Operator implements ParsedThing
     byte[] newdata = new byte[data.length + 4];
     System.arraycopy(data, 0, newdata, 0, data.length);
     data = newdata;
-    data[pos] = Token.ATTRIBUTE.getCode();
+    data[pos] = Token.ATTRIBUTE.getReferenceCode();
     data[pos + 1] = 0x2;
     falseOffsetPos = pos + 2;
 
@@ -310,7 +310,7 @@ class Attribute extends Operator implements ParsedThing
     newdata = new byte[data.length + 4];
     System.arraycopy(data, 0, newdata, 0, data.length);
     data = newdata;
-    data[pos] = Token.ATTRIBUTE.getCode();
+    data[pos] = Token.ATTRIBUTE.getReferenceCode();
     data[pos + 1] = 0x8;
     gotoEndPos = pos + 2;
 
@@ -333,7 +333,7 @@ class Attribute extends Operator implements ParsedThing
       newdata = new byte[data.length + 4];
       System.arraycopy(data, 0, newdata, 0, data.length);
       data = newdata;
-      data[pos] = Token.ATTRIBUTE.getCode();
+      data[pos] = Token.ATTRIBUTE.getReferenceCode();
       data[pos + 1] = 0x8;
       data[pos + 2] = 0x3;
     }
@@ -343,7 +343,7 @@ class Attribute extends Operator implements ParsedThing
     newdata = new byte[data.length + 4];
     System.arraycopy(data, 0, newdata, 0, data.length);
     data = newdata;
-    data[pos] = Token.FUNCTIONVARARG.getCode();
+    data[pos] = Token.FUNCTIONVARARG.getReferenceCode();
     data[pos + 1] = (byte) numArgs;
     data[pos + 2] = 1;
     data[pos + 3] = 0;  // indicates the end of the expression

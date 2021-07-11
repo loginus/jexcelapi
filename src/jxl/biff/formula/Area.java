@@ -188,8 +188,8 @@ class Area extends Operand implements ParsedThing
   byte[] getBytes()
   {
     byte[] data = new byte[9];
-    data[0] = !useAlternateCode() ? Token.AREA.getCode() :
-                                    Token.AREA.getCode2();
+    data[0] = !useAlternateCode() ? Token.AREA.getReferenceCode() :
+                                    Token.AREA.getValueCode();
 
     IntegerHelper.getTwoBytes(rowFirst, data, 1);
     IntegerHelper.getTwoBytes(rowLast, data, 3);

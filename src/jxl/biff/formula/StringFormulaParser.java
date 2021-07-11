@@ -326,7 +326,7 @@ class StringFormulaParser implements Parser
     {
       byte[] newBytes = new byte[bytes.length + 4];
       System.arraycopy(bytes, 0, newBytes, 4, bytes.length);
-      newBytes[0] = Token.ATTRIBUTE.getCode();
+      newBytes[0] = Token.ATTRIBUTE.getReferenceCode();
       newBytes[1] = (byte) 0x1;
       bytes = newBytes;
     }

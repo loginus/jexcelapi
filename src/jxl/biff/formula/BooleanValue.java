@@ -69,7 +69,7 @@ class BooleanValue extends Operand implements ParsedThing
   byte[] getBytes()
   {
     byte[] data = new byte[2];
-    data[0] = Token.BOOL.getCode();
+    data[0] = Token.BOOL.getReferenceCode();
     data[1] = (byte) (value == true ? 1 : 0);
 
     return data;

@@ -304,7 +304,7 @@ class VariableArgFunction extends Operator implements ParsedThing
     byte[] newdata = new byte[data.length + 4];
     System.arraycopy(data, 0, newdata, 0, data.length);
     newdata[data.length] = !useAlternateCode() ? 
-      Token.FUNCTIONVARARG.getCode() : Token.FUNCTIONVARARG.getCode2() ;
+      Token.FUNCTIONVARARG.getReferenceCode() : Token.FUNCTIONVARARG.getValueCode() ;
     newdata[data.length+1] = (byte) arguments;
     IntegerHelper.getTwoBytes(function.getCode(), newdata, data.length+2);
 

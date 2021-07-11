@@ -47,7 +47,7 @@ class DoubleValue extends NumberValue implements ParsedThing
 
   /**
    * Constructor - invoked when writing an integer value that's out
-   * of range for a short
+ of range for a short
    *
    * @param v the double value
    */
@@ -96,7 +96,7 @@ class DoubleValue extends NumberValue implements ParsedThing
   byte[] getBytes()
   {
     byte[] data = new byte[9];
-    data[0] = Token.DOUBLE.getCode();
+    data[0] = Token.DOUBLE.getReferenceCode();
 
     DoubleHelper.getIEEEBytes(value, data, 1);
 
