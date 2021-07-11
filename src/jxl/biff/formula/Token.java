@@ -116,8 +116,8 @@ class Token
   }
 
   // Operands
-  public static final Token REF         = new Token(0x44, 0x24, 0x64);
-  public static final Token REF3D       = new Token(0x5a, 0x3a, 0x7a);
+  public static final Token REF         = new Token(0x24, 0x44, 0x64);
+  public static final Token REF3D       = new Token(0x3a, 0x5a, 0x7a);
   public static final Token MISSING_ARG = new Token(0x16);
   public static final Token STRING      = new Token(0x17);
   public static final Token ERR         = new Token(0x1c);
@@ -126,15 +126,20 @@ class Token
   public static final Token DOUBLE      = new Token(0x1f);
   public static final Token ARRAY       = new Token(0x20, 0x40, 0x60);
   public static final Token REFERR      = new Token(0x2a, 0x4a, 0x6a);
+  public static final Token AREA_R      = new Token(0x2b, 0x4b, 0x6b);
   public static final Token REFV        = new Token(0x2c, 0x4c, 0x6c);
   public static final Token AREAV       = new Token(0x2d, 0x4d, 0x6d);
+  public static final Token MEM_AREA_V  = new Token(0x2e, 0x4e, 0x6e);
+  public static final Token MEM_NO_MEM_V= new Token(0x2f, 0x4f, 0x6f);
   public static final Token MEM_AREA    = new Token(0x26, 0x46, 0x66);
+  public static final Token MEM_ERR     = new Token(0x27, 0x47, 0x67);
+  public static final Token MEM_NO_MEM  = new Token(0x28, 0x48, 0x68);
   public static final Token AREA        = new Token(0x25, 0x65, 0x45);
-  public static final Token NAMED_RANGE = new Token(0x23, 0x43, 0x63);
-  public static final Token CELL_REF    = new Token(0x24, 0x44, 0x64);
-    //need 0x23 for data validation references
+  public static final Token NAMED_RANGE = new Token(0x23, 0x43, 0x63); //need 0x23 for data validation references
   public static final Token NAME        = new Token(0x39, 0x59);
-  public static final Token AREA3D      = new Token(0x3b, 0x5b);
+  public static final Token AREA3D      = new Token(0x3b, 0x5b, 0x7b);
+  public static final Token REF_ERR_3D  = new Token(0x3c, 0x5c, 0x7c);
+  public static final Token AREA_ERR_3D = new Token(0x3d, 0x5d, 0x7d);
 
   // Unary Operators
   public static final Token UNARY_PLUS   = new Token(0x12);
@@ -165,7 +170,12 @@ class Token
   public static final Token MACROCOMMAND   = new Token(0x38, 0x58, 0x78); // BIFF2,BIFF3
 
   // Control
+  public static final Token EXP       = new Token(0x1);
+  public static final Token TBL       = new Token(0x2);
+  public static final Token NLR       = new Token(0x18); // BIFF8
   public static final Token ATTRIBUTE = new Token(0x19);
+  public static final Token SHEET     = new Token(0x1A); // BIFF2-4
+  public static final Token END_SHEET = new Token(0x1B); // BIFF2-4
   public static final Token MEM_FUNC = new Token(0x29, 0x49, 0x69);
 
   // Unknown token
