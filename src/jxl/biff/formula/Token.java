@@ -133,7 +133,7 @@ class Token
   public static final Token ARRAY       = new Token(0x20, 0x40, 0x60); // the reference class 0x20 never appears in an excel formula
 
   // Operands
-  public static final Token NAMED_RANGE = new Token(0x23, 0x43, 0x63); //need 0x23 for data validation references
+  public static final Token NAME        = new Token(0x23, 0x43, 0x63); //need 0x23 for data validation references
   public static final Token REF         = new Token(0x24, 0x44, 0x64);
   public static final Token AREA        = new Token(0x25, 0x45, 0x65);
   public static final Token MEM_AREA    = new Token(0x26, 0x46, 0x66);
@@ -142,7 +142,7 @@ class Token
   public static final Token AREA_ERR    = new Token(0x2b, 0x4b, 0x6b);
   public static final Token REF_N       = new Token(0x2c, 0x4c, 0x6c);
   public static final Token AREA_N      = new Token(0x2d, 0x4d, 0x6d);
-  public static final Token NAME        = new Token(0x39, 0x59, 0x79);
+  public static final Token NAME_X      = new Token(0x39, 0x59, 0x79);
   public static final Token REF3D       = new Token(0x3a, 0x5a, 0x7a);
   public static final Token AREA3D      = new Token(0x3b, 0x5b, 0x7b);
   public static final Token REF_ERR_3D  = new Token(0x3c, 0x5c, 0x7c);

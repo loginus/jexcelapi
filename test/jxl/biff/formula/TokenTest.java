@@ -36,6 +36,10 @@ public class TokenTest {
     assertEquals(PARENTHESIS,    Token.getToken((byte) 0x15));
     assertEquals(MISSING_ARG,    Token.getToken((byte) 0x16));
     assertEquals(STRING,         Token.getToken((byte) 0x17));
+    assertEquals(NLR,            Token.getToken((byte) 0x18));
+    assertEquals(ATTRIBUTE,      Token.getToken((byte) 0x19));
+    assertEquals(SHEET,          Token.getToken((byte) 0x1A));
+    assertEquals(END_SHEET,      Token.getToken((byte) 0x1B));
     assertEquals(ERR,            Token.getToken((byte) 0x1C));
     assertEquals(BOOL,           Token.getToken((byte) 0x1D));
     assertEquals(INTEGER,        Token.getToken((byte) 0x1E));
@@ -43,7 +47,7 @@ public class TokenTest {
     assertEquals(ARRAY,          Token.getToken((byte) 0x20));
     assertEquals(FUNCTION,       Token.getToken((byte) 0x21));
     assertEquals(FUNCTIONVARARG, Token.getToken((byte) 0x22));
-    assertEquals(NAMED_RANGE,    Token.getToken((byte) 0x23));
+    assertEquals(NAME,           Token.getToken((byte) 0x23));
     assertEquals(REF,            Token.getToken((byte) 0x24));
     assertEquals(AREA,           Token.getToken((byte) 0x25));
     assertEquals(MEM_AREA,       Token.getToken((byte) 0x26));
@@ -65,7 +69,7 @@ public class TokenTest {
     assertEquals(UNKNOWN,        Token.getToken((byte) 0x36));
     assertEquals(UNKNOWN,        Token.getToken((byte) 0x37));
     assertEquals(MACROCOMMAND,   Token.getToken((byte) 0x38));
-    assertEquals(NAME,           Token.getToken((byte) 0x39));
+    assertEquals(NAME_X,         Token.getToken((byte) 0x39));
     assertEquals(REF3D,          Token.getToken((byte) 0x3A));
     assertEquals(AREA3D,         Token.getToken((byte) 0x3B));
     assertEquals(REF_ERR_3D,     Token.getToken((byte) 0x3C));
@@ -75,7 +79,7 @@ public class TokenTest {
     assertEquals(ARRAY,          Token.getToken((byte) 0x40));
     assertEquals(FUNCTION,       Token.getToken((byte) 0x41));
     assertEquals(FUNCTIONVARARG, Token.getToken((byte) 0x42));
-    assertEquals(NAMED_RANGE,    Token.getToken((byte) 0x43));
+    assertEquals(NAME,           Token.getToken((byte) 0x43));
     assertEquals(REF,            Token.getToken((byte) 0x44));
     assertEquals(AREA,           Token.getToken((byte) 0x45));
     assertEquals(MEM_AREA,       Token.getToken((byte) 0x46));
@@ -97,7 +101,7 @@ public class TokenTest {
     assertEquals(UNKNOWN,        Token.getToken((byte) 0x56));
     assertEquals(UNKNOWN,        Token.getToken((byte) 0x57));
     assertEquals(MACROCOMMAND,   Token.getToken((byte) 0x58));
-    assertEquals(NAME,           Token.getToken((byte) 0x59));
+    assertEquals(NAME_X,         Token.getToken((byte) 0x59));
     assertEquals(REF3D,          Token.getToken((byte) 0x5A));
     assertEquals(AREA3D,         Token.getToken((byte) 0x5B));
     assertEquals(REF_ERR_3D,     Token.getToken((byte) 0x5C));
@@ -107,7 +111,7 @@ public class TokenTest {
     assertEquals(ARRAY,          Token.getToken((byte) 0x60));
     assertEquals(FUNCTION,       Token.getToken((byte) 0x61));
     assertEquals(FUNCTIONVARARG, Token.getToken((byte) 0x62));
-    assertEquals(NAMED_RANGE,    Token.getToken((byte) 0x63));
+    assertEquals(NAME,           Token.getToken((byte) 0x63));
     assertEquals(REF,            Token.getToken((byte) 0x64));
     assertEquals(AREA,           Token.getToken((byte) 0x65));
     assertEquals(MEM_AREA,       Token.getToken((byte) 0x66));
@@ -129,7 +133,7 @@ public class TokenTest {
     assertEquals(UNKNOWN,        Token.getToken((byte) 0x76));
     assertEquals(UNKNOWN,        Token.getToken((byte) 0x77));
     assertEquals(MACROCOMMAND,   Token.getToken((byte) 0x78));
-    assertEquals(NAME,           Token.getToken((byte) 0x79));
+    assertEquals(NAME_X,         Token.getToken((byte) 0x79));
     assertEquals(REF3D,          Token.getToken((byte) 0x7A));
     assertEquals(AREA3D,         Token.getToken((byte) 0x7B));
     assertEquals(REF_ERR_3D,     Token.getToken((byte) 0x7C));

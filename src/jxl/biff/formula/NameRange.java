@@ -110,11 +110,11 @@ class NameRange extends Operand implements ParsedThing
   {
     byte[] data = new byte[5];
 
-    data[0] = Token.NAMED_RANGE.getValueCode();
+    data[0] = Token.NAME.getValueCode();
 
     if (getParseContext() == ParseContext.DATA_VALIDATION)
     {
-      data[0] = Token.NAMED_RANGE.getReferenceCode();
+      data[0] = Token.NAME.getReferenceCode();
     }
 
     IntegerHelper.getTwoBytes(index, data, 1);

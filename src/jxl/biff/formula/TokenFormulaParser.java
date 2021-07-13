@@ -199,14 +199,14 @@ class TokenFormulaParser implements Parser
         pos += a.read(tokenData, pos);
         tokenStack.push(a);
       }
-      else if (t == Token.NAME)
+      else if (t == Token.NAME_X)
       {
         Name n = new Name();
         pos += n.read(tokenData, pos);
         n.setParseContext(parseContext);
         tokenStack.push(n);
       }
-      else if (t == Token.NAMED_RANGE)
+      else if (t == Token.NAME)
       {
         NameRange nr = new NameRange(nameTable);
         pos += nr.read(tokenData, pos);
