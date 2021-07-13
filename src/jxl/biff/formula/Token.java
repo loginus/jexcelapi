@@ -127,6 +127,8 @@ enum Token {
    * the first on the list
    *
    * @return the token code. This is the first item in the array
+   *
+   * TODO: used in DATA_VALIDATION = getReferenceCode = ! alternateCode
    */
   public byte getReferenceCode() {
     return values[0];
@@ -137,6 +139,8 @@ enum Token {
    * the second item on the list
    *
    * @return the token code
+   *
+   * TODO: used in DEFAULT = getValueCode = alternateCode
    */
   public byte getValueCode() {
     return values.length > 1 ? values[1] : values[0];
