@@ -168,7 +168,7 @@ class TokenFormulaParser implements Parser
         pos += ec.read(tokenData, pos);
         tokenStack.push(ec);
       }
-      else if (t == Token.REFV)
+      else if (t == Token.REF_N)
       {
         SharedFormulaCellReference cr =
           new SharedFormulaCellReference(relativeTo);
@@ -187,7 +187,7 @@ class TokenFormulaParser implements Parser
         pos += a.read(tokenData, pos);
         tokenStack.push(a);
       }
-      else if (t == Token.AREAV)
+      else if (t == Token.AREA_N)
       {
         SharedFormulaArea a = new SharedFormulaArea(relativeTo);
         pos += a.read(tokenData, pos);

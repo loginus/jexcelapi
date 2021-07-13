@@ -48,7 +48,6 @@ class Token
     values = new byte[] {(byte) reference};
 
     tokens.put((byte) reference, this);
-    System.out.println(tokens.size());
   }
 
   /**
@@ -64,7 +63,6 @@ class Token
     tokens.put((byte) reference, this);
     tokens.put((byte) value, this);
     tokens.put((byte) array, this);
-    System.out.println(tokens.size());
   }
 
   /**
@@ -125,23 +123,25 @@ class Token
   public static final Token UNARY_MINUS  = new Token(0x13);
   public static final Token PERCENT      = new Token(0x14);
 
-  // Operands
+  // Constant Operands
   public static final Token MISSING_ARG = new Token(0x16);
   public static final Token STRING      = new Token(0x17);
   public static final Token ERR         = new Token(0x1c);
   public static final Token BOOL        = new Token(0x1d);
   public static final Token INTEGER     = new Token(0x1e);
   public static final Token DOUBLE      = new Token(0x1f);
-  public static final Token ARRAY       = new Token(0x20, 0x40, 0x60);
+  public static final Token ARRAY       = new Token(0x20, 0x40, 0x60); // the reference class 0x20 never appears in an excel formula
+
+  // Operands
   public static final Token NAMED_RANGE = new Token(0x23, 0x43, 0x63); //need 0x23 for data validation references
   public static final Token REF         = new Token(0x24, 0x44, 0x64);
   public static final Token AREA        = new Token(0x25, 0x45, 0x65);
   public static final Token MEM_AREA    = new Token(0x26, 0x46, 0x66);
   public static final Token MEM_ERR     = new Token(0x27, 0x47, 0x67);
   public static final Token REFERR      = new Token(0x2a, 0x4a, 0x6a);
-  public static final Token AREA_R      = new Token(0x2b, 0x4b, 0x6b); // AREA_ERR
-  public static final Token REFV        = new Token(0x2c, 0x4c, 0x6c); // REF_N
-  public static final Token AREAV       = new Token(0x2d, 0x4d, 0x6d); // AREA_N
+  public static final Token AREA_ERR    = new Token(0x2b, 0x4b, 0x6b);
+  public static final Token REF_N       = new Token(0x2c, 0x4c, 0x6c);
+  public static final Token AREA_N      = new Token(0x2d, 0x4d, 0x6d);
   public static final Token NAME        = new Token(0x39, 0x59, 0x79);
   public static final Token REF3D       = new Token(0x3a, 0x5a, 0x7a);
   public static final Token AREA3D      = new Token(0x3b, 0x5b, 0x7b);
@@ -163,8 +163,8 @@ class Token
   public static final Token END_SHEET   = new Token(0x1B); // BIFF2-4, deleted
   public static final Token MEM_NO_MEM  = new Token(0x28, 0x48, 0x68);
   public static final Token MEM_FUNC    = new Token(0x29, 0x49, 0x69);
-  public static final Token MEM_AREA_V  = new Token(0x2e, 0x4e, 0x6e); // MEM_AREA_N
-  public static final Token MEM_NO_MEM_V= new Token(0x2f, 0x4f, 0x6f); // MEM_AREA_N
+  public static final Token MEM_AREA_N  = new Token(0x2e, 0x4e, 0x6e);
+  public static final Token MEM_NO_MEM_N= new Token(0x2f, 0x4f, 0x6f);
 
   // Unknown token
   public static final Token UNKNOWN = new Token(0xffff);
