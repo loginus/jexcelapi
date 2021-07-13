@@ -25,17 +25,80 @@ import java.util.*;
  * An enumeration detailing the Excel parsed tokens
  * A particular token may be associated with more than one token code
  */
-class Token
-{
+enum Token {
+
+    // Binary Operators
+    ADD          (0x3),
+    SUBTRACT     (0x4),
+    MULTIPLY     (0x5),
+    DIVIDE       (0x6),
+    POWER        (0x7),
+    CONCAT       (0x8),
+    LESS_THAN    (0x9),
+    LESS_EQUAL   (0xa),
+    EQUAL        (0xb),
+    GREATER_EQUAL(0xc),
+    GREATER_THAN (0xd),
+    NOT_EQUAL    (0xe),
+    INTERSECTION (0xf),
+    UNION        (0x10),
+    RANGE        (0x11),
+
+    // Unary Operators
+    UNARY_PLUS   (0x12),
+    UNARY_MINUS  (0x13),
+    PERCENT      (0x14),
+
+    // Constant Operands
+    MISSING_ARG (0x16),
+    STRING      (0x17),
+    ERR         (0x1c),
+    BOOL        (0x1d),
+    INTEGER     (0x1e),
+    DOUBLE      (0x1f),
+    ARRAY       (0x20, 0x40, 0x60), // the reference class 0x20 never appears in an excel formula
+
+    // Operands
+    NAME        (0x23, 0x43, 0x63), //need 0x23 for data validation references
+    REF         (0x24, 0x44, 0x64),
+    AREA        (0x25, 0x45, 0x65),
+    MEM_AREA    (0x26, 0x46, 0x66),
+    MEM_ERR     (0x27, 0x47, 0x67),
+    REFERR      (0x2a, 0x4a, 0x6a),
+    AREA_ERR    (0x2b, 0x4b, 0x6b),
+    REF_N       (0x2c, 0x4c, 0x6c),
+    AREA_N      (0x2d, 0x4d, 0x6d),
+    NAME_X      (0x39, 0x59, 0x79), // local name of explicit sheet or external name
+    REF3D       (0x3a, 0x5a, 0x7a),
+    AREA3D      (0x3b, 0x5b, 0x7b),
+    REF_ERR_3D  (0x3c, 0x5c, 0x7c),
+    AREA_ERR_3D (0x3d, 0x5d, 0x7d),
+
+    // Function operators
+    FUNCTION       (0x21, 0x41, 0x61),
+    FUNCTIONVARARG (0x22, 0x42, 0x62),
+    MACROCOMMAND   (0x38, 0x58, 0x78), // BIFF2,BIFF3
+
+    // Control
+    EXP         (0x1),
+    TBL         (0x2),
+    PARENTHESIS (0x15),
+    NLR         (0x18), // BIFF8, extended parsed thing
+    ATTRIBUTE   (0x19),
+    SHEET       (0x1A), // BIFF2-4, deleted
+    END_SHEET   (0x1B), // BIFF2-4, deleted
+    MEM_NO_MEM  (0x28, 0x48, 0x68),
+    MEM_FUNC    (0x29, 0x49, 0x69),
+    MEM_AREA_N  (0x2e, 0x4e, 0x6e),
+    MEM_NO_MEM_N(0x2f, 0x4f, 0x6f),
+
+    // Unknown token
+    UNKNOWN (0);
+
   /**
    * The array of values which apply to this token
    */
   private final byte[] values;
-
-  /**
-   * All available tokens, keyed on value
-   */
-  private static Map<Byte, Token> tokens = new HashMap<>(100);
 
   /**
    * Constructor
@@ -43,36 +106,29 @@ class Token
    *
    * @param reference the biff code for the token
    */
-  private Token(int reference)
-  {
+  private Token(int reference) {
     values = new byte[] {(byte) reference};
-
-    tokens.put((byte) reference, this);
   }
 
   /**
    * Constructor
    * Sets the token value and adds this token to the array of all token
    *
-   * @param v the biff code for the token
+   * @param reference the biff code for the token
+   * @param value the biff code for the token
+   * @param array the biff code for the token
    */
-  private Token(int reference, int value, int array)
-  {
+  private Token(int reference, int value, int array) {
     this.values = new byte[] {(byte) reference, (byte) value, (byte) array};
-
-    tokens.put((byte) reference, this);
-    tokens.put((byte) value, this);
-    tokens.put((byte) array, this);
   }
 
   /**
    * Gets the reference token code for the specified token.  This is always
    * the first on the list
    *
-   * @return the token code.  This is the first item in the array
+   * @return the token code. This is the first item in the array
    */
-  public byte getReferenceCode()
-  {
+  public byte getReferenceCode() {
     return values[0];
   }
 
@@ -82,90 +138,37 @@ class Token
    *
    * @return the token code
    */
-  public byte getValueCode()
-  {
-    return values.length > 0 ? values[1] : values[0];
-  }
-
-  public byte getArrayCode() {
-    return values.length > 1 ? values[2] : getValueCode();
+  public byte getValueCode() {
+    return values.length > 1 ? values[1] : values[0];
   }
 
   /**
-   * Gets the type object from its integer value
+   * Gets the array token code for the specified token.  This is always
+   * the third item on the list
+   *
+   * @return the token code
    */
-  public static Token getToken(byte v)
-  {
-    Token t = tokens.get(v);
-
-    return t != null ? t : UNKNOWN;
+  public byte getArrayCode() {
+    return values.length > 2 ? values[2] : getValueCode();
   }
 
-  // Binary Operators
-  public static final Token ADD           = new Token(0x3);
-  public static final Token SUBTRACT      = new Token(0x4);
-  public static final Token MULTIPLY      = new Token(0x5);
-  public static final Token DIVIDE        = new Token(0x6);
-  public static final Token POWER         = new Token(0x7);
-  public static final Token CONCAT        = new Token(0x8);
-  public static final Token LESS_THAN     = new Token(0x9);
-  public static final Token LESS_EQUAL    = new Token(0xa);
-  public static final Token EQUAL         = new Token(0xb);
-  public static final Token GREATER_EQUAL = new Token(0xc);
-  public static final Token GREATER_THAN  = new Token(0xd);
-  public static final Token NOT_EQUAL     = new Token(0xe);
-  public static final Token INTERSECTION  = new Token(0xf);
-  public static final Token UNION         = new Token(0x10);
-  public static final Token RANGE         = new Token(0x11);
+  /**
+   * All available tokens, keyed on value
+   */
+  private static final Map<Byte, Token> TOKENS = new HashMap<>(100);
 
-  // Unary Operators
-  public static final Token UNARY_PLUS   = new Token(0x12);
-  public static final Token UNARY_MINUS  = new Token(0x13);
-  public static final Token PERCENT      = new Token(0x14);
+  static {
+    Arrays.stream(Token.values())
+            .peek(t -> TOKENS.put(t.getReferenceCode(), t))
+            .peek(t -> TOKENS.put(t.getValueCode(), t))
+            .forEach(t -> TOKENS.put(t.getArrayCode(), t));
+  }
 
-  // Constant Operands
-  public static final Token MISSING_ARG = new Token(0x16);
-  public static final Token STRING      = new Token(0x17);
-  public static final Token ERR         = new Token(0x1c);
-  public static final Token BOOL        = new Token(0x1d);
-  public static final Token INTEGER     = new Token(0x1e);
-  public static final Token DOUBLE      = new Token(0x1f);
-  public static final Token ARRAY       = new Token(0x20, 0x40, 0x60); // the reference class 0x20 never appears in an excel formula
+  /**
+   * Gets the type object from its byte value
+   */
+  public static Token getToken(byte v) {
+    return TOKENS.getOrDefault(v, UNKNOWN);
+  }
 
-  // Operands
-  public static final Token NAME        = new Token(0x23, 0x43, 0x63); //need 0x23 for data validation references
-  public static final Token REF         = new Token(0x24, 0x44, 0x64);
-  public static final Token AREA        = new Token(0x25, 0x45, 0x65);
-  public static final Token MEM_AREA    = new Token(0x26, 0x46, 0x66);
-  public static final Token MEM_ERR     = new Token(0x27, 0x47, 0x67);
-  public static final Token REFERR      = new Token(0x2a, 0x4a, 0x6a);
-  public static final Token AREA_ERR    = new Token(0x2b, 0x4b, 0x6b);
-  public static final Token REF_N       = new Token(0x2c, 0x4c, 0x6c);
-  public static final Token AREA_N      = new Token(0x2d, 0x4d, 0x6d);
-  public static final Token NAME_X      = new Token(0x39, 0x59, 0x79);
-  public static final Token REF3D       = new Token(0x3a, 0x5a, 0x7a);
-  public static final Token AREA3D      = new Token(0x3b, 0x5b, 0x7b);
-  public static final Token REF_ERR_3D  = new Token(0x3c, 0x5c, 0x7c);
-  public static final Token AREA_ERR_3D = new Token(0x3d, 0x5d, 0x7d);
-
-  // Function operators
-  public static final Token FUNCTION       = new Token(0x21, 0x41, 0x61);
-  public static final Token FUNCTIONVARARG = new Token(0x22, 0x42, 0x62);
-  public static final Token MACROCOMMAND   = new Token(0x38, 0x58, 0x78); // BIFF2,BIFF3
-
-  // Control
-  public static final Token EXP         = new Token(0x1);
-  public static final Token TBL         = new Token(0x2);
-  public static final Token PARENTHESIS = new Token(0x15);
-  public static final Token NLR         = new Token(0x18); // BIFF8, extended parsed thing
-  public static final Token ATTRIBUTE   = new Token(0x19);
-  public static final Token SHEET       = new Token(0x1A); // BIFF2-4, deleted
-  public static final Token END_SHEET   = new Token(0x1B); // BIFF2-4, deleted
-  public static final Token MEM_NO_MEM  = new Token(0x28, 0x48, 0x68);
-  public static final Token MEM_FUNC    = new Token(0x29, 0x49, 0x69);
-  public static final Token MEM_AREA_N  = new Token(0x2e, 0x4e, 0x6e);
-  public static final Token MEM_NO_MEM_N= new Token(0x2f, 0x4f, 0x6f);
-
-  // Unknown token
-  public static final Token UNKNOWN = new Token(0xffff);
 }
