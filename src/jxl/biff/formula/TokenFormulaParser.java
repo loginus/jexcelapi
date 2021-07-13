@@ -141,266 +141,218 @@ class TokenFormulaParser implements Parser
       byte tokenVal = tokenData[pos];
       pos++;
 
-      Token t = Token.getToken(tokenVal);
+      switch (Token.getToken(tokenVal)) {
+        case UNKNOWN -> throw new FormulaException(FormulaException.UNRECOGNIZED_TOKEN, tokenVal);
 
-      if (t == Token.UNKNOWN)
-      {
-        throw new FormulaException
-          (FormulaException.UNRECOGNIZED_TOKEN, tokenVal);
-      }
-
-      // Operands
-      else if (t == Token.REF)
-      {
-        CellReference cr = new CellReference(relativeTo);
-        pos += cr.read(tokenData, pos);
-        tokenStack.push(cr);
-      }
-      else if (t == Token.REFERR)
-      {
-        CellReferenceError cr = new CellReferenceError();
-        pos += cr.read(tokenData, pos);
-        tokenStack.push(cr);
-      }
-      else if (t == Token.ERR)
-      {
-        ErrorConstant ec = new ErrorConstant();
-        pos += ec.read(tokenData, pos);
-        tokenStack.push(ec);
-      }
-      else if (t == Token.REF_N)
-      {
-        SharedFormulaCellReference cr =
-          new SharedFormulaCellReference(relativeTo);
-        pos += cr.read(tokenData, pos);
-        tokenStack.push(cr);
-      }
-      else if (t == Token.REF3D)
-      {
-        CellReference3d cr = new CellReference3d(relativeTo, workbook);
-        pos += cr.read(tokenData, pos);
-        tokenStack.push(cr);
-      }
-      else if (t == Token.AREA)
-      {
-        Area a = new Area();
-        pos += a.read(tokenData, pos);
-        tokenStack.push(a);
-      }
-      else if (t == Token.AREA_N)
-      {
-        SharedFormulaArea a = new SharedFormulaArea(relativeTo);
-        pos += a.read(tokenData, pos);
-        tokenStack.push(a);
-      }
-      else if (t == Token.AREA3D)
-      {
-        Area3d a = new Area3d(workbook);
-        pos += a.read(tokenData, pos);
-        tokenStack.push(a);
-      }
-      else if (t == Token.NAME_X)
-      {
-        Name n = new Name();
-        pos += n.read(tokenData, pos);
-        n.setParseContext(parseContext);
-        tokenStack.push(n);
-      }
-      else if (t == Token.NAME)
-      {
-        NameRange nr = new NameRange(nameTable);
-        pos += nr.read(tokenData, pos);
-        nr.setParseContext(parseContext);
-        tokenStack.push(nr);
-      }
-      else if (t == Token.INTEGER)
-      {
-        IntegerValue i = new IntegerValue();
-        pos += i.read(tokenData, pos);
-        tokenStack.push(i);
-      }
-      else if (t == Token.DOUBLE)
-      {
-        DoubleValue d = new DoubleValue();
-        pos += d.read(tokenData, pos);
-        tokenStack.push(d);
-      }
-      else if (t == Token.BOOL)
-      {
-        BooleanValue bv = new BooleanValue();
-        pos += bv.read(tokenData, pos);
-        tokenStack.push(bv);
-      }
-      else if (t == Token.STRING)
-      {
-        StringValue sv = new StringValue(settings);
-        pos += sv.read(tokenData, pos);
-        tokenStack.push(sv);
-      }
-      else if (t == Token.MISSING_ARG)
-      {
-        MissingArg ma = new MissingArg();
-        pos += ma.read(tokenData, pos);
-        tokenStack.push(ma);
-      }
-
-      // Unary Operators
-      else if (t == Token.UNARY_PLUS)
-      {
-        UnaryPlus up = new UnaryPlus();
-        pos += up.read(tokenData, pos);
-        addOperator(up);
-      }
-      else if (t == Token.UNARY_MINUS)
-      {
-        UnaryMinus um = new UnaryMinus();
-        pos += um.read(tokenData, pos);
-        addOperator(um);
-      }
-      else if (t == Token.PERCENT)
-      {
-        Percent p = new Percent();
-        pos += p.read(tokenData, pos);
-        addOperator(p);
-      }
-
-      // Binary Operators
-      else if (t == Token.SUBTRACT)
-      {
-        Subtract s = new Subtract();
-        pos += s.read(tokenData, pos);
-        addOperator(s);
-      }
-      else if (t == Token.ADD)
-      {
-        Add s = new Add();
-        pos += s.read(tokenData, pos);
-        addOperator(s);
-      }
-      else if (t == Token.MULTIPLY)
-      {
-        Multiply s = new Multiply();
-        pos += s.read(tokenData, pos);
-        addOperator(s);
-      }
-      else if (t == Token.DIVIDE)
-      {
-        Divide s = new Divide();
-        pos += s.read(tokenData, pos);
-        addOperator(s);
-      }
-      else if (t == Token.CONCAT)
-      {
-        Concatenate c = new Concatenate();
-        pos += c.read(tokenData, pos);
-        addOperator(c);
-      }
-      else if (t == Token.POWER)
-      {
-        Power p = new Power();
-        pos += p.read(tokenData, pos);
-        addOperator(p);
-      }
-      else if (t == Token.LESS_THAN)
-      {
-        LessThan lt = new LessThan();
-        pos += lt.read(tokenData, pos);
-        addOperator(lt);
-      }
-      else if (t == Token.LESS_EQUAL)
-      {
-        LessEqual lte = new LessEqual();
-        pos += lte.read(tokenData, pos);
-        addOperator(lte);
-      }
-      else if (t == Token.GREATER_THAN)
-      {
-        GreaterThan gt = new GreaterThan();
-        pos += gt.read(tokenData, pos);
-        addOperator(gt);
-      }
-      else if (t == Token.GREATER_EQUAL)
-      {
-        GreaterEqual gte = new GreaterEqual();
-        pos += gte.read(tokenData, pos);
-        addOperator(gte);
-      }
-      else if (t == Token.NOT_EQUAL)
-      {
-        NotEqual ne = new NotEqual();
-        pos += ne.read(tokenData, pos);
-        addOperator(ne);
-      }
-      else if (t == Token.EQUAL)
-      {
-        Equal e = new Equal();
-        pos += e.read(tokenData, pos);
-        addOperator(e);
-      }
-      else if (t == Token.PARENTHESIS)
-      {
-        Parenthesis p = new Parenthesis();
-        pos += p.read(tokenData, pos);
-        addOperator(p);
-      }
-
-      // Functions
-      else if (t == Token.ATTRIBUTE)
-      {
-        Attribute a = new Attribute(settings);
-        pos += a.read(tokenData, pos);
-
-        if (a.isSum())
-        {
-          addOperator(a);
+        // Operands
+        case REF -> {
+          CellReference cr = new CellReference(relativeTo);
+          pos += cr.read(tokenData, pos);
+          tokenStack.push(cr);
         }
-        else if (a.isIf())
-        {
-          // Add it to a special stack for ifs
-          ifStack.push(a);
+        case REFERR -> {
+          CellReferenceError cr = new CellReferenceError();
+          pos += cr.read(tokenData, pos);
+          tokenStack.push(cr);
         }
-      }
-      else if (t == Token.FUNCTION)
-      {
-        BuiltInFunction bif = new BuiltInFunction(settings);
-        pos += bif.read(tokenData, pos);
-
-        addOperator(bif);
-      }
-      else if (t == Token.FUNCTIONVARARG)
-      {
-        VariableArgFunction vaf = new VariableArgFunction(settings);
-        pos += vaf.read(tokenData, pos);
-
-        if (vaf.getFunction() != Function.ATTRIBUTE)
-        {
-          addOperator(vaf);
+        case ERR -> {
+          ErrorConstant ec = new ErrorConstant();
+          pos += ec.read(tokenData, pos);
+          tokenStack.push(ec);
         }
-        else
-        {
-          // This is part of an IF function.  Get the operands, but then
-          // add it to the top of the if stack
-          vaf.getOperands(tokenStack);
-
-          Attribute ifattr = ifStack.empty()
-                  ? new Attribute(settings)
-                  : ifStack.pop();
-
-          ifattr.setIfConditions(vaf);
-          tokenStack.push(ifattr);
+        case REF_N -> {
+          SharedFormulaCellReference cr = new SharedFormulaCellReference(relativeTo);
+          pos += cr.read(tokenData, pos);
+          tokenStack.push(cr);
         }
-      }
+        case REF3D -> {
+          CellReference3d cr = new CellReference3d(relativeTo, workbook);
+          pos += cr.read(tokenData, pos);
+          tokenStack.push(cr);
+        }
+        case AREA -> {
+          Area a = new Area();
+          pos += a.read(tokenData, pos);
+          tokenStack.push(a);
+        }
+        case AREA_N -> {
+          SharedFormulaArea a = new SharedFormulaArea(relativeTo);
+          pos += a.read(tokenData, pos);
+          tokenStack.push(a);
+        }
+        case AREA3D -> {
+          Area3d a = new Area3d(workbook);
+          pos += a.read(tokenData, pos);
+          tokenStack.push(a);
+        }
+        case NAME_X -> {
+          Name n = new Name();
+          pos += n.read(tokenData, pos);
+          n.setParseContext(parseContext);
+          tokenStack.push(n);
+        }
+        case NAME -> {
+          NameRange nr = new NameRange(nameTable);
+          pos += nr.read(tokenData, pos);
+          nr.setParseContext(parseContext);
+          tokenStack.push(nr);
+        }
+        case INTEGER -> {
+          IntegerValue i = new IntegerValue();
+          pos += i.read(tokenData, pos);
+          tokenStack.push(i);
+        }
+        case DOUBLE -> {
+          DoubleValue d = new DoubleValue();
+          pos += d.read(tokenData, pos);
+          tokenStack.push(d);
+        }
+        case BOOL -> {
+          BooleanValue bv = new BooleanValue();
+          pos += bv.read(tokenData, pos);
+          tokenStack.push(bv);
+        }
+        case STRING -> {
+          StringValue sv = new StringValue(settings);
+          pos += sv.read(tokenData, pos);
+          tokenStack.push(sv);
+        }
+        case MISSING_ARG -> {
+          MissingArg ma = new MissingArg();
+          pos += ma.read(tokenData, pos);
+          tokenStack.push(ma);
+        }
 
-      // Other things
-      else if (t == Token.MEM_FUNC)
-      {
-        MemFunc memFunc = new MemFunc();
-        handleMemoryFunction(memFunc);
-      }
-      else if (t == Token.MEM_AREA)
-      {
-        MemArea memArea = new MemArea();
-        handleMemoryFunction(memArea);
+        // Unary Operators
+        case UNARY_PLUS -> {
+          UnaryPlus up = new UnaryPlus();
+          pos += up.read(tokenData, pos);
+          addOperator(up);
+        }
+        case UNARY_MINUS -> {
+          UnaryMinus um = new UnaryMinus();
+          pos += um.read(tokenData, pos);
+          addOperator(um);
+        }
+        case PERCENT -> {
+          Percent p = new Percent();
+          pos += p.read(tokenData, pos);
+          addOperator(p);
+        }
+
+        // Binary Operators
+        case SUBTRACT -> {
+          Subtract s = new Subtract();
+          pos += s.read(tokenData, pos);
+          addOperator(s);
+        }
+        case ADD -> {
+          Add s = new Add();
+          pos += s.read(tokenData, pos);
+          addOperator(s);
+        }
+        case MULTIPLY -> {
+          Multiply s = new Multiply();
+          pos += s.read(tokenData, pos);
+          addOperator(s);
+        }
+        case DIVIDE -> {
+          Divide s = new Divide();
+          pos += s.read(tokenData, pos);
+          addOperator(s);
+        }
+        case CONCAT -> {
+          Concatenate c = new Concatenate();
+          pos += c.read(tokenData, pos);
+          addOperator(c);
+        }
+        case POWER -> {
+          Power p = new Power();
+          pos += p.read(tokenData, pos);
+          addOperator(p);
+        }
+        case LESS_THAN -> {
+          LessThan lt = new LessThan();
+          pos += lt.read(tokenData, pos);
+          addOperator(lt);
+        }
+        case LESS_EQUAL -> {
+          LessEqual lte = new LessEqual();
+          pos += lte.read(tokenData, pos);
+          addOperator(lte);
+        }
+        case GREATER_THAN -> {
+          GreaterThan gt = new GreaterThan();
+          pos += gt.read(tokenData, pos);
+          addOperator(gt);
+        }
+        case GREATER_EQUAL -> {
+          GreaterEqual gte = new GreaterEqual();
+          pos += gte.read(tokenData, pos);
+          addOperator(gte);
+        }
+        case NOT_EQUAL -> {
+          NotEqual ne = new NotEqual();
+          pos += ne.read(tokenData, pos);
+          addOperator(ne);
+        }
+        case EQUAL -> {
+          Equal e = new Equal();
+          pos += e.read(tokenData, pos);
+          addOperator(e);
+        }
+        case PARENTHESIS -> {
+          Parenthesis p = new Parenthesis();
+          pos += p.read(tokenData, pos);
+          addOperator(p);
+        }
+
+        // Functions
+        case ATTRIBUTE -> {
+          Attribute a = new Attribute(settings);
+          pos += a.read(tokenData, pos);
+          if (a.isSum())
+            addOperator(a);
+          else if (a.isIf())
+            // Add it to a special stack for ifs
+            ifStack.push(a);
+        }
+        case FUNCTION -> {
+          BuiltInFunction bif = new BuiltInFunction(settings);
+          pos += bif.read(tokenData, pos);
+          addOperator(bif);
+        }
+        case FUNCTIONVARARG -> {
+          VariableArgFunction vaf = new VariableArgFunction(settings);
+          pos += vaf.read(tokenData, pos);
+          if (vaf.getFunction() != Function.ATTRIBUTE)
+          {
+            addOperator(vaf);
+          }
+          else
+          {
+            // This is part of an IF function.  Get the operands, but then
+            // add it to the top of the if stack
+            vaf.getOperands(tokenStack);
+
+            Attribute ifattr = ifStack.empty()
+                    ? new Attribute(settings)
+                    : ifStack.pop();
+
+            ifattr.setIfConditions(vaf);
+            tokenStack.push(ifattr);
+          }
+        }
+
+        // Other things
+        case MEM_FUNC -> {
+          MemFunc memFunc = new MemFunc();
+          handleMemoryFunction(memFunc);
+        }
+        case MEM_AREA -> {
+          MemArea memArea = new MemArea();
+          handleMemoryFunction(memArea);
+        }
       }
     }
   }
