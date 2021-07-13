@@ -1,0 +1,141 @@
+package jxl.biff.formula;
+
+import static jxl.biff.formula.Token.*;
+import org.junit.Test;
+import static org.junit.Assert.*;
+
+/**
+ *
+ * @author jan
+ */
+public class TokenTest {
+
+  @Test
+  public void testPresentsOfAllDocumented() {
+    assertEquals(UNKNOWN,        Token.getToken((byte) 0x00));
+    assertEquals(EXP,            Token.getToken((byte) 0x01));
+    assertEquals(TBL,            Token.getToken((byte) 0x02));
+    assertEquals(ADD,            Token.getToken((byte) 0x03));
+    assertEquals(SUBTRACT,       Token.getToken((byte) 0x04));
+    assertEquals(MULTIPLY,       Token.getToken((byte) 0x05));
+    assertEquals(DIVIDE,         Token.getToken((byte) 0x06));
+    assertEquals(POWER,          Token.getToken((byte) 0x07));
+    assertEquals(CONCAT,         Token.getToken((byte) 0x08));
+    assertEquals(LESS_THAN,      Token.getToken((byte) 0x09));
+    assertEquals(LESS_EQUAL,     Token.getToken((byte) 0x0A));
+    assertEquals(EQUAL,          Token.getToken((byte) 0x0B));
+    assertEquals(GREATER_EQUAL,  Token.getToken((byte) 0x0C));
+    assertEquals(GREATER_THAN,   Token.getToken((byte) 0x0D));
+    assertEquals(NOT_EQUAL,      Token.getToken((byte) 0x0E));
+    assertEquals(INTERSECTION,   Token.getToken((byte) 0x0F));
+    assertEquals(UNION,          Token.getToken((byte) 0x10));
+    assertEquals(RANGE,          Token.getToken((byte) 0x11));
+    assertEquals(UNARY_PLUS,     Token.getToken((byte) 0x12));
+    assertEquals(UNARY_MINUS,    Token.getToken((byte) 0x13));
+    assertEquals(PERCENT,        Token.getToken((byte) 0x14));
+    assertEquals(PARENTHESIS,    Token.getToken((byte) 0x15));
+    assertEquals(MISSING_ARG,    Token.getToken((byte) 0x16));
+    assertEquals(STRING,         Token.getToken((byte) 0x17));
+    assertEquals(ERR,            Token.getToken((byte) 0x1C));
+    assertEquals(BOOL,           Token.getToken((byte) 0x1D));
+    assertEquals(INTEGER,        Token.getToken((byte) 0x1E));
+    assertEquals(DOUBLE,         Token.getToken((byte) 0x1F));
+    assertEquals(ARRAY,          Token.getToken((byte) 0x20));
+    assertEquals(FUNCTION,       Token.getToken((byte) 0x21));
+    assertEquals(FUNCTIONVARARG, Token.getToken((byte) 0x22));
+    assertEquals(NAMED_RANGE,    Token.getToken((byte) 0x23));
+    assertEquals(REF,            Token.getToken((byte) 0x24));
+    assertEquals(AREA,           Token.getToken((byte) 0x25));
+    assertEquals(MEM_AREA,       Token.getToken((byte) 0x26));
+    assertEquals(MEM_ERR,        Token.getToken((byte) 0x27));
+    assertEquals(MEM_NO_MEM,     Token.getToken((byte) 0x28));
+    assertEquals(MEM_FUNC,       Token.getToken((byte) 0x29));
+    assertEquals(REFERR,         Token.getToken((byte) 0x2A));
+    assertEquals(AREA_ERR,       Token.getToken((byte) 0x2B));
+    assertEquals(REF_N,          Token.getToken((byte) 0x2C));
+    assertEquals(AREA_N,         Token.getToken((byte) 0x2D));
+    assertEquals(MEM_AREA_N,     Token.getToken((byte) 0x2E));
+    assertEquals(MEM_NO_MEM_N,   Token.getToken((byte) 0x2F));
+    assertEquals(UNKNOWN,        Token.getToken((byte) 0x30));
+    assertEquals(UNKNOWN,        Token.getToken((byte) 0x31));
+    assertEquals(UNKNOWN,        Token.getToken((byte) 0x32));
+    assertEquals(UNKNOWN,        Token.getToken((byte) 0x33));
+    assertEquals(UNKNOWN,        Token.getToken((byte) 0x34));
+    assertEquals(UNKNOWN,        Token.getToken((byte) 0x35));
+    assertEquals(UNKNOWN,        Token.getToken((byte) 0x36));
+    assertEquals(UNKNOWN,        Token.getToken((byte) 0x37));
+    assertEquals(MACROCOMMAND,   Token.getToken((byte) 0x38));
+    assertEquals(NAME,           Token.getToken((byte) 0x39));
+    assertEquals(REF3D,          Token.getToken((byte) 0x3A));
+    assertEquals(AREA3D,         Token.getToken((byte) 0x3B));
+    assertEquals(REF_ERR_3D,     Token.getToken((byte) 0x3C));
+    assertEquals(AREA_ERR_3D,    Token.getToken((byte) 0x3D));
+    assertEquals(UNKNOWN,        Token.getToken((byte) 0x3E));
+    assertEquals(UNKNOWN,        Token.getToken((byte) 0x3F));
+    assertEquals(ARRAY,          Token.getToken((byte) 0x40));
+    assertEquals(FUNCTION,       Token.getToken((byte) 0x41));
+    assertEquals(FUNCTIONVARARG, Token.getToken((byte) 0x42));
+    assertEquals(NAMED_RANGE,    Token.getToken((byte) 0x43));
+    assertEquals(REF,            Token.getToken((byte) 0x44));
+    assertEquals(AREA,           Token.getToken((byte) 0x45));
+    assertEquals(MEM_AREA,       Token.getToken((byte) 0x46));
+    assertEquals(MEM_ERR,        Token.getToken((byte) 0x47));
+    assertEquals(MEM_NO_MEM,     Token.getToken((byte) 0x48));
+    assertEquals(MEM_FUNC,       Token.getToken((byte) 0x49));
+    assertEquals(REFERR,         Token.getToken((byte) 0x4A));
+    assertEquals(AREA_ERR,       Token.getToken((byte) 0x4B));
+    assertEquals(REF_N,          Token.getToken((byte) 0x4C));
+    assertEquals(AREA_N,         Token.getToken((byte) 0x4D));
+    assertEquals(MEM_AREA_N,     Token.getToken((byte) 0x4E));
+    assertEquals(MEM_NO_MEM_N,   Token.getToken((byte) 0x4F));
+    assertEquals(UNKNOWN,        Token.getToken((byte) 0x50));
+    assertEquals(UNKNOWN,        Token.getToken((byte) 0x51));
+    assertEquals(UNKNOWN,        Token.getToken((byte) 0x52));
+    assertEquals(UNKNOWN,        Token.getToken((byte) 0x53));
+    assertEquals(UNKNOWN,        Token.getToken((byte) 0x54));
+    assertEquals(UNKNOWN,        Token.getToken((byte) 0x55));
+    assertEquals(UNKNOWN,        Token.getToken((byte) 0x56));
+    assertEquals(UNKNOWN,        Token.getToken((byte) 0x57));
+    assertEquals(MACROCOMMAND,   Token.getToken((byte) 0x58));
+    assertEquals(NAME,           Token.getToken((byte) 0x59));
+    assertEquals(REF3D,          Token.getToken((byte) 0x5A));
+    assertEquals(AREA3D,         Token.getToken((byte) 0x5B));
+    assertEquals(REF_ERR_3D,     Token.getToken((byte) 0x5C));
+    assertEquals(AREA_ERR_3D,    Token.getToken((byte) 0x5D));
+    assertEquals(UNKNOWN,        Token.getToken((byte) 0x5E));
+    assertEquals(UNKNOWN,        Token.getToken((byte) 0x5F));
+    assertEquals(ARRAY,          Token.getToken((byte) 0x60));
+    assertEquals(FUNCTION,       Token.getToken((byte) 0x61));
+    assertEquals(FUNCTIONVARARG, Token.getToken((byte) 0x62));
+    assertEquals(NAMED_RANGE,    Token.getToken((byte) 0x63));
+    assertEquals(REF,            Token.getToken((byte) 0x64));
+    assertEquals(AREA,           Token.getToken((byte) 0x65));
+    assertEquals(MEM_AREA,       Token.getToken((byte) 0x66));
+    assertEquals(MEM_ERR,        Token.getToken((byte) 0x67));
+    assertEquals(MEM_NO_MEM,     Token.getToken((byte) 0x68));
+    assertEquals(MEM_FUNC,       Token.getToken((byte) 0x69));
+    assertEquals(REFERR,         Token.getToken((byte) 0x6A));
+    assertEquals(AREA_ERR,       Token.getToken((byte) 0x6B));
+    assertEquals(REF_N,          Token.getToken((byte) 0x6C));
+    assertEquals(AREA_N,         Token.getToken((byte) 0x6D));
+    assertEquals(MEM_AREA_N,     Token.getToken((byte) 0x6E));
+    assertEquals(MEM_NO_MEM_N,   Token.getToken((byte) 0x6F));
+    assertEquals(UNKNOWN,        Token.getToken((byte) 0x70));
+    assertEquals(UNKNOWN,        Token.getToken((byte) 0x71));
+    assertEquals(UNKNOWN,        Token.getToken((byte) 0x72));
+    assertEquals(UNKNOWN,        Token.getToken((byte) 0x73));
+    assertEquals(UNKNOWN,        Token.getToken((byte) 0x74));
+    assertEquals(UNKNOWN,        Token.getToken((byte) 0x75));
+    assertEquals(UNKNOWN,        Token.getToken((byte) 0x76));
+    assertEquals(UNKNOWN,        Token.getToken((byte) 0x77));
+    assertEquals(MACROCOMMAND,   Token.getToken((byte) 0x78));
+    assertEquals(NAME,           Token.getToken((byte) 0x79));
+    assertEquals(REF3D,          Token.getToken((byte) 0x7A));
+    assertEquals(AREA3D,         Token.getToken((byte) 0x7B));
+    assertEquals(REF_ERR_3D,     Token.getToken((byte) 0x7C));
+    assertEquals(AREA_ERR_3D,    Token.getToken((byte) 0x7D));
+    assertEquals(UNKNOWN,        Token.getToken((byte) 0x7E));
+    assertEquals(UNKNOWN,        Token.getToken((byte) 0x7F));
+  }
+
+}
