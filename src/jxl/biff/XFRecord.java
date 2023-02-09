@@ -1343,15 +1343,10 @@ public class XFRecord extends WritableRecordData implements CellFormat
   private void initializeFormatInformation()
   {
     // Initialize the cell format string
-    if (formatIndex < BuiltInFormat.builtIns.length &&
-        BuiltInFormat.builtIns[formatIndex] != null)
-    {
-      excelFormat = BuiltInFormat.builtIns[formatIndex];
-    }
+    if (formatIndex < BuiltInFormat.builtIns.size())
+      excelFormat = BuiltInFormat.builtIns.get(formatIndex);
     else
-    {
       excelFormat = formattingRecords.getFormatRecord(formatIndex);
-    }
 
     // Initialize the font
     font = formattingRecords.getFonts().getFont(fontIndex);
