@@ -48,7 +48,7 @@ public class Formulas
    *
    * @param w The workbook to interrogate
    * @param out The output stream to which the CSV values are written
-   * @param encoding The encoding used by the output stream.  Null or 
+   * @param encoding The encoding used by the output stream.  Null or
    * unrecognized values cause the encoding to default to UTF8
    * @exception java.io.IOException
    */
@@ -60,73 +60,61 @@ public class Formulas
       encoding = "UTF8";
     }
 
-    try
-    {
-      OutputStreamWriter osw = new OutputStreamWriter(out, encoding);
-      BufferedWriter bw = new BufferedWriter(osw);
-
-      ArrayList parseErrors = new ArrayList();
-      
-      for (int sheet = 0; sheet < w.getNumberOfSheets(); sheet++)
-      {
-        Sheet s = w.getSheet(sheet);
-
-        bw.write(s.getName());
-        bw.newLine();
-      
-        Cell[] row = null;
-        Cell c = null;
-      
-        for (int i = 0 ; i < s.getRows() ; i++)
+    ArrayList<String> parseErrors = new ArrayList<>();
+    try {
+      try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(out, encoding))) {
+        for (int sheet = 0; sheet < w.getNumberOfSheets(); sheet++)
         {
-          row = s.getRow(i);
+          Sheet s = w.getSheet(sheet);
 
-          for (int j = 0; j < row.length; j++)
+          bw.write(s.getName());
+          bw.newLine();
+
+
+          for (int i = 0 ; i < s.getRows() ; i++)
           {
-            c = row[j];
-            if (c.getType() == CellType.NUMBER_FORMULA || 
-                c.getType() == CellType.STRING_FORMULA || 
-                c.getType() == CellType.BOOLEAN_FORMULA ||
-                c.getType() == CellType.DATE_FORMULA ||
-                c.getType() == CellType.FORMULA_ERROR)
-            {
-              FormulaCell nfc = (FormulaCell) c;
-              StringBuffer sb = new StringBuffer();
-              CellReferenceHelper.getCellReference
-                 (c.getColumn(), c.getRow(), sb);
+            Cell[] row = s.getRow(i);
 
-              try
+            for (Cell c : row)
+              if (c.getType() == CellType.NUMBER_FORMULA ||
+                      c.getType() == CellType.STRING_FORMULA ||
+                      c.getType() == CellType.BOOLEAN_FORMULA ||
+                      c.getType() == CellType.DATE_FORMULA ||
+                      c.getType() == CellType.FORMULA_ERROR)
               {
-                bw.write("Formula in "  + sb.toString() + 
-                         " value:  " + c.getContents());
-                bw.flush();
-                bw.write(" formula: " + nfc.getFormula());
-                bw.flush();
-                bw.newLine();
+                FormulaCell nfc = (FormulaCell) c;
+                StringBuffer sb = new StringBuffer();
+                CellReferenceHelper.getCellReference
+                                 (c.getColumn(), c.getRow(), sb);
+
+                try
+                {
+                  bw.write("Formula in "  + sb.toString() +
+                          " value:  " + c.getContents());
+                  bw.flush();
+                  bw.write(" formula: " + nfc.getFormula());
+                  bw.flush();
+                  bw.newLine();
+                }
+                catch (FormulaException e)
+                {
+                  bw.newLine();
+                  parseErrors.add(s.getName() + '!' +
+                          sb.toString() + ": " + e.getMessage());
+                }
               }
-              catch (FormulaException e)
-              {
-                bw.newLine();
-                parseErrors.add(s.getName() + '!' +
-                                sb.toString() + ": " + e.getMessage());
-              }
-            }
           }
         }
+        bw.flush();
       }
-      bw.flush();
-      bw.close();
 
-      if (parseErrors.size() > 0)
+      if (!parseErrors.isEmpty())
       {
         System.err.println();
         System.err.println("There were " + parseErrors.size() + " errors");
 
-        Iterator i = parseErrors.iterator();
-        while (i.hasNext())
-        {
-          System.err.println(i.next());
-        }
+        for (String err : parseErrors)
+          System.err.println(err);
       }
     }
     catch (UnsupportedEncodingException e)
