@@ -311,59 +311,25 @@ class WritableSheetCopier
   /**
    * Performs a shallow copy of the specified cell
    */
-  private WritableCell shallowCopyCell(Cell cell)
-  {
-    CellType ct = cell.getType();
-    WritableCell newCell = null;
-
-    if (ct == CellType.LABEL)
-    {
-      newCell = new Label((LabelCell) cell);
-    }
-    else if (ct == CellType.NUMBER)
-    {
-      newCell = new Number((NumberCell) cell);
-    }
-    else if (ct == CellType.DATE)
-    {
-      newCell = new DateTime((DateCell) cell);
-    }
-    else if (ct == CellType.BOOLEAN)
-    {
-      newCell = new Boolean((BooleanCell) cell);
-    }
-    else if (ct == CellType.NUMBER_FORMULA)
-    {
-      newCell = new ReadNumberFormulaRecord((FormulaData) cell);
-    }
-    else if (ct == CellType.STRING_FORMULA)
-    {
-      newCell = new ReadStringFormulaRecord((FormulaData) cell);
-    }
-    else if( ct == CellType.BOOLEAN_FORMULA)
-    {
-      newCell = new ReadBooleanFormulaRecord((FormulaData) cell);
-    }
-    else if (ct == CellType.DATE_FORMULA)
-    {
-      newCell = new ReadDateFormulaRecord((FormulaData) cell);
-    }
-    else if(ct == CellType.FORMULA_ERROR)
-    {
-      newCell = new ReadErrorFormulaRecord((FormulaData) cell);
-    }
-    else if (ct == CellType.EMPTY)
-    {
-      if (cell.getCellFormat() != null)
-      {
-        // It is a blank cell, rather than an empty cell, so
-        // it may have formatting information, so
-        // it must be copied
-        newCell = new Blank(cell);
-      }
-    }
-
-    return newCell;
+  private WritableCell shallowCopyCell(Cell cell) {
+    return switch (cell.getType()) {
+      case LABEL -> new Label((LabelCell) cell);
+      case NUMBER -> new Number((NumberCell) cell);
+      case DATE -> new DateTime((DateCell) cell);
+      case BOOLEAN -> new Boolean((BooleanCell) cell);
+      case NUMBER_FORMULA -> new ReadNumberFormulaRecord((FormulaData) cell);
+      case STRING_FORMULA -> new ReadStringFormulaRecord((FormulaData) cell);
+      case BOOLEAN_FORMULA -> new ReadBooleanFormulaRecord((FormulaData) cell);
+      case DATE_FORMULA -> new ReadDateFormulaRecord((FormulaData) cell);
+      case FORMULA_ERROR -> new ReadErrorFormulaRecord((FormulaData) cell);
+      case EMPTY -> (cell.getCellFormat() != null)
+            // It is a blank cell, rather than an empty cell, so
+            // it may have formatting information, so
+            // it must be copied
+            ? new Blank(cell)
+            : null;
+      case ERROR -> null;
+    };
   }
 
   /**
