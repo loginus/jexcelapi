@@ -27,37 +27,22 @@ import jxl.common.Logger;
 import jxl.BooleanCell;
 import jxl.Cell;
 import jxl.CellType;
-import jxl.CellView;
 import jxl.DateCell;
-import jxl.HeaderFooter;
-import jxl.Hyperlink;
-import jxl.Image;
 import jxl.LabelCell;
 import jxl.NumberCell;
 import jxl.Range;
-import jxl.Sheet;
-import jxl.SheetSettings;
 import jxl.WorkbookSettings;
-import jxl.biff.AutoFilter;
 import jxl.biff.CellReferenceHelper;
-import jxl.biff.ConditionalFormat;
 import jxl.biff.DataValidation;
 import jxl.biff.FormattingRecords;
 import jxl.biff.FormulaData;
-import jxl.biff.IndexMapping;
 import jxl.biff.NumFormatRecordsException;
 import jxl.biff.SheetRangeImpl;
 import jxl.biff.WorkspaceInformationRecord;
 import jxl.biff.XFRecord;
-import jxl.biff.drawing.Chart;
-import jxl.biff.drawing.ComboBox;
-import jxl.biff.drawing.Drawing;
 import jxl.biff.drawing.DrawingGroupObject;
 import jxl.format.CellFormat;
 import jxl.biff.formula.FormulaException;
-import jxl.read.biff.SheetImpl;
-import jxl.read.biff.NameRecord;
-import jxl.read.biff.WorkbookParser;
 import jxl.write.Blank;
 import jxl.write.Boolean;
 import jxl.write.DateTime;
@@ -66,7 +51,6 @@ import jxl.write.Label;
 import jxl.write.Number;
 import jxl.write.WritableCell;
 import jxl.write.WritableCellFormat;
-import jxl.write.WritableFont;
 import jxl.write.WritableHyperlink;
 import jxl.write.WritableImage;
 import jxl.write.WritableSheet;
@@ -82,13 +66,13 @@ class WritableSheetCopier
 {
   private static Logger logger = Logger.getLogger(SheetCopier.class);
 
-  private WritableSheetImpl fromSheet;
-  private WritableSheetImpl toSheet;
-  private WorkbookSettings workbookSettings;
+  private final WritableSheetImpl fromSheet;
+  private final WritableSheetImpl toSheet;
+  private final WorkbookSettings workbookSettings;
 
   // Objects used by the sheet
-  private TreeSet fromColumnFormats;
-  private TreeSet toColumnFormats;
+  private TreeSet<ColumnInfoRecord> fromColumnFormats;
+  private TreeSet<ColumnInfoRecord> toColumnFormats;
   private MergedCells fromMergedCells;
   private MergedCells toMergedCells;
   private RowRecord[] fromRows;
@@ -99,17 +83,17 @@ class WritableSheetCopier
   private DataValidation fromDataValidation;
   private DataValidation toDataValidation;
   private SheetWriter sheetWriter;
-  private ArrayList fromDrawings;
-  private ArrayList toDrawings;
-  private ArrayList toImages;
+  private ArrayList<DrawingGroupObject> fromDrawings;
+  private ArrayList<DrawingGroupObject> toDrawings;
+  private ArrayList<WritableImage> toImages;
   private WorkspaceInformationRecord fromWorkspaceOptions;
   private PLSRecord fromPLSRecord;
   private PLSRecord toPLSRecord;
   private ButtonPropertySetRecord fromButtonPropertySet;
   private ButtonPropertySetRecord toButtonPropertySet;
-  private ArrayList fromHyperlinks;
-  private ArrayList toHyperlinks;
-  private ArrayList validatedCells;
+  private ArrayList<WritableHyperlink> fromHyperlinks;
+  private ArrayList<WritableHyperlink> toHyperlinks;
+  private ArrayList<WritableCell> validatedCells;
   private int numRows;
   private int maxRowOutlineLevel;
   private int maxColumnOutlineLevel;
@@ -121,9 +105,9 @@ class WritableSheetCopier
 
 
   // Objects used to maintain state during the copy process
-  private HashMap xfRecords;
-  private HashMap fonts;
-  private HashMap formats;
+  private HashMap<Integer, WritableCellFormat> xfRecords;
+  private HashMap<Integer, Integer> fonts;
+  private HashMap<Integer, Integer> formats;
 
   public WritableSheetCopier(WritableSheet f, WritableSheet t)
   {
@@ -133,7 +117,7 @@ class WritableSheetCopier
     chartOnly = false;
   }
 
-  void setColumnFormats(TreeSet fcf, TreeSet tcf)
+  void setColumnFormats(TreeSet<ColumnInfoRecord> fcf, TreeSet<ColumnInfoRecord> tcf)
   {
     fromColumnFormats = fcf;
     toColumnFormats = tcf;
@@ -150,7 +134,7 @@ class WritableSheetCopier
     fromRows = r;
   }
 
-  void setValidatedCells(ArrayList vc)
+  void setValidatedCells(ArrayList<WritableCell> vc)
   {
     validatedCells = vc;
   }
@@ -167,14 +151,14 @@ class WritableSheetCopier
     toColumnBreaks = tcb;
   }
 
-  void setDrawings(ArrayList fd, ArrayList td, ArrayList ti)
+  void setDrawings(ArrayList<DrawingGroupObject> fd, ArrayList<DrawingGroupObject> td, ArrayList<WritableImage> ti)
   {
     fromDrawings = fd;
     toDrawings = td;
     toImages = ti;
   }
 
-  void setHyperlinks(ArrayList fh, ArrayList th)
+  void setHyperlinks(ArrayList<WritableHyperlink> fh, ArrayList<WritableHyperlink> th)
   {
     fromHyperlinks = fh;
     toHyperlinks = th;
@@ -233,38 +217,28 @@ class WritableSheetCopier
   public void copySheet()
   {
     shallowCopyCells();
-
     // Copy the column formats
-    Iterator cfit = fromColumnFormats.iterator();
-    while (cfit.hasNext())
-    {
-      ColumnInfoRecord cv = new ColumnInfoRecord
-        ((ColumnInfoRecord) cfit.next());
-      toColumnFormats.add(cv);
-    }
+
+    for (ColumnInfoRecord toCopy : fromColumnFormats)
+      toColumnFormats.add(new ColumnInfoRecord(toCopy));
 
     // Copy the merged cells
     Range[] merged = fromMergedCells.getMergedCells();
 
-    for (int i = 0; i < merged.length; i++)
-    {
-      toMergedCells.add(new SheetRangeImpl((SheetRangeImpl)merged[i],
-                                           toSheet));
-    }
+    for (Range m : merged)
+      toMergedCells.add(new SheetRangeImpl((SheetRangeImpl) m, toSheet));
 
     try
     {
-      RowRecord row = null;
-      RowRecord newRow = null;
       for (int i = 0; i < fromRows.length ; i++)
       {
-        row = fromRows[i];
+        RowRecord row = fromRows[i];
 
         if (row != null &&
             (!row.isDefaultHeight() ||
              row.isCollapsed()))
         {
-          newRow = toSheet.getRowRecord(i);
+          RowRecord newRow = toSheet.getRowRecord(i);
           newRow.setRowDetails(row.getRowHeight(),
                                row.matchesDefaultFontHeight(),
                                row.isCollapsed(),
@@ -301,21 +275,17 @@ class WritableSheetCopier
     sheetWriter.setCharts(fromSheet.getCharts());
 
     // Copy the drawings
-    for (Iterator i = fromDrawings.iterator(); i.hasNext(); )
-    {
-      Object o = i.next();
-      if (o instanceof jxl.biff.drawing.Drawing)
-      {
+    for (DrawingGroupObject o : fromDrawings)
+      if (o instanceof jxl.biff.drawing.Drawing drawing) {
         WritableImage wi = new WritableImage
-          ((jxl.biff.drawing.Drawing) o,
-           toSheet.getWorkbook().getDrawingGroup());
+                  (drawing,
+                          toSheet.getWorkbook().getDrawingGroup());
         toDrawings.add(wi);
         toImages.add(wi);
       }
 
-      // Not necessary to copy the comments, as they will be handled by
-      // the deep copy of the individual cells
-    }
+    // Not necessary to copy the comments, as they will be handled by
+    // the deep copy of the individual cells
 
     // Copy the workspace options
     sheetWriter.setWorkspaceOptions(fromWorkspaceOptions);
@@ -333,12 +303,9 @@ class WritableSheetCopier
     }
 
     // Copy the hyperlinks
-    for (Iterator i = fromHyperlinks.iterator(); i.hasNext();)
-    {
-      WritableHyperlink hr = new WritableHyperlink
-        ((WritableHyperlink) i.next(), toSheet);
-      toHyperlinks.add(hr);
-    }
+    for (WritableHyperlink toCopy : fromHyperlinks)
+      toHyperlinks.add(new WritableHyperlink(toCopy, toSheet));
+
   }
 
   /**
@@ -413,9 +380,8 @@ class WritableSheetCopier
       return c;
     }
 
-    if (c instanceof ReadFormulaRecord)
+    if (c instanceof ReadFormulaRecord rfr)
     {
-      ReadFormulaRecord rfr = (ReadFormulaRecord) c;
       boolean crossSheetReference = !rfr.handleImportedCellReferences
         (fromSheet.getWorkbook(),
          fromSheet.getWorkbook(),
@@ -448,7 +414,7 @@ class WritableSheetCopier
     // Copy the cell format
     CellFormat cf = c.getCellFormat();
     int index = ( (XFRecord) cf).getXFIndex();
-    WritableCellFormat wcf = (WritableCellFormat) xfRecords.get(index);
+    WritableCellFormat wcf = xfRecords.get(index);
 
     if (wcf == null)
       wcf = copyCellFormat(cf);
@@ -464,16 +430,10 @@ class WritableSheetCopier
   void shallowCopyCells()
   {
     // Copy the cells
-    int cells = fromSheet.getRows();
-    Cell[] row = null;
-    Cell cell = null;
-    for (int i = 0;  i < cells; i++)
-    {
-      row = fromSheet.getRow(i);
+    for (int i = 0;  i < fromSheet.getRows(); i++) {
+      Cell[] row = fromSheet.getRow(i);
 
-      for (int j = 0; j < row.length; j++)
-      {
-        cell = row[j];
+      for (Cell cell : row) {
         WritableCell c = shallowCopyCell(cell);
 
         // Encase the calls to addCell in a try-catch block
@@ -490,7 +450,7 @@ class WritableSheetCopier
             // Cell.setCellFeatures short circuits when the cell is copied,
             // so make sure the copy logic handles the validated cells
             if (c.getCellFeatures() != null &
-                c.getCellFeatures().hasDataValidation())
+                    c.getCellFeatures().hasDataValidation())
             {
               validatedCells.add(c);
             }
@@ -503,52 +463,6 @@ class WritableSheetCopier
       }
     }
     numRows = toSheet.getRows();
-  }
-
-  /**
-   * Perform a deep copy of the cells from the specified sheet into this one
-   */
-  void deepCopyCells()
-  {
-    // Copy the cells
-    int cells = fromSheet.getRows();
-    Cell[] row = null;
-    Cell cell = null;
-    for (int i = 0;  i < cells; i++)
-    {
-      row = fromSheet.getRow(i);
-
-      for (int j = 0; j < row.length; j++)
-      {
-        cell = row[j];
-        WritableCell c = deepCopyCell(cell);
-
-        // Encase the calls to addCell in a try-catch block
-        // These should not generate any errors, because we are
-        // copying from an existing spreadsheet.  In the event of
-        // errors, catch the exception and then bomb out with an
-        // assertion
-        try
-        {
-          if (c != null)
-          {
-            toSheet.addCell(c);
-
-            // Cell.setCellFeatures short circuits when the cell is copied,
-            // so make sure the copy logic handles the validated cells
-            if (c.getCellFeatures() != null &
-                c.getCellFeatures().hasDataValidation())
-            {
-              validatedCells.add(c);
-            }
-          }
-        }
-        catch (WriteException e)
-        {
-          Assert.verify(false);
-        }
-      }
-    }
   }
 
   /**

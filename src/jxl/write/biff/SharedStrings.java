@@ -33,12 +33,12 @@ class SharedStrings
   /**
    * All the strings in the spreadsheet, keyed on the string itself
    */
-  private HashMap strings;
+  private final HashMap<String, Integer> strings = new HashMap<>(100);
 
   /**
    * Contains the same strings, held in a list
    */
-  private ArrayList stringList;
+  private final ArrayList<String> stringList = new ArrayList<>(100);
 
   /**
    * The total occurrence of strings in the workbook
@@ -50,8 +50,6 @@ class SharedStrings
    */
   public SharedStrings()
   {
-    strings = new HashMap(100);
-    stringList = new ArrayList(100);
     totalOccurrences = 0;
   }
 
@@ -65,10 +63,9 @@ class SharedStrings
    */
   public int getIndex(String s)
   {
-    Integer i = (Integer) strings.get(s);
+    Integer i = strings.get(s);
 
-    if (i == null)
-    {
+    if (i == null) {
       i = strings.size();
       strings.put(s, i);
       stringList.add(s);
@@ -76,7 +73,7 @@ class SharedStrings
 
     totalOccurrences++;
 
-    return i.intValue();
+    return i;
   }
 
   /**
@@ -87,7 +84,7 @@ class SharedStrings
    */
   public String get(int i)
   {
-    return (String) stringList.get(i);
+    return stringList.get(i);
   }
 
   /**
@@ -106,11 +103,11 @@ class SharedStrings
     ExtendedSSTRecord extsst = new ExtendedSSTRecord(stringList.size());
     int bucketSize = extsst.getNumberOfStringsPerBucket();
 
-    Iterator i = stringList.iterator();
+    Iterator<String> i = stringList.iterator();
     int stringIndex = 0;
     while (i.hasNext() && charsLeft == 0)
     {
-      curString = (String) i.next();
+      curString = i.next();
       // offset + header bytes
       int relativePosition = sst.getOffset() + 4;
       charsLeft = sst.add(curString);
@@ -131,7 +128,7 @@ class SharedStrings
       // Carry on looping through the array until all the strings are done
       while (i.hasNext())
       {
-        curString = (String) i.next();
+        curString = i.next();
         int relativePosition = cont.getOffset() + 4;
         charsLeft = cont.add(curString);
         if ((stringIndex % bucketSize) == 0) {

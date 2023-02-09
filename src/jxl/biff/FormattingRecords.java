@@ -47,17 +47,17 @@ public class FormattingRecords
    * A hash map of FormatRecords, for random access retrieval when reading
    * in a spreadsheet
    */
-  private HashMap formats;
+  private final HashMap<Integer, DisplayFormat> formats = new HashMap<>(10);
 
   /**
    * A list of formats, used when writing out a spreadsheet
    */
-  private ArrayList formatsList;
+  private ArrayList<DisplayFormat> formatsList;
 
   /**
    * The list of extended format records
    */
-  private ArrayList xfRecords;
+  private ArrayList<XFRecord> xfRecords;
 
   /**
    * The next available index number for custom format records
@@ -67,7 +67,7 @@ public class FormattingRecords
   /**
    * A handle to the available fonts
    */
-  private Fonts fonts;
+  private final Fonts fonts;
 
   /**
    * The colour palette
@@ -98,9 +98,8 @@ public class FormattingRecords
    */
   public FormattingRecords(Fonts f)
   {
-    xfRecords = new ArrayList(10);
-    formats = new HashMap(10);
-    formatsList = new ArrayList(10);
+    xfRecords = new ArrayList<>(10);
+    formatsList = new ArrayList<>(10);
     fonts = f;
     nextCustomIndexNumber = customFormatStartIndex;
   }
@@ -192,7 +191,7 @@ public class FormattingRecords
    */
   public final boolean isDate(int pos)
   {
-    XFRecord xfr = (XFRecord) xfRecords.get(pos);
+    XFRecord xfr = xfRecords.get(pos);
 
     if (xfr.isDate())
     {
@@ -214,7 +213,7 @@ public class FormattingRecords
    */
   public final DateFormat getDateFormat(int pos)
   {
-    XFRecord xfr = (XFRecord) xfRecords.get(pos);
+    XFRecord xfr = xfRecords.get(pos);
 
     if (xfr.isDate())
     {
@@ -241,7 +240,7 @@ public class FormattingRecords
    */
   public final NumberFormat getNumberFormat(int pos)
   {
-    XFRecord xfr = (XFRecord) xfRecords.get(pos);
+    XFRecord xfr = xfRecords.get(pos);
 
     if (xfr.isNumber())
     {
@@ -277,23 +276,12 @@ public class FormattingRecords
    */
   public void write(File outputFile) throws IOException
   {
-    // Write out all the formats
-    Iterator i = formatsList.iterator();
-    FormatRecord fr = null;
-    while (i.hasNext())
-    {
-      fr = (FormatRecord) i.next();
-      outputFile.write(fr);
-    }
+    for (DisplayFormat fr : formatsList)
+      outputFile.write((FormatRecord) fr);
 
     // Write out the styles
-    i = xfRecords.iterator();
-    XFRecord xfr = null;
-    while (i.hasNext())
-    {
-      xfr = (XFRecord) i.next();
+    for (XFRecord xfr : xfRecords)
       outputFile.write(xfr);
-    }
 
     // Write out the style records
     BuiltInStyle style = new BuiltInStyle(0x10, 3);
@@ -334,7 +322,7 @@ public class FormattingRecords
    */
   public final XFRecord getXFRecord(int index)
   {
-    return (XFRecord) xfRecords.get(index);
+    return xfRecords.get(index);
   }
 
   /**
@@ -374,20 +362,14 @@ public class FormattingRecords
     // Update the index codes for the XF records using the format
     // mapping and the font mapping
     // at the same time
-    XFRecord xfr = null;
-    for (Iterator it = xfRecords.iterator(); it.hasNext();)
-    {
-      xfr = (XFRecord) it.next();
-
+    for (XFRecord xfr : xfRecords) {
       if (xfr.getFormatRecord() >= customFormatStartIndex)
-      {
         xfr.setFormatIndex(formatMapping.getNewIndex(xfr.getFormatRecord()));
-      }
 
       xfr.setFontIndex(fontMapping.getNewIndex(xfr.getFontIndex()));
     }
 
-    ArrayList newrecords = new ArrayList(minXFRecords);
+    ArrayList<XFRecord> newrecords = new ArrayList<>(minXFRecords);
     IndexMapping mapping = new IndexMapping(xfRecords.size());
     int numremoved = 0;
 
@@ -409,14 +391,13 @@ public class FormattingRecords
     // Iterate through the old list
     for (int i = minXFRecords; i < xfRecords.size(); i++)
     {
-      XFRecord xf = (XFRecord) xfRecords.get(i);
+      XFRecord xf = xfRecords.get(i);
 
       // Compare against formats already on the list
       boolean duplicate = false;
-      for (Iterator it = newrecords.iterator();
-           it.hasNext() && !duplicate;)
+      for (Iterator<XFRecord> it = newrecords.iterator(); it.hasNext() && !duplicate;)
       {
-        XFRecord xf2 = (XFRecord) it.next();
+        XFRecord xf2 = it.next();
         if (xf2.equals(xf))
         {
           duplicate = true;
@@ -436,11 +417,8 @@ public class FormattingRecords
     // It is sufficient to merely change the xf index field on all XFRecords
     // In this case, CellValues which refer to defunct format records
     // will nevertheless be written out with the correct index number
-    for (Iterator i = xfRecords.iterator(); i.hasNext();)
-    {
-      XFRecord xf = (XFRecord) i.next();
+    for (XFRecord xf : xfRecords)
       xf.rationalize(mapping);
-    }
 
     // Set the new list
     xfRecords = newrecords;
@@ -458,27 +436,27 @@ public class FormattingRecords
    */
   public IndexMapping rationalizeDisplayFormats()
   {
-    ArrayList newformats = new ArrayList();
+    ArrayList<DisplayFormat> newformats = new ArrayList<>();
     int numremoved = 0;
     IndexMapping mapping = new IndexMapping(nextCustomIndexNumber);
 
     // Iterate through the old list
-    Iterator i = formatsList.iterator();
+    Iterator<DisplayFormat> i = formatsList.iterator();
     DisplayFormat df = null;
     DisplayFormat df2 = null;
     boolean duplicate = false;
     while (i.hasNext())
     {
-      df = (DisplayFormat) i.next();
+      df = i.next();
 
       Assert.verify(!df.isBuiltIn());
 
       // Compare against formats already on the list
-      Iterator i2 = newformats.iterator();
+      Iterator<DisplayFormat> i2 = newformats.iterator();
       duplicate = false;
       while (i2.hasNext() && !duplicate)
       {
-        df2 = (DisplayFormat) i2.next();
+        df2 = i2.next();
         if (df2.equals(df))
         {
           duplicate = true;
@@ -511,7 +489,7 @@ public class FormattingRecords
 
     while (i.hasNext())
     {
-      df = (DisplayFormat) i.next();
+      df = i.next();
       df.initialize(mapping.getNewIndex(df.getFormatIndex()));
     }
 
