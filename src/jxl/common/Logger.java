@@ -19,11 +19,11 @@
 
 package jxl.common;
 
-import java.security.AccessControlException;
+import java.lang.reflect.InvocationTargetException;
 
 /**
- * Abstract wrapper class for the logging interface of choice.  
- * The methods declared here are the same as those for the log4j  
+ * Abstract wrapper class for the logging interface of choice.
+ * The methods declared here are the same as those for the log4j
  */
 public abstract class Logger
 {
@@ -51,9 +51,7 @@ public abstract class Logger
   private synchronized static void initializeLogger()
   {
     if (logger != null)
-    {
       return;
-    }
 
     String loggerName = jxl.common.log.LoggerName.NAME;
 
@@ -64,34 +62,16 @@ public abstract class Logger
 
       if (loggerName == null)
       {
-        // Get the logger name from the compiled in logger 
+        // Get the logger name from the compiled in logger
         loggerName = jxl.common.log.LoggerName.NAME;
       }
 
-      logger = (Logger) Class.forName(loggerName).newInstance();
+      logger = (Logger) Class.forName(loggerName).getDeclaredConstructor().newInstance();
     }
-    catch(IllegalAccessException e)
+    catch(IllegalAccessException | InstantiationException | ClassNotFoundException | NoSuchMethodException | SecurityException | IllegalArgumentException | InvocationTargetException e)
     {
       logger = new jxl.common.log.SimpleLogger();
-      logger.warn("Could not instantiate logger " + loggerName + 
-                  " using default");
-    }
-    catch(InstantiationException e)
-    {
-      logger = new jxl.common.log.SimpleLogger();
-      logger.warn("Could not instantiate logger " + loggerName + 
-                  " using default");
-    }
-    catch (AccessControlException e)
-    {
-      logger = new jxl.common.log.SimpleLogger();
-      logger.warn("Could not instantiate logger " + loggerName + 
-                  " using default");
-    }
-    catch(ClassNotFoundException e)
-    {
-      logger = new jxl.common.log.SimpleLogger();
-      logger.warn("Could not instantiate logger " + loggerName + 
+      logger.warn("Could not instantiate logger " + loggerName +
                   " using default");
     }
   }
@@ -159,7 +139,7 @@ public abstract class Logger
   protected abstract Logger getLoggerImpl(Class cl);
 
   /**
-   * Empty implementation of the suppressWarnings.  Subclasses may 
+   * Empty implementation of the suppressWarnings.  Subclasses may
    * or may not override this method.  This method is included
    * primarily for backwards support of the jxl.nowarnings property, and
    * is used only by the SimpleLogger
