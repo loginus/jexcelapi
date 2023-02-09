@@ -71,7 +71,7 @@ public class Write
   public void write() throws IOException, WriteException
   {
     WorkbookSettings ws = new WorkbookSettings();
-    ws.setLocale(new Locale("en", "EN"));
+    ws.setLocale(Locale.of("en", "EN"));
     workbook = Workbook.createWorkbook(Paths.get(filename), ws);
 
 

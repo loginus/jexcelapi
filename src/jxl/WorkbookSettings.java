@@ -307,7 +307,7 @@ public final class WorkbookSettings
       }
       else
       {
-        locale = new Locale(System.getProperty("jxl.lang"),
+        locale = Locale.of(System.getProperty("jxl.lang"),
                             System.getProperty("jxl.country"));
       }
 
