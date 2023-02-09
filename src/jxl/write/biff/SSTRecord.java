@@ -101,7 +101,7 @@ class SSTRecord extends WritableRecordData
       // value in order to force the creation of a continue record
     }
 
-    stringLengths.add(new Integer(s.length()));
+    stringLengths.add(s.length());
 
     if (bytes + byteCount < maxBytes)
     {

@@ -43,7 +43,7 @@ public class SharedBooleanFormulaRecord extends BaseSharedFormulaRecord
   /**
    * The logger
    */
-  private static Logger logger = 
+  private static Logger logger =
     Logger.getLogger(SharedBooleanFormulaRecord.class);
 
   /**
@@ -95,8 +95,7 @@ public class SharedBooleanFormulaRecord extends BaseSharedFormulaRecord
    */
   public String getContents()
   {
-    // return Boolean.toString(value) - only available in 1.4 or later
-    return (new Boolean(value)).toString();
+    return Boolean.toString(value);
   }
 
   /**

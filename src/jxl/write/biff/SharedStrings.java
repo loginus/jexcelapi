@@ -69,7 +69,7 @@ class SharedStrings
 
     if (i == null)
     {
-      i = new Integer(strings.size());
+      i = strings.size();
       strings.put(s, i);
       stringList.add(s);
     }

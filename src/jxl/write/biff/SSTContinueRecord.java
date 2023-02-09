@@ -115,7 +115,7 @@ class SSTContinueRecord extends WritableRecordData
 
     // Calculate the number of characters we can add
     // The bytes variable will always be an odd number
-    int charsAvailable = includeLength ? (maxBytes - 4) / 2 : 
+    int charsAvailable = includeLength ? (maxBytes - 4) / 2 :
                                          (maxBytes - 2) / 2;
 
     // Add what part of the string we can
@@ -154,7 +154,7 @@ class SSTContinueRecord extends WritableRecordData
       return s.length();
     }
 
-    stringLengths.add(new Integer(s.length()));
+    stringLengths.add(s.length());
 
     if (bytes + byteCount < maxBytes)
     {
@@ -178,7 +178,7 @@ class SSTContinueRecord extends WritableRecordData
 
   /**
    * Gets the binary data for output to file
-   * 
+   *
    * @return the binary data
    */
   public byte[] getData()
@@ -219,7 +219,7 @@ class SSTContinueRecord extends WritableRecordData
       pos += s.length() * 2 + 3;
       count++;
     }
-    
+
     return data;
   }
 }

@@ -27,7 +27,7 @@ import jxl.biff.Type;
 import jxl.biff.WritableRecordData;
 
 /**
- * Indexes the first row record of the block and each individual cell.  
+ * Indexes the first row record of the block and each individual cell.
  * This is invoked by the sheets write process
  */
 class DBCellRecord extends WritableRecordData
@@ -55,7 +55,7 @@ class DBCellRecord extends WritableRecordData
 
   /**
    * Constructor
-   * 
+   *
    * @param rp the position of this row
    */
   public DBCellRecord(int rp)
@@ -67,7 +67,7 @@ class DBCellRecord extends WritableRecordData
 
   /**
    * Sets the offset of this cell record within the sheet stream
-   * 
+   *
    * @param pos the offset
    */
   void setCellOffset(int pos)
@@ -77,17 +77,17 @@ class DBCellRecord extends WritableRecordData
 
   /**
    * Adds a cell
-   * 
-   * @param pos 
+   *
+   * @param pos
    */
   void addCellRowPosition(int pos)
   {
-    cellRowPositions.add(new Integer(pos));
+    cellRowPositions.add(pos);
   }
 
   /**
    * Sets the position of this cell within the sheet stream
-   * 
+   *
    * @param pos the position
    */
   void setPosition(int pos)
@@ -97,7 +97,7 @@ class DBCellRecord extends WritableRecordData
 
   /**
    * Gets the binary data for this cell record
-   * 
+   *
    * @return the binary data
    */
   protected byte[] getData()

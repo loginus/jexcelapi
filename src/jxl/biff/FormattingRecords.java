@@ -178,7 +178,7 @@ public class FormattingRecords
     if (!fr.isBuiltIn())
     {
       formatsList.add(fr);
-      formats.put(new Integer(fr.getFormatIndex()), fr);
+      formats.put(fr.getFormatIndex(), fr);
     }
   }
 
@@ -200,7 +200,7 @@ public class FormattingRecords
     }
 
     FormatRecord fr = (FormatRecord)
-      formats.get(new Integer(xfr.getFormatRecord()));
+    formats.get(xfr.getFormatRecord());
 
     return fr == null ? false : fr.isDate();
   }
@@ -222,7 +222,7 @@ public class FormattingRecords
     }
 
     FormatRecord fr = (FormatRecord)
-      formats.get(new Integer(xfr.getFormatRecord()));
+    formats.get(xfr.getFormatRecord());
 
     if (fr == null)
     {
@@ -242,14 +242,14 @@ public class FormattingRecords
   public final NumberFormat getNumberFormat(int pos)
   {
     XFRecord xfr = (XFRecord) xfRecords.get(pos);
-    
+
     if (xfr.isNumber())
     {
       return xfr.getNumberFormat();
     }
 
     FormatRecord fr = (FormatRecord)
-      formats.get(new Integer(xfr.getFormatRecord()));
+    formats.get(xfr.getFormatRecord());
 
     if (fr == null)
     {
@@ -267,8 +267,7 @@ public class FormattingRecords
    */
   FormatRecord getFormatRecord(int index)
   {
-    return (FormatRecord)
-      formats.get(new Integer(index));
+    return (FormatRecord) formats.get(index);
   }
   /**
    * Writes out all the format records and the XF records

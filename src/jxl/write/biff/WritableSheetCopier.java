@@ -74,7 +74,7 @@ import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
 
 /**
- * A transient utility object used to copy sheets.   This 
+ * A transient utility object used to copy sheets.   This
  * functionality has been farmed out to a different class
  * in order to reduce the bloat of the WritableSheetImpl
  */
@@ -248,7 +248,7 @@ class WritableSheetCopier
 
     for (int i = 0; i < merged.length; i++)
     {
-      toMergedCells.add(new SheetRangeImpl((SheetRangeImpl)merged[i], 
+      toMergedCells.add(new SheetRangeImpl((SheetRangeImpl)merged[i],
                                            toSheet));
     }
 
@@ -259,13 +259,13 @@ class WritableSheetCopier
       for (int i = 0; i < fromRows.length ; i++)
       {
         row = fromRows[i];
-        
+
         if (row != null &&
             (!row.isDefaultHeight() ||
              row.isCollapsed()))
         {
           newRow = toSheet.getRowRecord(i);
-          newRow.setRowDetails(row.getRowHeight(), 
+          newRow.setRowDetails(row.getRowHeight(),
                                row.matchesDefaultFontHeight(),
                                row.isCollapsed(),
                                row.getOutlineLevel(),
@@ -291,7 +291,7 @@ class WritableSheetCopier
     if (fromDataValidation != null)
     {
       toDataValidation = new DataValidation
-        (fromDataValidation, 
+        (fromDataValidation,
          toSheet.getWorkbook(),
          toSheet.getWorkbook(),
          toSheet.getWorkbook().getSettings());
@@ -307,7 +307,7 @@ class WritableSheetCopier
       if (o instanceof jxl.biff.drawing.Drawing)
       {
         WritableImage wi = new WritableImage
-          ((jxl.biff.drawing.Drawing) o, 
+          ((jxl.biff.drawing.Drawing) o,
            toSheet.getWorkbook().getDrawingGroup());
         toDrawings.add(wi);
         toImages.add(wi);
@@ -395,13 +395,13 @@ class WritableSheetCopier
         newCell = new Blank(cell);
       }
     }
-    
+
     return newCell;
   }
 
-  /** 
+  /**
    * Performs a deep copy of the specified cell, handling the cell format
-   * 
+   *
    * @param cell the cell to copy
    */
   private WritableCell deepCopyCell(Cell cell)
@@ -420,13 +420,13 @@ class WritableSheetCopier
         (fromSheet.getWorkbook(),
          fromSheet.getWorkbook(),
          workbookSettings);
-      
+
       if (crossSheetReference)
       {
         try
         {
         logger.warn("Formula " + rfr.getFormula() +
-                    " in cell " + 
+                    " in cell " +
                     CellReferenceHelper.getCellReference(cell.getColumn(),
                                                          cell.getRow()) +
                     " cannot be imported because it references another " +
@@ -434,12 +434,12 @@ class WritableSheetCopier
         }
         catch (FormulaException e)
         {
-          logger.warn("Formula  in cell " + 
+          logger.warn("Formula  in cell " +
                       CellReferenceHelper.getCellReference(cell.getColumn(),
                                                            cell.getRow()) +
                       " cannot be imported:  " + e.getMessage());
         }
-        
+
         // Create a new error formula and add it instead
         c = new Formula(cell.getColumn(), cell.getRow(), "\"ERROR\"");
       }
@@ -448,20 +448,17 @@ class WritableSheetCopier
     // Copy the cell format
     CellFormat cf = c.getCellFormat();
     int index = ( (XFRecord) cf).getXFIndex();
-    WritableCellFormat wcf = (WritableCellFormat) 
-      xfRecords.get(new Integer(index));
+    WritableCellFormat wcf = (WritableCellFormat) xfRecords.get(index);
 
     if (wcf == null)
-    {
       wcf = copyCellFormat(cf);
-    }
 
     c.setCellFormat(wcf);
 
     return c;
   }
 
-  /** 
+  /**
    * Perform a shallow copy of the cells from the specified sheet into this one
    */
   void shallowCopyCells()
@@ -489,9 +486,9 @@ class WritableSheetCopier
           if (c != null)
           {
             toSheet.addCell(c);
- 
+
             // Cell.setCellFeatures short circuits when the cell is copied,
-            // so make sure the copy logic handles the validated cells        
+            // so make sure the copy logic handles the validated cells
             if (c.getCellFeatures() != null &
                 c.getCellFeatures().hasDataValidation())
             {
@@ -508,7 +505,7 @@ class WritableSheetCopier
     numRows = toSheet.getRows();
   }
 
-  /** 
+  /**
    * Perform a deep copy of the cells from the specified sheet into this one
    */
   void deepCopyCells()
@@ -536,14 +533,14 @@ class WritableSheetCopier
           if (c != null)
           {
             toSheet.addCell(c);
- 
+
             // Cell.setCellFeatures short circuits when the cell is copied,
-            // so make sure the copy logic handles the validated cells        
+            // so make sure the copy logic handles the validated cells
             if (c.getCellFeatures() != null &
                 c.getCellFeatures().hasDataValidation())
             {
               validatedCells.add(c);
-            } 
+            }
           }
         }
         catch (WriteException e)
@@ -573,13 +570,13 @@ class WritableSheetCopier
 
       // Maintain the local list of formats
       int xfIndex = xfr.getXFIndex();
-      xfRecords.put(new Integer(xfIndex), f);
+      xfRecords.put(xfIndex, f);
 
       int fontIndex = xfr.getFontIndex();
-      fonts.put(new Integer(fontIndex), new Integer(f.getFontIndex()));
+      fonts.put(fontIndex, f.getFontIndex());
 
       int formatIndex = xfr.getFormatRecord();
-      formats.put(new Integer(formatIndex), new Integer(f.getFormatRecord()));
+      formats.put(formatIndex, f.getFormatRecord());
 
       return f;
     }
@@ -593,22 +590,22 @@ class WritableSheetCopier
   }
 
 
-  /** 
+  /**
    * Accessor for the maximum column outline level
    *
    * @return the maximum column outline level, or 0 if no outlines/groups
    */
-  public int getMaxColumnOutlineLevel() 
+  public int getMaxColumnOutlineLevel()
   {
     return maxColumnOutlineLevel;
   }
 
-  /** 
+  /**
    * Accessor for the maximum row outline level
    *
    * @return the maximum row outline level, or 0 if no outlines/groups
    */
-  public int getMaxRowOutlineLevel() 
+  public int getMaxRowOutlineLevel()
   {
     return maxRowOutlineLevel;
   }
