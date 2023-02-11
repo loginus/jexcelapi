@@ -76,7 +76,6 @@ public class DrawingData implements EscherStream
     EscherContainer dgContainer  = new EscherContainer(er);
     EscherRecord[] children = dgContainer.getChildren();
 
-    children = dgContainer.getChildren();
     // Dg dg = (Dg) children[0];
 
     EscherContainer spgrContainer = null;
@@ -112,10 +111,10 @@ public class DrawingData implements EscherStream
     else
     {
       // Go through the hierarchy and dig out all the Sp containers
-      ArrayList sps = new ArrayList();
+      ArrayList<EscherRecord> sps = new ArrayList<>();
       getSpContainers(spgrContainer, sps);
       spContainers = new EscherRecord[sps.size()];
-      spContainers = (EscherRecord[]) sps.toArray(spContainers);
+      spContainers = sps.toArray(spContainers);
     }
 
     initialized = true;
@@ -127,25 +126,17 @@ public class DrawingData implements EscherStream
    * @param spgrContainer the spgr container
    * @param sps the list of sp records
    */
-  private void getSpContainers(EscherContainer spgrContainer, ArrayList sps)
+  private void getSpContainers(EscherContainer spgrContainer, ArrayList<EscherRecord> sps)
   {
     EscherRecord[] spgrChildren  = spgrContainer.getChildren();
-    for (int i = 0; i < spgrChildren.length; i++)
-    {
-      if (spgrChildren[i].getType() == EscherRecordType.SP_CONTAINER)
-      {
-        sps.add(spgrChildren[i]);
-      }
-      else if (spgrChildren[i].getType() == EscherRecordType.SPGR_CONTAINER)
-      {
-        getSpContainers((EscherContainer) spgrChildren[i], sps);
-      }
+    for (EscherRecord children : spgrChildren)
+      if (children.getType() == EscherRecordType.SP_CONTAINER)
+        sps.add(children);
+      else if (children.getType() == EscherRecordType.SPGR_CONTAINER)
+        getSpContainers((EscherContainer) children, sps);
       else
-      {
         logger.warn("Spgr Containers contains a record other than Sp/Spgr " +
-                    "containers");
-      }
-    }
+                "containers");
   }
 
   /**

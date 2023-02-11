@@ -154,17 +154,17 @@ public class SimpleLogger extends Logger
   /**
    * Accessor to the logger implementation
    */
-  protected Logger getLoggerImpl(Class c)
+  protected Logger getLoggerImpl(Class<?> c)
   {
     return this;
   }
 
   /**
    * Overrides the method in the base class to suppress warnings - it can
-   * be set using the system property jxl.nowarnings.  
+   * be set using the system property jxl.nowarnings.
    * This method was originally present in the WorkbookSettings bean,
    * but has been moved to the logger class.  This means it is now present
-   * when the JVM is initialized, and subsequent to change it on 
+   * when the JVM is initialized, and subsequent to change it on
    * a Workbook by Workbook basis will prove fruitless
    *
    * @param w suppression flag

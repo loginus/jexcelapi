@@ -59,7 +59,7 @@ class StringFormulaParser implements Parser
    * The stack argument used when parsing a function in order to
    * pass multiple arguments back to the calling method
    */
-  private Stack arguments;
+  private Stack<ParseItem> arguments;
 
   /**
    * The workbook settings
@@ -106,11 +106,8 @@ class StringFormulaParser implements Parser
    */
   public void parse() throws FormulaException
   {
-    ArrayList tokens = getTokens();
-
-    Iterator i = tokens.iterator();
-
-    root = parseCurrent(i);
+    ArrayList<ParseItem> tokens = getTokens();
+    root = parseCurrent(tokens.iterator());
   }
 
   /**
@@ -121,38 +118,36 @@ class StringFormulaParser implements Parser
    * @return the root node of the current parse stack
    * @exception FormulaException if an error occurs
    */
-  private ParseItem parseCurrent(Iterator i) throws FormulaException
+  private ParseItem parseCurrent(Iterator<ParseItem> i) throws FormulaException
   {
-    Stack stack = new Stack();
-    Stack operators = new Stack();
-    Stack args = null; // we usually don't need this
+    Stack<ParseItem> stack = new Stack<>();
+    Stack<Operator> operators = new Stack<>();
+    Stack<ParseItem> args = null; // we usually don't need this
 
     boolean parenthesesClosed = false;
     ParseItem lastParseItem = null;
 
     while (i.hasNext() && !parenthesesClosed)
     {
-      ParseItem pi = (ParseItem) i.next();
+      ParseItem pi = i.next();
       pi.setParseContext(parseContext);
 
-      if (pi instanceof Operand)
+      if (pi instanceof Operand operand)
       {
-        handleOperand((Operand) pi, stack);
+        handleOperand(operand, stack);
       }
-      else if (pi instanceof StringFunction)
+      else if (pi instanceof StringFunction stringFunction)
       {
-        handleFunction((StringFunction) pi, i, stack);
+        handleFunction(stringFunction, i, stack);
       }
-      else if (pi instanceof Operator)
+      else if (pi instanceof Operator op)
       {
-        Operator op = (Operator) pi;
 
         // See if the operator is a binary or unary operator
         // It is a unary operator either if the stack is empty, or if
         // the last thing off the stack was another operator
-        if (op instanceof StringOperator)
+        if (op instanceof StringOperator sop)
         {
-          StringOperator sop = (StringOperator) op;
           if (stack.isEmpty() || lastParseItem instanceof Operator)
           {
             op = sop.getUnaryOperator();
@@ -170,7 +165,7 @@ class StringFormulaParser implements Parser
         }
         else
         {
-          Operator operator = (Operator) operators.peek();
+          Operator operator = operators.peek();
 
           // If the last  operator has a higher precedence then add this to
           // the operator stack and wait
@@ -202,7 +197,7 @@ class StringFormulaParser implements Parser
         // Clean up any remaining items on this stack
         while (!operators.isEmpty())
         {
-          Operator o = (Operator) operators.pop();
+          Operator o = operators.pop();
           o.getOperands(stack);
           stack.push(o);
         }
@@ -212,7 +207,7 @@ class StringFormulaParser implements Parser
         // reverse order
         if (args == null)
         {
-          args = new Stack();
+          args = new Stack<>();
         }
 
         args.push(stack.pop());
@@ -236,12 +231,12 @@ class StringFormulaParser implements Parser
 
     while (!operators.isEmpty())
     {
-      Operator o = (Operator) operators.pop();
+      Operator o = operators.pop();
       o.getOperands(stack);
       stack.push(o);
     }
 
-    ParseItem rt = !stack.empty()? (ParseItem) stack.pop():null;
+    ParseItem rt = !stack.empty() ? stack.pop() : null;
 
     // if the argument stack is not null, then add it to that stack
     // as well for good measure
@@ -267,9 +262,9 @@ class StringFormulaParser implements Parser
    * @return the list of tokens
    * @exception FormulaException if an error occurs
    */
-  private ArrayList getTokens() throws FormulaException
+  private ArrayList<ParseItem> getTokens() throws FormulaException
   {
-    ArrayList tokens = new ArrayList();
+    ArrayList<ParseItem> tokens = new ArrayList<>();
 
     StringReader sr = new StringReader(formula);
     Yylex lex = new Yylex(sr);
@@ -342,8 +337,8 @@ class StringFormulaParser implements Parser
    * @param stack the parse tree stack
    * @exception FormulaException if an error occurs
    */
-  private void handleFunction(StringFunction sf, Iterator i,
-                              Stack stack)
+  private void handleFunction(StringFunction sf, Iterator<ParseItem> i,
+                              Stack<ParseItem> stack)
     throws FormulaException
   {
     ParseItem pi2 = parseCurrent(i);
@@ -376,7 +371,7 @@ class StringFormulaParser implements Parser
       int numargs = arguments.size();
       for (int j = 0 ; j < numargs; j++)
       {
-        ParseItem pi3 = (ParseItem) arguments.get(j);
+        ParseItem pi3 = arguments.get(j);
         vaf.add(pi3);
       }
 
@@ -415,14 +410,12 @@ class StringFormulaParser implements Parser
         ParseItem[] args = new ParseItem[numargs];
         for (int j = 0 ; j < numargs; j++)
         {
-          ParseItem pi3 = (ParseItem) arguments.pop();
+          ParseItem pi3 = arguments.pop();
           args[numargs-j-1] = pi3;
         }
 
-        for (int j = 0 ; j < args.length ; j++)
-        {
-          vaf.add(args[j]);
-        }
+        for (ParseItem arg : args)
+          vaf.add(arg);
         stack.push(vaf);
         arguments.clear();
         arguments = null;
@@ -452,7 +445,7 @@ class StringFormulaParser implements Parser
       // stored in reverse order
       for (int j = 0; j < numargs ; j++)
       {
-        ParseItem pi3 = (ParseItem) arguments.get(j);
+        ParseItem pi3 = arguments.get(j);
         bif.add(pi3);
       }
     }
@@ -537,7 +530,7 @@ class StringFormulaParser implements Parser
    * @param o operand
    * @param stack stack
    */
-  private void handleOperand(Operand o, Stack stack)
+  private void handleOperand(Operand o, Stack<ParseItem> stack)
   {
     if (!(o instanceof IntegerValue))
     {
@@ -545,9 +538,8 @@ class StringFormulaParser implements Parser
       return;
     }
 
-    if (o instanceof IntegerValue)
+    if (o instanceof IntegerValue iv)
     {
-      IntegerValue iv = (IntegerValue) o;
       if (!iv.isOutOfRange())
       {
         stack.push(iv);
@@ -555,7 +547,7 @@ class StringFormulaParser implements Parser
       else
       {
         // convert to a double
-        DoubleValue dv = new  DoubleValue(iv.getValue());
+        DoubleValue dv = new DoubleValue(iv.getValue());
         stack.push(dv);
       }
     }

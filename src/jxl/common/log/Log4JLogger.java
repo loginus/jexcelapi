@@ -34,7 +34,7 @@ public class Log4JLogger extends jxl.common.Logger
   private Logger log4jLogger;
 
   /**
-   * Default constructor. This constructor is 
+   * Default constructor. This constructor is
    */
   public Log4JLogger()
   {
@@ -135,7 +135,7 @@ public class Log4JLogger extends jxl.common.Logger
   /**
    * Accessor to the logger implementation
    */
-  protected jxl.common.Logger getLoggerImpl(Class cl)
+  protected jxl.common.Logger getLoggerImpl(Class<?> cl)
   {
     return new Log4JLogger();
   }

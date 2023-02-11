@@ -23,8 +23,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import jxl.WorkbookSettings;
-import jxl.biff.formula.ExternalSheet;
 import jxl.write.biff.File;
 
 /**
@@ -36,12 +34,12 @@ public class ConditionalFormat
   /**
    * The range of the format
    */
-  private ConditionalFormatRangeRecord range;
+  private final ConditionalFormatRangeRecord range;
 
   /**
    * The format conditions
    */
-  private ArrayList conditions;
+  private final ArrayList<ConditionalFormatRecord> conditions = new ArrayList<>();
 
   /**
    * Constructor
@@ -49,7 +47,6 @@ public class ConditionalFormat
   public ConditionalFormat(ConditionalFormatRangeRecord cfrr)
   {
     range = cfrr;
-    conditions = new ArrayList();
   }
 
   /**
@@ -63,7 +60,7 @@ public class ConditionalFormat
   }
 
   /**
-   * Inserts a blank column into this spreadsheet.  If the column is out of 
+   * Inserts a blank column into this spreadsheet.  If the column is out of
    * range of the columns in the sheet, then no action is taken
    *
    * @param col the column to insert
@@ -85,7 +82,7 @@ public class ConditionalFormat
   }
 
   /**
-   * Removes a row from this spreadsheet.  If the row is out of 
+   * Removes a row from this spreadsheet.  If the row is out of
    * range of the columns in the sheet, then no action is taken
    *
    * @param row the row to remove
@@ -108,18 +105,15 @@ public class ConditionalFormat
 
   /**
    * Writes out the data validation
-   * 
-   * @exception IOException 
+   *
+   * @exception IOException
    * @param outputFile the output file
    */
   public void write(File outputFile) throws IOException
   {
     outputFile.write(range);
 
-    for (Iterator i = conditions.iterator(); i.hasNext();)
-    {
-      ConditionalFormatRecord cfr = (ConditionalFormatRecord) i.next();
+    for (ConditionalFormatRecord cfr : conditions)
       outputFile.write(cfr);
-    }
   }
 }

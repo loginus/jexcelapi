@@ -35,7 +35,7 @@ public abstract class Logger
   /**
    * Factory method to return the logger
    */
-  public static final Logger getLogger(Class cl)
+  public static final Logger getLogger(Class<?> cl)
   {
     if (logger == null)
     {
@@ -136,7 +136,7 @@ public abstract class Logger
   /**
    * Accessor to the logger implementation
    */
-  protected abstract Logger getLoggerImpl(Class cl);
+  protected abstract Logger getLoggerImpl(Class<?> cl);
 
   /**
    * Empty implementation of the suppressWarnings.  Subclasses may

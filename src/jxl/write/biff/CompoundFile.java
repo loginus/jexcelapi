@@ -34,7 +34,7 @@ import jxl.read.biff.BiffException;
 
 /**
  * Writes out a compound file
- * 
+ *
  * Header block is -1
  * Excel data is e..n (where e is the head extension blocks, normally 0 and
  * n is at least 8)
@@ -151,12 +151,12 @@ final class CompoundFile extends BaseCompoundFile
   /**
    * The list of additional, non standard property sets names
    */
-  private ArrayList additionalPropertySets;
+  private ArrayList<ReadPropertyStorage> additionalPropertySets;
 
   /**
    * The map of standard property sets, keyed on name
    */
-  private HashMap standardPropertySets;
+  private HashMap<String, ReadPropertyStorage> standardPropertySets;
 
   /**
    * Structure used to store the property set and the data
@@ -192,14 +192,14 @@ final class CompoundFile extends BaseCompoundFile
 
   /**
    * Constructor
-   * 
+   *
    * @param l the length of the data
    * @param os the output stream to write to
    * @param data the excel data
    * @param rcf the read compound
    */
-  public CompoundFile(ExcelDataOutput data, int l, OutputStream os, 
-                      jxl.read.biff.CompoundFile rcf) 
+  public CompoundFile(ExcelDataOutput data, int l, OutputStream os,
+                      jxl.read.biff.CompoundFile rcf)
     throws CopyAdditionalPropertySetsException, IOException
   {
     super();
@@ -209,7 +209,7 @@ final class CompoundFile extends BaseCompoundFile
     readAdditionalPropertySets(rcf);
 
     numRootEntryBlocks = 1;
-    numPropertySets = 4 + 
+    numPropertySets = 4 +
       (additionalPropertySets != null ? additionalPropertySets.size() : 0);
 
 
@@ -236,7 +236,7 @@ final class CompoundFile extends BaseCompoundFile
     {
       requiredSize = blocks * BIG_BLOCK_SIZE;
     }
-    
+
     out = os;
 
 
@@ -246,7 +246,7 @@ final class CompoundFile extends BaseCompoundFile
 
     int blockChainLength = (BIG_BLOCK_SIZE - BIG_BLOCK_DEPOT_BLOCKS_POS)/4;
 
-    int startTotalBlocks = excelDataBlocks + 
+    int startTotalBlocks = excelDataBlocks +
       8 + // summary block
       8 + // document information
       additionalPropertyBlocks +
@@ -257,14 +257,14 @@ final class CompoundFile extends BaseCompoundFile
     int totalBlocks = startTotalBlocks + numBigBlockDepotBlocks;
 
     // Calculate the number of BBD blocks needed to hold this info
-    numBigBlockDepotBlocks = (int) Math.ceil( (double) totalBlocks / 
+    numBigBlockDepotBlocks = (int) Math.ceil( (double) totalBlocks /
                                               (double) (BIG_BLOCK_SIZE/4));
 
     // Does this affect the total?
     totalBlocks = startTotalBlocks + numBigBlockDepotBlocks;
 
     // And recalculate
-    numBigBlockDepotBlocks = (int) Math.ceil( (double) totalBlocks / 
+    numBigBlockDepotBlocks = (int) Math.ceil( (double) totalBlocks /
                                               (double) (BIG_BLOCK_SIZE/4));
 
     // Does this affect the total?
@@ -286,15 +286,15 @@ final class CompoundFile extends BaseCompoundFile
 
       // Modify the total number of blocks required and recalculate the
       // the number of bbd blocks
-      totalBlocks = startTotalBlocks + 
-                    numExtensionBlocks + 
+      totalBlocks = startTotalBlocks +
+                    numExtensionBlocks +
                     numBigBlockDepotBlocks;
-      numBigBlockDepotBlocks = (int) Math.ceil( (double) totalBlocks / 
+      numBigBlockDepotBlocks = (int) Math.ceil( (double) totalBlocks /
                                                 (double) (BIG_BLOCK_SIZE/4));
 
       // The final total
-      totalBlocks = startTotalBlocks + 
-                    numExtensionBlocks + 
+      totalBlocks = startTotalBlocks +
+                    numExtensionBlocks +
                     numBigBlockDepotBlocks;
     }
     else
@@ -311,8 +311,8 @@ final class CompoundFile extends BaseCompoundFile
     sbdStartBlock = -2;
     if (additionalPropertySets != null && numSmallBlockDepotBlocks != 0)
     {
-      sbdStartBlock = excelDataStartBlock + 
-                      excelDataBlocks + 
+      sbdStartBlock = excelDataStartBlock +
+                      excelDataBlocks +
                       additionalPropertyBlocks +
                       16;
     }
@@ -320,12 +320,12 @@ final class CompoundFile extends BaseCompoundFile
     // Set the sbd chain start block to be after the excel data and the
     // small block depot
     sbdStartBlockChain = -2;
-    
+
     if (sbdStartBlock != -2)
     {
       sbdStartBlockChain = sbdStartBlock + numSmallBlockDepotBlocks;
     }
-    
+
     // Set the bbd start block to be after all the excel data
     if (sbdStartBlockChain != -2)
     {
@@ -335,7 +335,7 @@ final class CompoundFile extends BaseCompoundFile
     else
     {
       bbdStartBlock = excelDataStartBlock +
-                      excelDataBlocks + 
+                      excelDataBlocks +
                       additionalPropertyBlocks +
                       16;
     }
@@ -347,7 +347,7 @@ final class CompoundFile extends BaseCompoundFile
 
     if (totalBlocks != rootStartBlock + numRootEntryBlocks)
     {
-      logger.warn("Root start block and total blocks are inconsistent " + 
+      logger.warn("Root start block and total blocks are inconsistent " +
                   " generated file may be corrupt");
       logger.warn("RootStartBlock " + rootStartBlock + " totalBlocks " + totalBlocks);
     }
@@ -361,7 +361,7 @@ final class CompoundFile extends BaseCompoundFile
    * @exception IOException
    */
   private void readAdditionalPropertySets
-    (jxl.read.biff.CompoundFile readCompoundFile) 
+    (jxl.read.biff.CompoundFile readCompoundFile)
     throws CopyAdditionalPropertySetsException, IOException
   {
     if (readCompoundFile == null)
@@ -369,12 +369,12 @@ final class CompoundFile extends BaseCompoundFile
       return;
     }
 
-    additionalPropertySets = new ArrayList();
-    standardPropertySets = new HashMap();
+    additionalPropertySets = new ArrayList<>();
+    standardPropertySets = new HashMap<>();
     int blocksRequired = 0;
 
     int numPropertySets = readCompoundFile.getNumberOfPropertySets();
-    
+
     for (int i = 0 ; i < numPropertySets ; i++)
     {
       PropertyStorage ps = readCompoundFile.getPropertySet(i);
@@ -446,8 +446,8 @@ final class CompoundFile extends BaseCompoundFile
 
   /**
    * Writes out the excel file in OLE compound file format
-   * 
-   * @exception IOException 
+   *
+   * @exception IOException
    */
   public void write() throws IOException
   {
@@ -460,7 +460,7 @@ final class CompoundFile extends BaseCompoundFile
     writeSmallBlockDepotChain();
     writeBigBlockDepot();
     writePropertySets();
-    
+
     // Don't flush or close the stream - this is handled by the enclosing File
     // object
   }
@@ -475,9 +475,7 @@ final class CompoundFile extends BaseCompoundFile
       return;
     }
 
-    for (Iterator i = additionalPropertySets.iterator(); i.hasNext() ;)
-    {
-      ReadPropertyStorage rps = (ReadPropertyStorage) i.next();
+    for (ReadPropertyStorage rps : additionalPropertySets) {
       byte[] data = rps.data;
 
       if (data.length > SMALL_BLOCK_THRESHOLD)
@@ -486,7 +484,7 @@ final class CompoundFile extends BaseCompoundFile
         int requiredSize = numBlocks * BIG_BLOCK_SIZE;
 
         out.write(data, 0, data.length);
-      
+
         byte[] padding = new byte[requiredSize - data.length];
         out.write(padding, 0, padding.length);
       }
@@ -496,9 +494,9 @@ final class CompoundFile extends BaseCompoundFile
   /**
    * Writes out the excel data, padding it out with empty bytes as
    * necessary
-   * Also write out empty 
-   * 
-   * @exception IOException 
+   * Also write out empty
+   *
+   * @exception IOException
    */
   private void writeExcelData() throws IOException
   {
@@ -510,8 +508,8 @@ final class CompoundFile extends BaseCompoundFile
 
   /**
    * Write out the document summary data.  This is just blank
-   * 
-   * @exception IOException 
+   *
+   * @exception IOException
    */
   private void writeDocumentSummaryData() throws IOException
   {
@@ -523,8 +521,8 @@ final class CompoundFile extends BaseCompoundFile
 
   /**
    * Write out the  summary data.  This is just blank
-   * 
-   * @exception IOException 
+   *
+   * @exception IOException
    */
   private void writeSummaryData() throws IOException
   {
@@ -536,8 +534,8 @@ final class CompoundFile extends BaseCompoundFile
 
   /**
    * Writes the compound file header
-   * 
-   * @exception IOException 
+   *
+   * @exception IOException
    */
   private void writeHeader() throws IOException
   {
@@ -558,54 +556,54 @@ final class CompoundFile extends BaseCompoundFile
     headerBlock[0x39] = 0x10;
 
     // Set the number of BBD blocks
-    IntegerHelper.getFourBytes(numBigBlockDepotBlocks, 
-                               headerBlock, 
-                               NUM_BIG_BLOCK_DEPOT_BLOCKS_POS);  
+    IntegerHelper.getFourBytes(numBigBlockDepotBlocks,
+                               headerBlock,
+                               NUM_BIG_BLOCK_DEPOT_BLOCKS_POS);
 
-    // Set the small block depot chain 
+    // Set the small block depot chain
     IntegerHelper.getFourBytes(sbdStartBlockChain,
                                headerBlock,
                                SMALL_BLOCK_DEPOT_BLOCK_POS);
 
-    // Set the number of blocks in the small block depot chain 
+    // Set the number of blocks in the small block depot chain
     IntegerHelper.getFourBytes(numSmallBlockDepotChainBlocks,
                                headerBlock,
                                NUM_SMALL_BLOCK_DEPOT_BLOCKS_POS);
 
-    // Set the extension block 
+    // Set the extension block
     IntegerHelper.getFourBytes(extensionBlock,
                                headerBlock,
                                EXTENSION_BLOCK_POS);
 
     // Set the number of extension blocks to be the number of BBD blocks - 1
     IntegerHelper.getFourBytes(numExtensionBlocks,
-                               headerBlock, 
+                               headerBlock,
                                NUM_EXTENSION_BLOCK_POS);
-    
+
     // Set the root start block
     IntegerHelper.getFourBytes(rootStartBlock,
                                headerBlock,
                                ROOT_START_BLOCK_POS);
 
-    // Set the block numbers for the BBD.  Set the BBD running 
+    // Set the block numbers for the BBD.  Set the BBD running
     // after the excel data and summary information
     int pos = BIG_BLOCK_DEPOT_BLOCKS_POS;
 
     // See how many blocks fit into the header
-    int blocksToWrite = Math.min(numBigBlockDepotBlocks, 
-                                 (BIG_BLOCK_SIZE - 
+    int blocksToWrite = Math.min(numBigBlockDepotBlocks,
+                                 (BIG_BLOCK_SIZE -
                                   BIG_BLOCK_DEPOT_BLOCKS_POS)/4);
     int blocksWritten = 0;
 
     for (int i = 0 ; i < blocksToWrite; i++)
     {
-      IntegerHelper.getFourBytes(bbdStartBlock + i, 
+      IntegerHelper.getFourBytes(bbdStartBlock + i,
                                  headerBlock,
                                  pos);
       pos += 4;
       blocksWritten++;
     }
-    
+
     // Pad out the rest of the header with blanks
     for (int i = pos; i < BIG_BLOCK_SIZE; i++)
     {
@@ -619,12 +617,12 @@ final class CompoundFile extends BaseCompoundFile
 
     for (int extBlock = 0; extBlock < numExtensionBlocks; extBlock++)
     {
-      blocksToWrite = Math.min(numBigBlockDepotBlocks - blocksWritten, 
+      blocksToWrite = Math.min(numBigBlockDepotBlocks - blocksWritten,
                                BIG_BLOCK_SIZE/4 -1);
 
       for(int j = 0 ; j < blocksToWrite; j++)
       {
-        IntegerHelper.getFourBytes(bbdStartBlock + blocksWritten + j, 
+        IntegerHelper.getFourBytes(bbdStartBlock + blocksWritten + j,
                                    extensionBlockData,
                                    pos);
         pos += 4;
@@ -633,7 +631,7 @@ final class CompoundFile extends BaseCompoundFile
       blocksWritten += blocksToWrite;
 
       // Indicate the next block, or the termination of the chain
-      int nextBlock = (blocksWritten == numBigBlockDepotBlocks) ? 
+      int nextBlock = (blocksWritten == numBigBlockDepotBlocks) ?
                               -2 : extBlock+1 ;
       IntegerHelper.getFourBytes(nextBlock, extensionBlockData, pos);
       pos +=4;
@@ -654,8 +652,8 @@ final class CompoundFile extends BaseCompoundFile
   /**
    * Checks that the data can fit into the current BBD block.  If not,
    * then it moves on to the next block
-   * 
-   * @exception IOException 
+   *
+   * @exception IOException
    */
   private void checkBbdPos() throws IOException
   {
@@ -663,7 +661,7 @@ final class CompoundFile extends BaseCompoundFile
     {
       // Write out the extension block.  This will simply be the next block
       out.write(bigBlockDepot);
-      
+
       // Create a new block
       bigBlockDepot = new byte[BIG_BLOCK_SIZE];
       bbdPos = 0;
@@ -677,12 +675,12 @@ final class CompoundFile extends BaseCompoundFile
    * @param numBlocks the number of blocks in the chain
    * @exception IOException
    */
-  private void writeBlockChain(int startBlock, int numBlocks) 
+  private void writeBlockChain(int startBlock, int numBlocks)
     throws IOException
   {
     int blocksToWrite = numBlocks - 1;
     int blockNumber   = startBlock + 1;
-    
+
     while (blocksToWrite > 0)
     {
       int bbdBlocks = Math.min(blocksToWrite, (BIG_BLOCK_SIZE - bbdPos)/4);
@@ -693,12 +691,12 @@ final class CompoundFile extends BaseCompoundFile
         bbdPos +=4 ;
         blockNumber++;
       }
-      
+
       blocksToWrite -= bbdBlocks;
       checkBbdPos();
     }
 
-    // Write the end of the block chain 
+    // Write the end of the block chain
     IntegerHelper.getFourBytes(-2, bigBlockDepot, bbdPos);
     bbdPos += 4;
     checkBbdPos();
@@ -717,9 +715,7 @@ final class CompoundFile extends BaseCompoundFile
     }
 
     int blockNumber = excelDataStartBlock + excelDataBlocks + 16;
-    for (Iterator i = additionalPropertySets.iterator(); i.hasNext() ; )
-    {
-      ReadPropertyStorage rps = (ReadPropertyStorage) i.next();
+    for (ReadPropertyStorage rps : additionalPropertySets)
       if (rps.data.length > SMALL_BLOCK_THRESHOLD)
       {
         int numBlocks = getBigBlocksRequired(rps.data.length);
@@ -727,9 +723,8 @@ final class CompoundFile extends BaseCompoundFile
         writeBlockChain(blockNumber, numBlocks);
         blockNumber += numBlocks;
       }
-    }
   }
-  
+
   /**
    * Writes out the chains for the small block depot
    */
@@ -740,25 +735,22 @@ final class CompoundFile extends BaseCompoundFile
       return;
     }
 
-    byte[] smallBlockDepotChain = 
+    byte[] smallBlockDepotChain =
       new byte[numSmallBlockDepotChainBlocks * BIG_BLOCK_SIZE];
 
     int pos = 0;
     int sbdBlockNumber = 1;
 
-    for (Iterator i = additionalPropertySets.iterator(); i.hasNext() ; )
-    {
-      ReadPropertyStorage rps = (ReadPropertyStorage) i.next();
-
+    for (ReadPropertyStorage rps : additionalPropertySets)
       if (rps.data.length <= SMALL_BLOCK_THRESHOLD &&
-          rps.data.length != 0)
+              rps.data.length != 0)
       {
         int numSmallBlocks = getSmallBlocksRequired(rps.data.length);
         for (int j = 0 ; j < numSmallBlocks - 1 ; j++)
         {
-          IntegerHelper.getFourBytes(sbdBlockNumber, 
-                                     smallBlockDepotChain, 
-                                     pos);
+          IntegerHelper.getFourBytes(sbdBlockNumber,
+                  smallBlockDepotChain,
+                  pos);
           pos += 4;
           sbdBlockNumber++;
         }
@@ -768,7 +760,6 @@ final class CompoundFile extends BaseCompoundFile
         pos += 4;
         sbdBlockNumber++;
       }
-    }
 
     out.write(smallBlockDepotChain);
   }
@@ -785,15 +776,12 @@ final class CompoundFile extends BaseCompoundFile
       return;
     }
 
-    byte[] smallBlockDepot = 
+    byte[] smallBlockDepot =
       new byte[numSmallBlockDepotBlocks * BIG_BLOCK_SIZE];
 
     int pos = 0;
 
-    for (Iterator i = additionalPropertySets.iterator() ; i.hasNext() ; )
-    {
-      ReadPropertyStorage rps = (ReadPropertyStorage) i.next();
-
+    for (ReadPropertyStorage rps : additionalPropertySets)
       if (rps.data.length <= SMALL_BLOCK_THRESHOLD)
       {
         int smallBlocks = getSmallBlocksRequired(rps.data.length);
@@ -801,15 +789,14 @@ final class CompoundFile extends BaseCompoundFile
         System.arraycopy(rps.data, 0, smallBlockDepot, pos, rps.data.length);
         pos += length;
       }
-    }
 
     out.write(smallBlockDepot);
   }
 
   /**
    * Writes out the Big Block Depot
-   * 
-   * @exception IOException 
+   *
+   * @exception IOException
    */
   private void writeBigBlockDepot() throws IOException
   {
@@ -827,12 +814,12 @@ final class CompoundFile extends BaseCompoundFile
     }
 
     writeBlockChain(excelDataStartBlock, excelDataBlocks);
-    
+
     // The excel data has been written.  Now write out the rest of it
 
     // Write the block chain for the summary information
-    int summaryInfoBlock = excelDataStartBlock + 
-      excelDataBlocks + 
+    int summaryInfoBlock = excelDataStartBlock +
+      excelDataBlocks +
       additionalPropertyBlocks;
 
     for (int i = summaryInfoBlock; i < summaryInfoBlock + 7; i++)
@@ -840,7 +827,7 @@ final class CompoundFile extends BaseCompoundFile
       IntegerHelper.getFourBytes(i + 1, bigBlockDepot, bbdPos);
       bbdPos +=4 ;
       checkBbdPos();
-    } 
+    }
 
     // Write the end of the block chain for the summary info block
     IntegerHelper.getFourBytes(-2, bigBlockDepot, bbdPos);
@@ -853,7 +840,7 @@ final class CompoundFile extends BaseCompoundFile
       IntegerHelper.getFourBytes(i + 1, bigBlockDepot, bbdPos);
       bbdPos +=4 ;
       checkBbdPos();
-    } 
+    }
 
     // Write the end of the block chain for the document summary
     IntegerHelper.getFourBytes(-2, bigBlockDepot, bbdPos);
@@ -872,7 +859,7 @@ final class CompoundFile extends BaseCompoundFile
       writeBlockChain(sbdStartBlockChain, numSmallBlockDepotChainBlocks);
     }
 
-    // The Big Block Depot immediately follows.  Denote these as a special 
+    // The Big Block Depot immediately follows.  Denote these as a special
     // block
     for (int i = 0; i < numBigBlockDepotBlocks; i++)
     {
@@ -896,7 +883,7 @@ final class CompoundFile extends BaseCompoundFile
   }
 
   /**
-   * Calculates the number of big blocks required to store data of the 
+   * Calculates the number of big blocks required to store data of the
    * specified length
    *
    * @param length the length of the data
@@ -905,12 +892,12 @@ final class CompoundFile extends BaseCompoundFile
   private int getBigBlocksRequired(int length)
   {
     int blocks = length / BIG_BLOCK_SIZE;
-    
+
     return (length % BIG_BLOCK_SIZE > 0 )? blocks + 1 : blocks;
   }
 
   /**
-   * Calculates the number of small blocks required to store data of the 
+   * Calculates the number of small blocks required to store data of the
    * specified length
    *
    * @param length the length of the data
@@ -919,14 +906,14 @@ final class CompoundFile extends BaseCompoundFile
   private int getSmallBlocksRequired(int length)
   {
     int blocks = length / SMALL_BLOCK_SIZE;
-    
+
     return (length % SMALL_BLOCK_SIZE > 0 )? blocks + 1 : blocks;
   }
 
   /**
    * Writes out the property sets
-   * 
-   * @exception IOException 
+   *
+   * @exception IOException
    */
   private void writePropertySets() throws IOException
   {
@@ -939,12 +926,11 @@ final class CompoundFile extends BaseCompoundFile
     if (additionalPropertySets != null)
     {
       mappings = new int[numPropertySets];
-      
+
       // Map the standard ones to the first four
       for (int i = 0 ; i < STANDARD_PROPERTY_SETS.length ; i++)
       {
-        ReadPropertyStorage rps = (ReadPropertyStorage) 
-          standardPropertySets.get(STANDARD_PROPERTY_SETS[i]);
+        ReadPropertyStorage rps = standardPropertySets.get(STANDARD_PROPERTY_SETS[i]);
 
         if (rps != null)
         {
@@ -952,16 +938,14 @@ final class CompoundFile extends BaseCompoundFile
         }
         else
         {
-          logger.warn("Standard property set " + STANDARD_PROPERTY_SETS[i] + 
+          logger.warn("Standard property set " + STANDARD_PROPERTY_SETS[i] +
                       " not present in source file");
         }
       }
 
       // Now go through the original ones
       int newMapping = STANDARD_PROPERTY_SETS.length;
-      for (Iterator i = additionalPropertySets.iterator(); i.hasNext(); )
-      {
-        ReadPropertyStorage rps = (ReadPropertyStorage) i.next();
+      for (ReadPropertyStorage rps : additionalPropertySets) {
         mappings[rps.number] = newMapping;
         newMapping++;
       }
@@ -973,7 +957,7 @@ final class CompoundFile extends BaseCompoundFile
 
     // Compute the size of the root property set
     int size = 0;
-    
+
     if (additionalPropertySets != null)
     {
       // Workbook
@@ -984,23 +968,20 @@ final class CompoundFile extends BaseCompoundFile
       size += getBigBlocksRequired(SMALL_BLOCK_THRESHOLD) * BIG_BLOCK_SIZE;
 
       // Additional property sets
-      for (Iterator i = additionalPropertySets.iterator(); i.hasNext(); )
-      {
-        ReadPropertyStorage rps = (ReadPropertyStorage) i.next();
+      for (ReadPropertyStorage rps : additionalPropertySets)
         if (rps.propertyStorage.type != 1)
         {
           if (rps.propertyStorage.size >= SMALL_BLOCK_THRESHOLD)
           {
-            size += getBigBlocksRequired(rps.propertyStorage.size) * 
-              BIG_BLOCK_SIZE;
+            size += getBigBlocksRequired(rps.propertyStorage.size) *
+                    BIG_BLOCK_SIZE;
           }
           else
           {
-            size += getSmallBlocksRequired(rps.propertyStorage.size) * 
-              SMALL_BLOCK_SIZE;
+            size += getSmallBlocksRequired(rps.propertyStorage.size) *
+                    SMALL_BLOCK_SIZE;
           }
         }
-      }
     }
 
     // Set the root entry property set
@@ -1015,14 +996,13 @@ final class CompoundFile extends BaseCompoundFile
     child = 1;
     if (additionalPropertySets != null)
     {
-      ReadPropertyStorage rps = (ReadPropertyStorage) 
-                            standardPropertySets.get(ROOT_ENTRY_NAME);
+      ReadPropertyStorage rps = standardPropertySets.get(ROOT_ENTRY_NAME);
       child = mappings[rps.propertyStorage.child];
     }
     ps.setChild(child);
 
-    System.arraycopy(ps.data, 0, 
-                     propertySetStorage, pos, 
+    System.arraycopy(ps.data, 0,
+                     propertySetStorage, pos,
                      PROPERTY_STORAGE_BLOCK_SIZE);
     pos += PROPERTY_STORAGE_BLOCK_SIZE;
 
@@ -1035,17 +1015,16 @@ final class CompoundFile extends BaseCompoundFile
     ps.setSize(requiredSize);
       // always use a big block stream - none of that messing around
       // with small blocks
-    
+
     previous = 3;
     next = -1;
 
     if (additionalPropertySets != null)
     {
-      ReadPropertyStorage rps = (ReadPropertyStorage) 
-        standardPropertySets.get(WORKBOOK_NAME);
-      previous = rps.propertyStorage.previous != -1 ? 
+      ReadPropertyStorage rps = standardPropertySets.get(WORKBOOK_NAME);
+      previous = rps.propertyStorage.previous != -1 ?
         mappings[rps.propertyStorage.previous] : -1;
-      next = rps.propertyStorage.next != -1 ? 
+      next = rps.propertyStorage.next != -1 ?
         mappings[rps.propertyStorage.next] : -1 ;
     }
 
@@ -1053,8 +1032,8 @@ final class CompoundFile extends BaseCompoundFile
     ps.setNext(next);
     ps.setChild(-1);
 
-    System.arraycopy(ps.data, 0, 
-                     propertySetStorage, pos, 
+    System.arraycopy(ps.data, 0,
+                     propertySetStorage, pos,
                      PROPERTY_STORAGE_BLOCK_SIZE);
     pos += PROPERTY_STORAGE_BLOCK_SIZE;
 
@@ -1069,8 +1048,7 @@ final class CompoundFile extends BaseCompoundFile
 
     if (additionalPropertySets != null)
     {
-      ReadPropertyStorage rps = (ReadPropertyStorage) 
-                            standardPropertySets.get(SUMMARY_INFORMATION_NAME);
+      ReadPropertyStorage rps = standardPropertySets.get(SUMMARY_INFORMATION_NAME);
 
       if (rps != null)
       {
@@ -1085,8 +1063,8 @@ final class CompoundFile extends BaseCompoundFile
     ps.setNext(next);
     ps.setChild(-1);
 
-    System.arraycopy(ps.data, 0, 
-                     propertySetStorage, pos, 
+    System.arraycopy(ps.data, 0,
+                     propertySetStorage, pos,
                      PROPERTY_STORAGE_BLOCK_SIZE);
     pos += PROPERTY_STORAGE_BLOCK_SIZE;
 
@@ -1099,8 +1077,8 @@ final class CompoundFile extends BaseCompoundFile
     ps.setNext(-1);
     ps.setChild(-1);
 
-    System.arraycopy(ps.data, 0, 
-                     propertySetStorage, pos, 
+    System.arraycopy(ps.data, 0,
+                     propertySetStorage, pos,
                      PROPERTY_STORAGE_BLOCK_SIZE);
     pos += PROPERTY_STORAGE_BLOCK_SIZE;
 
@@ -1112,16 +1090,13 @@ final class CompoundFile extends BaseCompoundFile
       out.write(propertySetStorage);
       return;
     }
-    
+
     int bigBlock = excelDataStartBlock + excelDataBlocks + 16;
     int smallBlock = 0;
 
-    for (Iterator i = additionalPropertySets.iterator() ; i.hasNext(); )
-    {
-      ReadPropertyStorage rps = (ReadPropertyStorage) i.next();
- 
-      int block = rps.data.length > SMALL_BLOCK_THRESHOLD ? 
-        bigBlock : smallBlock;
+    for (ReadPropertyStorage rps : additionalPropertySets) {
+      int block = rps.data.length > SMALL_BLOCK_THRESHOLD ?
+              bigBlock : smallBlock;
 
       ps = new PropertyStorage(rps.propertyStorage.name);
       ps.setType(rps.propertyStorage.type);
@@ -1129,20 +1104,20 @@ final class CompoundFile extends BaseCompoundFile
       ps.setSize(rps.propertyStorage.size);
       //      ps.setColour(rps.propertyStorage.colour);
 
-      previous = rps.propertyStorage.previous != -1 ? 
-        mappings[rps.propertyStorage.previous] : -1;
-      next = rps.propertyStorage.next != -1 ? 
-        mappings[rps.propertyStorage.next] : -1;
-      child = rps.propertyStorage.child != -1 ? 
-        mappings[rps.propertyStorage.child] : -1;
+      previous = rps.propertyStorage.previous != -1 ?
+              mappings[rps.propertyStorage.previous] : -1;
+      next = rps.propertyStorage.next != -1 ?
+              mappings[rps.propertyStorage.next] : -1;
+      child = rps.propertyStorage.child != -1 ?
+              mappings[rps.propertyStorage.child] : -1;
 
       ps.setPrevious(previous);
       ps.setNext(next);
       ps.setChild(child);
 
-      System.arraycopy(ps.data, 0, 
-                       propertySetStorage, pos, 
-                       PROPERTY_STORAGE_BLOCK_SIZE);
+      System.arraycopy(ps.data, 0,
+              propertySetStorage, pos,
+              PROPERTY_STORAGE_BLOCK_SIZE);
       pos += PROPERTY_STORAGE_BLOCK_SIZE;
 
       if (rps.data.length > SMALL_BLOCK_THRESHOLD)
