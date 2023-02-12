@@ -1154,7 +1154,7 @@ public class Write
 
     Blank b = new Blank(1,63);
     cellFeatures = new WritableCellFeatures();
-    ArrayList al = new ArrayList();
+    ArrayList<String> al = new ArrayList<>();
     al.add("bagpuss");
     al.add("clangers");
     al.add("ivor the engine");
@@ -1201,7 +1201,7 @@ public class Write
     l = new Label(0, 66, "Block of cells B67-F71 with data validation");
     s1.addCell(l);
 
-    al = new ArrayList();
+    al = new ArrayList<>();
     al.add("Achilles");
     al.add("Agamemnon");
     al.add("Hector");

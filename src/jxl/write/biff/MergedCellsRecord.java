@@ -23,12 +23,10 @@ import java.util.ArrayList;
 
 import jxl.Cell;
 import jxl.Range;
-import jxl.biff.IntegerHelper;
-import jxl.biff.Type;
-import jxl.biff.WritableRecordData;
+import jxl.biff.*;
 
 /**
- * A number record.  This is stored as 8 bytes, as opposed to the 
+ * A number record.  This is stored as 8 bytes, as opposed to the
  * 4 byte RK record
  */
 public class MergedCellsRecord extends WritableRecordData
@@ -36,14 +34,14 @@ public class MergedCellsRecord extends WritableRecordData
   /**
    * The ranges of all the cells which are merged on this sheet
    */
-  private ArrayList ranges;
+  private ArrayList<SheetRangeImpl> ranges;
 
   /**
    * Constructs a merged cell record
    *
-   * @param ws the sheet containing the merged cells
+   * @param mc the merged cells
    */
-  protected MergedCellsRecord(ArrayList mc)
+  protected MergedCellsRecord(ArrayList<SheetRangeImpl> mc)
   {
     super(Type.MERGEDCELLS);
 
@@ -52,9 +50,10 @@ public class MergedCellsRecord extends WritableRecordData
 
   /**
    * Gets the raw data for output to file
-   * 
+   *
    * @return the data to write to file
    */
+  @Override
   public byte[] getData()
   {
     byte[] data = new byte[ranges.size() * 8 + 2];
@@ -71,7 +70,7 @@ public class MergedCellsRecord extends WritableRecordData
       // Set the various cell records
       Cell tl = range.getTopLeft();
       Cell br = range.getBottomRight();
-      
+
       IntegerHelper.getTwoBytes(tl.getRow(), data, pos);
       IntegerHelper.getTwoBytes(br.getRow(), data, pos+2);
       IntegerHelper.getTwoBytes(tl.getColumn(), data, pos+4);

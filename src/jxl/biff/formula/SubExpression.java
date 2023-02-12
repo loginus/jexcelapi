@@ -45,7 +45,7 @@ abstract class SubExpression extends Operand implements ParsedThing
   {
   }
 
-  /** 
+  /**
    * Reads the ptg data from the array starting at the specified position
    *
    * @param data the RPN array
@@ -58,10 +58,10 @@ abstract class SubExpression extends Operand implements ParsedThing
     return 2;
   }
 
-  /** 
+  /**
    * Gets the operands for this operator from the stack
    */
-  public void getOperands(Stack s)
+  public void getOperands(Stack<ParseItem> s)
   {
   }
 
@@ -79,7 +79,7 @@ abstract class SubExpression extends Operand implements ParsedThing
 
 
   /**
-   * Gets the precedence for this operator.  Operator precedents run from 
+   * Gets the precedence for this operator.  Operator precedents run from
    * 1 to 5, one being the highest, 5 being the lowest
    *
    * @return the operator precedence

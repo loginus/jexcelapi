@@ -50,7 +50,7 @@ class Attribute extends Operator implements ParsedThing
   /**
    * The workbook settings
    */
-  private WorkbookSettings settings;
+  private final WorkbookSettings settings;
 
   private static final int SUM_MASK  = 0x10;
   private static final int IF_MASK   = 0x02;
@@ -183,18 +183,13 @@ class Attribute extends Operator implements ParsedThing
    *
    * @param s the token stack
    */
-  public void getOperands(Stack s)
+  @Override
+  public void getOperands(Stack<ParseItem> s)
   {
     if ((options & SUM_MASK) != 0)
-    {
-      ParseItem o1 = (ParseItem) s.pop();
-      add(o1);
-    }
+      add(s.pop());
     else if ((options & IF_MASK) != 0)
-    {
-      ParseItem o1 = (ParseItem) s.pop();
-      add(o1);
-    }
+      add(s.pop());
   }
 
   /**
@@ -395,10 +390,8 @@ class Attribute extends Operator implements ParsedThing
       operands = getOperands();
     }
 
-    for (int i = 0; i < operands.length; i++)
-    {
-      operands[i].adjustRelativeCellReferences(colAdjust, rowAdjust);
-    }
+    for (ParseItem operand : operands)
+      operand.adjustRelativeCellReferences(colAdjust, rowAdjust);
   }
 
   /**
@@ -424,10 +417,8 @@ class Attribute extends Operator implements ParsedThing
       operands = getOperands();
     }
 
-    for (int i = 0; i < operands.length; i++)
-    {
-      operands[i].columnInserted(sheetIndex, col, currentSheet);
-    }
+    for (ParseItem operand : operands)
+      operand.columnInserted(sheetIndex, col, currentSheet);
   }
 
   /**
@@ -453,10 +444,8 @@ class Attribute extends Operator implements ParsedThing
       operands = getOperands();
     }
 
-    for (int i = 0; i < operands.length; i++)
-    {
-      operands[i].columnRemoved(sheetIndex, col, currentSheet);
-    }
+    for (ParseItem operand : operands)
+      operand.columnRemoved(sheetIndex, col, currentSheet);
   }
 
   /**
@@ -482,10 +471,8 @@ class Attribute extends Operator implements ParsedThing
       operands = getOperands();
     }
 
-    for (int i = 0; i < operands.length; i++)
-    {
-      operands[i].rowInserted(sheetIndex, row, currentSheet);
-    }
+    for (ParseItem operand : operands)
+      operand.rowInserted(sheetIndex, row, currentSheet);
   }
 
   /**
@@ -511,10 +498,8 @@ class Attribute extends Operator implements ParsedThing
       operands = getOperands();
     }
 
-    for (int i = 0; i < operands.length; i++)
-    {
-      operands[i].rowRemoved(sheetIndex, row, currentSheet);
-    }
+    for (ParseItem operand : operands)
+      operand.rowRemoved(sheetIndex, row, currentSheet);
   }
 
   /**
@@ -535,10 +520,8 @@ class Attribute extends Operator implements ParsedThing
       operands = getOperands();
     }
 
-    for (int i = 0; i < operands.length; i++)
-    {
-      operands[i].handleImportedCellReferences();
-    }
+    for (ParseItem operand : operands)
+      operand.handleImportedCellReferences();
   }
 }
 

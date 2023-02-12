@@ -247,9 +247,9 @@ public class DataValidation
    */
   public void removeColumn(int col)
   {
-    for (Iterator i = validitySettings.iterator(); i.hasNext() ; )
+    for (Iterator<DataValiditySettingsRecord> i = validitySettings.iterator(); i.hasNext() ; )
     {
-      DataValiditySettingsRecord dv = (DataValiditySettingsRecord) i.next();
+      DataValiditySettingsRecord dv = i.next();
 
       if (dv.getFirstColumn() == col && dv.getLastColumn() == col)
       {

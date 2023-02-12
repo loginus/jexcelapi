@@ -111,7 +111,7 @@ public class SheetImpl implements Sheet
   /**
    * A list of shared formula groups
    */
-  private final ArrayList sharedFormulas;
+  private final ArrayList<SharedFormulaRecord> sharedFormulas;
 
   /**
    * A list of hyperlinks on this page
@@ -579,7 +579,7 @@ public class SheetImpl implements Sheet
   public ColumnInfoRecord[] getColumnInfos()
   {
     // Just chuck all the column infos we have into an array
-    return columnInfosArray.toArray(new ColumnInfoRecord[columnInfosArray.size()]);
+    return columnInfosArray.toArray(ColumnInfoRecord[]::new);
   }
 
   /**
@@ -655,7 +655,7 @@ public class SheetImpl implements Sheet
       System.gc();
     }
 
-    if (columnInfosArray.size() > 0)
+    if (!columnInfosArray.isEmpty())
     {
       ColumnInfoRecord cir = columnInfosArray.get(columnInfosArray.size() - 1);
       columnInfos = new ColumnInfoRecord[cir.getEndColumn() + 1];
@@ -711,7 +711,7 @@ public class SheetImpl implements Sheet
   @Override
   public Hyperlink[] getHyperlinks()
   {
-    return hyperlinks.toArray(new Hyperlink[hyperlinks.size()]);
+    return hyperlinks.toArray(Hyperlink[]::new);
   }
 
   /**
@@ -734,7 +734,7 @@ public class SheetImpl implements Sheet
    * @return an array of row properties
    */
   public RowRecord[] getRowProperties() {
-    return rowProperties.toArray(new RowRecord[rowProperties.size()]);
+    return rowProperties.toArray(RowRecord[]::new);
   }
 
   /**
@@ -801,7 +801,7 @@ public class SheetImpl implements Sheet
    */
   public final Chart[] getCharts()
   {
-    return charts.toArray(new Chart[charts.size()]);
+    return charts.toArray(Chart[]::new);
   }
 
   /**
@@ -811,7 +811,7 @@ public class SheetImpl implements Sheet
    */
   public final DrawingGroupObject[] getDrawings()
   {
-    return drawings.toArray(new DrawingGroupObject[drawings.size()]);
+    return drawings.toArray(DrawingGroupObject[]::new);
   }
 
   /**

@@ -301,7 +301,7 @@ class RowRecord extends WritableRecordData
     throws IOException
   {
     // This is the list for integer values
-    List<CellValue> integerValues = new ArrayList<>();
+    List<Number> integerValues = new ArrayList<>();
 
     // Write out all the records
     for (int i = 0; i < numColumns; i++)
@@ -326,7 +326,7 @@ class RowRecord extends WritableRecordData
         if (integerValue)
         {
           // This cell is an integer, add it to the list
-          integerValues.add(cells[i]);
+          integerValues.add((Number) cells[i]);
         }
         else
         {
@@ -364,7 +364,7 @@ class RowRecord extends WritableRecordData
    * @param outputFile the output file
    * @param integerValues the array of integer values
    */
-  private void writeIntegerValues(List<CellValue> integerValues, File outputFile)
+  private void writeIntegerValues(List<Number> integerValues, File outputFile)
    throws IOException
   {
     if (integerValues.isEmpty())
@@ -381,7 +381,7 @@ class RowRecord extends WritableRecordData
     else
     {
       // Write out as number records
-      Iterator<CellValue> i = integerValues.iterator();
+      Iterator<Number> i = integerValues.iterator();
       while (i.hasNext())
       {
         outputFile.write(i.next());

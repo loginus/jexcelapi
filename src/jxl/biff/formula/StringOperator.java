@@ -39,11 +39,11 @@ abstract class StringOperator extends Operator
     super();
   }
 
-  /** 
+  /**
    * Gets the operands for this operator from the stack.  Does nothing
    * here
    */
-  public void getOperands(Stack s)
+  public void getOperands(Stack<ParseItem> s)
   {
     Assert.verify(false);
   }
@@ -69,7 +69,7 @@ abstract class StringOperator extends Operator
     Assert.verify(false);
     return null;
   }
-  
+
   /**
    * Gets the string representation of this item
    */

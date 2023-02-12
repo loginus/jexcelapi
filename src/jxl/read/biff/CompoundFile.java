@@ -79,18 +79,18 @@ public final class CompoundFile extends BaseCompoundFile
   /**
    * The chain of blocks which comprise the big block depot
    */
-  private int[] bigBlockDepotBlocks;
+  private final int[] bigBlockDepotBlocks;
   /**
    * The list of property sets
    */
-  private ArrayList propertySets;
+  private final ArrayList<PropertyStorage> propertySets;
 
   /**
    * The workbook settings
    */
-  private WorkbookSettings settings;
+  private final WorkbookSettings settings;
 
-  /** 
+  /**
    * The property storage root entry
    */
   private PropertyStorage rootEntryPropertyStorage;
@@ -117,7 +117,7 @@ public final class CompoundFile extends BaseCompoundFile
       }
     }
 
-    propertySets = new ArrayList();
+    propertySets = new ArrayList<>();
     numBigBlockDepotBlocks = IntegerHelper.getInt
       (data[NUM_BIG_BLOCK_DEPOT_BLOCKS_POS],
        data[NUM_BIG_BLOCK_DEPOT_BLOCKS_POS + 1],
@@ -252,9 +252,9 @@ public final class CompoundFile extends BaseCompoundFile
       sbdBlock = bigBlockChain[sbdBlock];
     }
 
-    if (blockCount > bigBlockChain.length) 
+    if (blockCount > bigBlockChain.length)
     {
-      // Attempted to read more blocks than the block chain contains entries 
+      // Attempted to read more blocks than the block chain contains entries
       // for.  This indicates a loop in the chain
       throw new BiffException(BiffException.corruptFileFormat);
     }
@@ -281,14 +281,14 @@ public final class CompoundFile extends BaseCompoundFile
         if (ps.type == ROOT_ENTRY_PS_TYPE)
         {
           ps.name = ROOT_ENTRY_NAME;
-          logger.warn("Property storage name for " + ps.type + 
+          logger.warn("Property storage name for " + ps.type +
                       " is empty - setting to " + ROOT_ENTRY_NAME);
-        } 
+        }
         else
         {
           if (ps.size != 0)
           {
-            logger.warn("Property storage type " + ps.type + 
+            logger.warn("Property storage type " + ps.type +
                         " is non-empty and has no associated name");
           }
         }
@@ -303,7 +303,7 @@ public final class CompoundFile extends BaseCompoundFile
 
     if (rootEntryPropertyStorage == null)
     {
-      rootEntryPropertyStorage = (PropertyStorage) propertySets.get(0);
+      rootEntryPropertyStorage = propertySets.get(0);
     }
   }
 
@@ -316,7 +316,7 @@ public final class CompoundFile extends BaseCompoundFile
    */
   public byte[] getStream(String streamName) throws BiffException
   {
-    PropertyStorage ps = findPropertyStorage(streamName, 
+    PropertyStorage ps = findPropertyStorage(streamName,
                                              rootEntryPropertyStorage);
 
     // Property set can't be found from the direct hierarchy, so just
@@ -361,7 +361,7 @@ public final class CompoundFile extends BaseCompoundFile
   }
 
   /**
-   * Recursively searches the property storages in hierarchy order 
+   * Recursively searches the property storages in hierarchy order
    * for the appropriate name.  This is the public version which is
    * invoked from the writable version
    * when copying a sheet with addition property sets.
@@ -372,10 +372,10 @@ public final class CompoundFile extends BaseCompoundFile
   }
 
   /**
-   * Recursively searches the property storages in hierarchy order 
+   * Recursively searches the property storages in hierarchy order
    * for the appropriate name.
    */
-  private PropertyStorage findPropertyStorage(String name, 
+  private PropertyStorage findPropertyStorage(String name,
                                              PropertyStorage base)
   {
     if (base.child == -1)
@@ -398,7 +398,7 @@ public final class CompoundFile extends BaseCompoundFile
       if (prev.name.equalsIgnoreCase(name))
       {
         return prev;
-      }      
+      }
     }
 
     // Find the next property storages on the same level
@@ -409,7 +409,7 @@ public final class CompoundFile extends BaseCompoundFile
       if (next.name.equalsIgnoreCase(name))
       {
         return next;
-      }      
+      }
     }
 
     return findPropertyStorage(name, child);
@@ -426,20 +426,16 @@ public final class CompoundFile extends BaseCompoundFile
     throws BiffException
   {
     // Find the workbook property
-    Iterator i = propertySets.iterator();
     boolean found = false;
     boolean multiple = false;
     PropertyStorage ps = null;
-    while (i.hasNext())
-    {
-      PropertyStorage ps2 = (PropertyStorage) i.next();
+    for (PropertyStorage ps2 : propertySets)
       if (ps2.name.equalsIgnoreCase(name))
       {
-        multiple = found == true ? true : false;
+        multiple = found;
         found = true;
         ps = ps2;
       }
-    }
 
     if (multiple)
     {
@@ -461,7 +457,7 @@ public final class CompoundFile extends BaseCompoundFile
    */
   private PropertyStorage getPropertyStorage(int index)
   {
-    return (PropertyStorage) propertySets.get(index);
+    return propertySets.get(index);
   }
 
   /**
@@ -537,9 +533,9 @@ public final class CompoundFile extends BaseCompoundFile
       }
     }
 
-    if (blockCount > smallBlockChain.length) 
+    if (blockCount > smallBlockChain.length)
     {
-      // Attempted to read more blocks than the block chain contains entries 
+      // Attempted to read more blocks than the block chain contains entries
       // for. This indicates a loop in the chain
       throw new BiffException(BiffException.corruptFileFormat);
     }
@@ -577,9 +573,9 @@ public final class CompoundFile extends BaseCompoundFile
       block = bigBlockChain[block];
     }
 
-    if (blockCount > bigBlockChain.length) 
+    if (blockCount > bigBlockChain.length)
     {
-      // Attempted to read more blocks than the block chain contains entries 
+      // Attempted to read more blocks than the block chain contains entries
       // for.  This indicates a loop in the chain
       throw new BiffException(BiffException.corruptFileFormat);
     }
@@ -597,7 +593,7 @@ public final class CompoundFile extends BaseCompoundFile
   }
 
   /**
-   * Gets the property set.  Invoked when copying worksheets with macros.  
+   * Gets the property set.  Invoked when copying worksheets with macros.
    * Simply calls the private counterpart
    *
    * @param ps the property set name

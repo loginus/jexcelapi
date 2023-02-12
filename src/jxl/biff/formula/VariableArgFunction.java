@@ -56,9 +56,9 @@ class VariableArgFunction extends Operator implements ParsedThing
   /**
    * The workbooks settings
    */
-  private WorkbookSettings settings;
+  private final WorkbookSettings settings;
 
-  /** 
+  /**
    * Constructor
    */
   public VariableArgFunction(WorkbookSettings ws)
@@ -81,7 +81,7 @@ class VariableArgFunction extends Operator implements ParsedThing
     settings = ws;
   }
 
-  /** 
+  /**
    * Reads the ptg data from the array starting at the specified position
    *
    * @param data the RPN array
@@ -104,18 +104,17 @@ class VariableArgFunction extends Operator implements ParsedThing
     return 3;
   }
 
-  /** 
+  /**
    * Gets the operands for this operator from the stack
    */
-  public void getOperands(Stack s)
+  public void getOperands(Stack<ParseItem> s)
   {
     // parameters are in the correct order, god damn them
     ParseItem[] items = new ParseItem[arguments];
 
     for (int i = arguments - 1; i >= 0 ; i--)
     {
-      ParseItem pi = (ParseItem) s.pop();
-      
+      ParseItem pi = s.pop();
       items[i] = pi;
     }
 
@@ -129,7 +128,7 @@ class VariableArgFunction extends Operator implements ParsedThing
   {
     buf.append(function.getName(settings));
     buf.append('(');
-   
+
     if (arguments > 0)
     {
       ParseItem[] operands = getOperands();
@@ -137,7 +136,7 @@ class VariableArgFunction extends Operator implements ParsedThing
       {
         // arguments are in the same order they were specified
         operands[0].getString(buf);
-        
+
         for (int i = 1; i < arguments; i++)
         {
           buf.append(',');
@@ -149,7 +148,7 @@ class VariableArgFunction extends Operator implements ParsedThing
         // arguments are stored in the reverse order to which they
         // were specified, so iterate through them backwards
         operands[arguments - 1].getString(buf);
-        
+
         for (int i = arguments - 2; i >= 0 ; i--)
         {
           buf.append(',');
@@ -170,12 +169,8 @@ class VariableArgFunction extends Operator implements ParsedThing
    */
   public void adjustRelativeCellReferences(int colAdjust, int rowAdjust)
   {
-    ParseItem[] operands = getOperands();
-
-    for (int i = 0 ; i < operands.length ; i++)
-    {
-      operands[i].adjustRelativeCellReferences(colAdjust, rowAdjust);
-    }
+    for (ParseItem operand : getOperands())
+      operand.adjustRelativeCellReferences(colAdjust, rowAdjust);
   }
 
   /**
@@ -190,11 +185,8 @@ class VariableArgFunction extends Operator implements ParsedThing
    */
   void columnInserted(int sheetIndex, int col, boolean currentSheet)
   {
-    ParseItem[] operands = getOperands();
-    for (int i = 0 ; i < operands.length ; i++)
-    {
-      operands[i].columnInserted(sheetIndex, col, currentSheet);
-    }
+    for (ParseItem operand : getOperands())
+      operand.columnInserted(sheetIndex, col, currentSheet);
   }
 
   /**
@@ -209,11 +201,8 @@ class VariableArgFunction extends Operator implements ParsedThing
    */
   void columnRemoved(int sheetIndex, int col, boolean currentSheet)
   {
-    ParseItem[] operands = getOperands();
-    for (int i = 0 ; i < operands.length ; i++)
-    {
-      operands[i].columnRemoved(sheetIndex, col, currentSheet);
-    }
+    for (ParseItem operand : getOperands())
+      operand.columnRemoved(sheetIndex, col, currentSheet);
   }
 
   /**
@@ -228,11 +217,8 @@ class VariableArgFunction extends Operator implements ParsedThing
    */
   void rowInserted(int sheetIndex, int row, boolean currentSheet)
   {
-    ParseItem[] operands = getOperands();
-    for (int i = 0 ; i < operands.length ; i++)
-    {
-      operands[i].rowInserted(sheetIndex, row, currentSheet);
-    }
+    for (ParseItem operand : getOperands())
+      operand.rowInserted(sheetIndex, row, currentSheet);
   }
 
   /**
@@ -247,11 +233,8 @@ class VariableArgFunction extends Operator implements ParsedThing
    */
   void rowRemoved(int sheetIndex, int row, boolean currentSheet)
   {
-    ParseItem[] operands = getOperands();
-    for (int i = 0 ; i < operands.length ; i++)
-    {
-      operands[i].rowRemoved(sheetIndex, row, currentSheet);
-    }
+    for (ParseItem operand : getOperands())
+      operand.rowRemoved(sheetIndex, row, currentSheet);
   }
 
   /**
@@ -261,11 +244,8 @@ class VariableArgFunction extends Operator implements ParsedThing
    */
   void handleImportedCellReferences()
   {
-    ParseItem[] operands = getOperands();
-    for (int i = 0 ; i < operands.length ; i++)
-    {
-      operands[i].handleImportedCellReferences();
-    }
+    for (ParseItem operand : getOperands())
+      operand.handleImportedCellReferences();
   }
 
   /**
@@ -286,13 +266,10 @@ class VariableArgFunction extends Operator implements ParsedThing
     handleSpecialCases();
 
     // Get the data for the operands - in the correct order
-    ParseItem[] operands = getOperands();
     byte[] data = new byte[0];
 
-    for (int i = 0 ; i < operands.length ; i++)
-    {
-      byte[] opdata = operands[i].getBytes();
-
+    for (ParseItem operand : getOperands()) {
+      byte[] opdata = operand.getBytes();
       // Grow the array
       byte[] newdata = new byte[data.length + opdata.length];
       System.arraycopy(data, 0, newdata, 0, data.length);
@@ -303,7 +280,7 @@ class VariableArgFunction extends Operator implements ParsedThing
     // Add on the operator byte
     byte[] newdata = new byte[data.length + 4];
     System.arraycopy(data, 0, newdata, 0, data.length);
-    newdata[data.length] = !useAlternateCode() ? 
+    newdata[data.length] = !useAlternateCode() ?
       Token.FUNCTIONVARARG.getReferenceCode() : Token.FUNCTIONVARARG.getValueCode() ;
     newdata[data.length+1] = (byte) arguments;
     IntegerHelper.getTwoBytes(function.getCode(), newdata, data.length+2);
@@ -312,7 +289,7 @@ class VariableArgFunction extends Operator implements ParsedThing
   }
 
   /**
-   * Gets the precedence for this operator.  Operator precedents run from 
+   * Gets the precedence for this operator.  Operator precedents run from
    * 1 to 5, one being the highest, 5 being the lowest
    *
    * @return the operator precedence
@@ -333,7 +310,7 @@ class VariableArgFunction extends Operator implements ParsedThing
     {
       // Get the data for the operands - in reverse order
       ParseItem[] operands = getOperands();
-      
+
       for (int i = operands.length - 1 ; i >= 0 ; i--)
       {
         if (operands[i] instanceof Area)
@@ -344,5 +321,5 @@ class VariableArgFunction extends Operator implements ParsedThing
     }
   }
 }
- 
+
 

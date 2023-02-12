@@ -28,9 +28,6 @@ import java.util.Stack;
  */
 abstract class BinaryOperator extends Operator implements ParsedThing
 {
-  // The logger
-  private static final Logger logger = Logger.getLogger(BinaryOperator.class);
-
   /**
    * Constructor
    */
@@ -55,13 +52,10 @@ abstract class BinaryOperator extends Operator implements ParsedThing
    *
    * @param s the token stack
    */
-  public void getOperands(Stack s)
+  public void getOperands(Stack<ParseItem> s)
   {
-    ParseItem o1 = (ParseItem) s.pop();
-    ParseItem o2 = (ParseItem) s.pop();
-
-    add(o1);
-    add(o2);
+    add(s.pop());
+    add(s.pop());
   }
 
   /**

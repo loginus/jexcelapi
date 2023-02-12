@@ -111,7 +111,7 @@ public class WritableCellFeatures extends CellFeatures
    *
    * @param c the list of valid values
    */
-  public void setDataValidationList(Collection c)
+  public void setDataValidationList(Collection<String> c)
   {
     super.setDataValidationList(c);
   }
@@ -133,7 +133,7 @@ public class WritableCellFeatures extends CellFeatures
    * Sets the data validation based upon a named range.  If the namedRange
    * is an empty string ("") then the cell is effectively made read only
    *
-   * @param namedRange the workbook named range defining the validation 
+   * @param namedRange the workbook named range defining the validation
    *                   boundaries
    */
   public void setDataValidationRange(String namedRange)

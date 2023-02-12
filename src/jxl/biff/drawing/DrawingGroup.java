@@ -22,7 +22,6 @@ package jxl.biff.drawing;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 
 import jxl.common.Assert;
 import jxl.common.Logger;
@@ -64,7 +63,7 @@ public class DrawingGroup implements EscherStream
   /**
    * The list of user added drawings
    */
-  private ArrayList<DrawingGroupObject> drawings;
+  private final ArrayList<DrawingGroupObject> drawings;
 
   /**
    * The number of blips
@@ -96,7 +95,7 @@ public class DrawingGroup implements EscherStream
    * A hash map of images keyed on the file path, containing the
    * reference count
    */
-  private HashMap<String, Drawing> imageFiles;
+  private final HashMap<String, Drawing> imageFiles;
 
   /**
    * A count of the next available object id
@@ -132,6 +131,7 @@ public class DrawingGroup implements EscherStream
    *
    * @param dg the drawing group to copy
    */
+  @SuppressWarnings("unchecked")
   public DrawingGroup(DrawingGroup dg)
   {
     drawingData = dg.drawingData;

@@ -44,19 +44,19 @@ class MergedCells
   /**
    * The logger
    */
-  private static Logger logger = Logger.getLogger(MergedCells.class);
+  private static final Logger logger = Logger.getLogger(MergedCells.class);
 
   /**
    * The list of merged cells
    */
-  private ArrayList ranges;
+  private ArrayList<SheetRangeImpl> ranges = new ArrayList<>();
 
   /**
    * The sheet containing the cells
    */
-  private WritableSheet sheet;
+  private final WritableSheet sheet;
 
-  /** 
+  /**
    * The maximum number of ranges per sheet
    */
   private static final int maxRangesPerSheet = 1020;
@@ -66,7 +66,6 @@ class MergedCells
    */
   public MergedCells(WritableSheet ws)
   {
-    ranges = new ArrayList();
     sheet = ws;
   }
 
@@ -76,7 +75,7 @@ class MergedCells
    *
    * @param range the range to add
    */
-  void add(Range r)
+  void add(SheetRangeImpl r)
   {
     ranges.add(r);
   }
@@ -87,13 +86,8 @@ class MergedCells
   void insertRow(int row)
   {
     // Adjust any merged cells
-    SheetRangeImpl sr = null;
-    Iterator i = ranges.iterator();
-    while (i.hasNext())
-    {
-      sr = (SheetRangeImpl) i.next();
+    for (SheetRangeImpl sr : ranges)
       sr.insertRow(row);
-    }
   }
 
   /**
@@ -101,13 +95,8 @@ class MergedCells
    */
   void insertColumn(int col)
   {
-    SheetRangeImpl sr = null;
-    Iterator i = ranges.iterator();
-    while (i.hasNext())
-    {
-      sr = (SheetRangeImpl) i.next();
+    for (SheetRangeImpl sr : ranges)
       sr.insertColumn(col);
-    }
   }
 
   /**
@@ -115,11 +104,10 @@ class MergedCells
    */
   void removeColumn(int col)
   {
-    SheetRangeImpl sr = null;
-    Iterator i = ranges.iterator();
+    Iterator<SheetRangeImpl> i = ranges.iterator();
     while (i.hasNext())
     {
-      sr = (SheetRangeImpl) i.next();
+      SheetRangeImpl sr = i.next();
       if (sr.getTopLeft().getColumn() == col &&
           sr.getBottomRight().getColumn() == col)
       {
@@ -139,11 +127,10 @@ class MergedCells
    */
   void removeRow(int row)
   {
-    SheetRangeImpl sr = null;
-    Iterator i = ranges.iterator();
+    Iterator<SheetRangeImpl> i = ranges.iterator();
     while (i.hasNext())
     {
-      sr = (SheetRangeImpl) i.next();
+      SheetRangeImpl sr = i.next();
       if (sr.getTopLeft().getRow()   == row &&
           sr.getBottomRight().getRow() == row)
       {
@@ -169,7 +156,7 @@ class MergedCells
 
     for (int i=0; i < cells.length; i++)
     {
-      cells[i] = (Range) ranges.get(i);
+      cells[i] = ranges.get(i);
     }
 
     return cells;
@@ -184,7 +171,7 @@ class MergedCells
   void unmergeCells(Range r)
   {
     int index = ranges.indexOf(r);
-    
+
     if (index != -1)
     {
       ranges.remove(index);
@@ -196,29 +183,25 @@ class MergedCells
    */
   private void checkIntersections()
   {
-    ArrayList newcells = new ArrayList(ranges.size());
+    ArrayList<SheetRangeImpl> newcells = new ArrayList<>(ranges.size());
 
-    for (Iterator mci = ranges.iterator(); mci.hasNext() ; )
-    {
-      SheetRangeImpl r = (SheetRangeImpl) mci.next();
-
+    for (SheetRangeImpl r : ranges) {
       // Check that the range doesn't intersect with any existing range
-      Iterator i = newcells.iterator();
-      SheetRangeImpl range = null;
+      Iterator<SheetRangeImpl> i = newcells.iterator();
       boolean intersects = false;
       while (i.hasNext() && !intersects)
       {
-        range = (SheetRangeImpl) i.next();
-        
+        SheetRangeImpl range = i.next();
+
         if (range.intersects(r))
         {
           logger.warn("Could not merge cells " + r +
-                      " as they clash with an existing set of merged cells.");
+                  " as they clash with an existing set of merged cells.");
 
           intersects = true;
         }
       }
-      
+
       if (!intersects)
       {
         newcells.add(r);
@@ -233,15 +216,11 @@ class MergedCells
    * contains more than one item of data
    */
   private void checkRanges()
-  {    
+  {
     try
     {
-      SheetRangeImpl range = null;
-
       // Check all the ranges to make sure they only contain one entry
-      for (int i = 0; i < ranges.size(); i++)
-      {
-        range = (SheetRangeImpl) ranges.get(i);
+      for (SheetRangeImpl range : ranges) {
 
         // Get the cell in the top left
         Cell tl = range.getTopLeft();
@@ -261,9 +240,9 @@ class MergedCells
               }
               else
               {
-                logger.warn("Range " + range + 
-                            " contains more than one data cell.  " +
-                            "Setting the other cells to blank.");
+                logger.warn("Range " + range +
+                        " contains more than one data cell.  " +
+                                "Setting the other cells to blank.");
                 Blank b = new Blank(c, r);
                 sheet.addCell(b);
               }
@@ -281,12 +260,10 @@ class MergedCells
 
   void write(File outputFile) throws IOException
   {
-    if (ranges.size() == 0)
-    {
+    if (ranges.isEmpty())
       return;
-    }
 
-    WorkbookSettings ws = 
+    WorkbookSettings ws =
       ( (WritableSheetImpl) sheet).getWorkbookSettings();
 
     if (!ws.getMergedCellCheckingDisabled())
@@ -311,7 +288,7 @@ class MergedCells
     {
       int numranges = Math.min(maxRangesPerSheet, ranges.size() - pos);
 
-      ArrayList cells = new ArrayList(numranges);
+      ArrayList<SheetRangeImpl> cells = new ArrayList<>(numranges);
       for (int j = 0 ; j < numranges ; j++)
       {
         cells.add(ranges.get(pos+j));

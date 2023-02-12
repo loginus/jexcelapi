@@ -945,8 +945,8 @@ final class SheetReader
     for (SharedFormulaRecord sfr : sharedFormulas) {
       Cell[] sfnr = sfr.getFormulas(formattingRecords, nineteenFour);
 
-      for (int sf = 0; sf < sfnr.length; sf++)
-        addCell(sfnr[sf]);
+      for (Cell cell : sfnr)
+        addCell(cell);
     }
 
     // If the last base shared formula wasn't added to the sheet, then

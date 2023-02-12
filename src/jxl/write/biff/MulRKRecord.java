@@ -34,34 +34,34 @@ class MulRKRecord extends WritableRecordData
   /**
    * The row  containing these numbers
    */
-  private int row;
+  private final int row;
   /**
    * The first column these rk number occur on
    */
-  private int colFirst;
+  private final int colFirst;
   /**
    * The last column these rk number occur on
    */
-  private int colLast;
+  private final int colLast;
   /**
    * The array of rk numbers
    */
-  private int[] rknumbers;
+  private final int[] rknumbers;
   /**
    * The array of xf indices
    */
-  private int[] xfIndices;
+  private final int[] xfIndices;
 
   /**
    * Constructs the rk numbers from the integer cells
-   * 
+   *
    * @param numbers A list of jxl.write.Number objects
    */
-  public MulRKRecord(List numbers)
+  public MulRKRecord(List<Number> numbers)
   {
     super(Type.MULRK);
-    row = ((Number)numbers.get(0)).getRow();
-    colFirst = ((Number)numbers.get(0)).getColumn();
+    row = numbers.get(0).getRow();
+    colFirst = numbers.get(0).getColumn();
     colLast = colFirst + numbers.size() - 1;
 
     rknumbers = new int[numbers.size()];
@@ -69,14 +69,14 @@ class MulRKRecord extends WritableRecordData
 
     for (int i = 0; i < numbers.size(); i++)
     {
-      rknumbers[i] = (int) ((Number)numbers.get(i)).getValue();
+      rknumbers[i] = (int) numbers.get(i).getValue();
       xfIndices[i] = ( (CellValue) numbers.get(i)).getXFIndex();
     }
   }
 
   /**
    * Gets the binary data for output to file
-   * 
+   *
    * @return the binary data
    */
   public byte[] getData()
@@ -94,7 +94,7 @@ class MulRKRecord extends WritableRecordData
     for (int i = 0; i < rknumbers.length; i++)
     {
       IntegerHelper.getTwoBytes(xfIndices[i], data, pos);
-      
+
       // To represent an int as an Excel RK value, we have to
       // undergo some outrageous jiggery pokery, as follows:
 
