@@ -1437,9 +1437,11 @@ class WritableSheetImpl implements WritableSheet
    * @return an array of range objects
    */
   @Override
-  public Range[] getMergedCells()
+  public List<Range> getMergedCells()
   {
-    return mergedCells.getMergedCells();
+    @SuppressWarnings("unchecked")
+    List<Range> m = (List<Range>) (List<?>) mergedCells.getMergedCells();
+    return m;
   }
 
   /**

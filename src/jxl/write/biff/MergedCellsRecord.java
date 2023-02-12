@@ -19,7 +19,7 @@
 
 package jxl.write.biff;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import jxl.Cell;
 import jxl.Range;
@@ -34,14 +34,14 @@ public class MergedCellsRecord extends WritableRecordData
   /**
    * The ranges of all the cells which are merged on this sheet
    */
-  private ArrayList<SheetRangeImpl> ranges;
+  private List<SheetRangeImpl> ranges;
 
   /**
    * Constructs a merged cell record
    *
    * @param mc the merged cells
    */
-  protected MergedCellsRecord(ArrayList<SheetRangeImpl> mc)
+  protected MergedCellsRecord(List<SheetRangeImpl> mc)
   {
     super(Type.MERGEDCELLS);
 

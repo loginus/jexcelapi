@@ -19,6 +19,7 @@
 
 package jxl;
 
+import java.util.List;
 import java.util.regex.Pattern;
 import jxl.format.CellFormat;
 import jxl.read.biff.*;
@@ -167,9 +168,9 @@ public interface Sheet
   /**
    * Gets the cells which have been merged on this sheet
    *
-   * @return an array of range objects
+   * @return a List of range objects
    */
-  public Range[] getMergedCells();
+  public List<Range> getMergedCells();
 
   /**
    * Gets the settings used on a particular sheet

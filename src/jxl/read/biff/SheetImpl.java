@@ -100,39 +100,39 @@ public class SheetImpl implements Sheet
   /**
    * The list of non-default row properties
    */
-  private ArrayList<RowRecord> rowProperties;
+  private List<RowRecord> rowProperties;
 
   /**
    * An array of column info records.  They are held this way before
    * they are transferred to the more convenient array
    */
-  private ArrayList<ColumnInfoRecord> columnInfosArray;
+  private List<ColumnInfoRecord> columnInfosArray;
 
   /**
    * A list of shared formula groups
    */
-  private final ArrayList<SharedFormulaRecord> sharedFormulas;
+  private final List<SharedFormulaRecord> sharedFormulas;
 
   /**
    * A list of hyperlinks on this page
    */
-  private ArrayList<Hyperlink> hyperlinks;
+  private List<Hyperlink> hyperlinks;
 
   /**
    * A list of charts on this page
    */
-  private ArrayList<Chart> charts;
+  private List<Chart> charts;
 
   /**
    * A list of drawings on this page
    */
-  private ArrayList<DrawingGroupObject> drawings;
+  private List<DrawingGroupObject> drawings;
 
   /**
    * A list of drawings (as opposed to comments/validation/charts) on this
    * page
    */
-  private ArrayList<Image> images;
+  private List<Image> images;
 
   /**
    * A list of data validations on this page
@@ -142,7 +142,7 @@ public class SheetImpl implements Sheet
   /**
    * A list of merged cells on this page
    */
-  private Range[] mergedCells;
+  private List<Range> mergedCells;
 
   /**
    * Indicates whether the columnInfos array has been initialized
@@ -207,12 +207,12 @@ public class SheetImpl implements Sheet
   /**
    * The list of local names for this sheet
    */
-  private ArrayList<NameRecord> localNames;
+  private List<NameRecord> localNames;
 
   /**
    * The list of conditional formats for this sheet
    */
-  private ArrayList<ConditionalFormat> conditionalFormats;
+  private List<ConditionalFormat> conditionalFormats;
 
   /**
    * The autofilter information
@@ -717,13 +717,13 @@ public class SheetImpl implements Sheet
   /**
    * Gets the cells which have been merged on this sheet
    *
-   * @return an array of range objects
+   * @return a List of range objects
    */
   @Override
-  public Range[] getMergedCells()
+  public List<Range> getMergedCells()
   {
     if (mergedCells == null)
-      return new Range[0];
+      return List.of();
 
     return mergedCells;
   }

@@ -685,9 +685,8 @@ final class SheetWriter
    */
   void checkMergedBorders()
   {
-    Range[] mcells = mergedCells.getMergedCells();
     ArrayList<CellXFRecord> borderFormats = new ArrayList<>();
-    for (Range range : mcells) {
+    for (var range : mergedCells.getMergedCells()) {
       Cell topLeft = range.getTopLeft();
       XFRecord tlformat = (XFRecord) topLeft.getCellFormat();
 

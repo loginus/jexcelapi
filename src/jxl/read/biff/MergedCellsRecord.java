@@ -19,6 +19,7 @@
 
 package jxl.read.biff;
 
+import java.util.*;
 import jxl.Range;
 import jxl.Sheet;
 import jxl.biff.IntegerHelper;
@@ -33,7 +34,7 @@ public class MergedCellsRecord extends RecordData
   /**
    * The ranges of the cells merged on this sheet
    */
-  private Range[] ranges;
+  private final List<Range> ranges;
 
   /**
    * Constructs this object from the raw data
@@ -48,27 +49,22 @@ public class MergedCellsRecord extends RecordData
     byte[] data = getRecord().getData();
 
     int numRanges = IntegerHelper.getInt(data[0], data[1]);
-
-    ranges = new Range[numRanges];
-
-    int pos      = 2;
-    int firstRow = 0;
-    int lastRow  = 0;
-    int firstCol = 0;
-    int lastCol  = 0;
-
+    Range rangesArray[] = new Range[numRanges];
+    int pos = 2;
     for (int i = 0; i < numRanges; i++)
     {
-      firstRow = IntegerHelper.getInt(data[pos], data[pos + 1]);
-      lastRow  = IntegerHelper.getInt(data[pos + 2], data[pos + 3]);
-      firstCol = IntegerHelper.getInt(data[pos + 4], data[pos + 5]);
-      lastCol  = IntegerHelper.getInt(data[pos + 6], data[pos + 7]);
+      int firstRow = IntegerHelper.getInt(data[pos], data[pos + 1]);
+      int lastRow  = IntegerHelper.getInt(data[pos + 2], data[pos + 3]);
+      int firstCol = IntegerHelper.getInt(data[pos + 4], data[pos + 5]);
+      int lastCol  = IntegerHelper.getInt(data[pos + 6], data[pos + 7]);
 
-      ranges[i] = new SheetRangeImpl(s, firstCol, firstRow,
+      rangesArray[i] = new SheetRangeImpl(s, firstCol, firstRow,
                                      lastCol, lastRow);
 
       pos += 8;
     }
+
+    ranges = List.of(rangesArray);
   }
 
   /**
@@ -76,7 +72,7 @@ public class MergedCellsRecord extends RecordData
    *
    * @return the ranges of cells which have been merged
    */
-  public Range[] getRanges()
+  public List<Range> getRanges()
   {
     return ranges;
   }

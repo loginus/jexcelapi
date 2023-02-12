@@ -89,28 +89,28 @@ final class SheetReader
   /**
    * The list of non-default row properties
    */
-  private final ArrayList<RowRecord> rowProperties = new ArrayList<>(10);
+  private final List<RowRecord> rowProperties = new ArrayList<>(10);
 
   /**
    * An array of column info records.  They are held this way before
    * they are transferred to the more convenient array
    */
-  private final ArrayList<ColumnInfoRecord> columnInfosArray = new ArrayList<>();
+  private final List<ColumnInfoRecord> columnInfosArray = new ArrayList<>();
 
   /**
    * A list of shared formula groups
    */
-  private final ArrayList<SharedFormulaRecord> sharedFormulas = new ArrayList<>();
+  private final List<SharedFormulaRecord> sharedFormulas = new ArrayList<>();
 
   /**
    * A list of hyperlinks on this page
    */
-  private final ArrayList<Hyperlink> hyperlinks = new ArrayList<>();
+  private final List<Hyperlink> hyperlinks = new ArrayList<>();
 
   /**
    * The list of conditional formats on this page
    */
-  private final ArrayList<ConditionalFormat> conditionalFormats = new ArrayList<>();
+  private final List<ConditionalFormat> conditionalFormats = new ArrayList<>();
 
   /**
    * The autofilter information
@@ -120,7 +120,7 @@ final class SheetReader
   /**
    * A list of merged cells on this page
    */
-  private Range[] mergedCells;
+  private final List<Range> mergedCells = new ArrayList<>();
 
   /**
    * The list of data validations on this page
@@ -130,12 +130,12 @@ final class SheetReader
   /**
    * The list of charts on this page
    */
-  private final ArrayList<Chart> charts = new ArrayList<>();
+  private final List<Chart> charts = new ArrayList<>();
 
   /**
    * The list of drawings on this page
    */
-  private final ArrayList<DrawingGroupObject> drawings = new ArrayList<>();
+  private final List<DrawingGroupObject> drawings = new ArrayList<>();
 
   /**
    * The drawing data for the drawings
@@ -359,19 +359,7 @@ final class SheetReader
 
         case MERGEDCELLS:
           MergedCellsRecord mc = new MergedCellsRecord(r, sheet);
-          if (mergedCells == null)
-            mergedCells = mc.getRanges();
-          else {
-            Range[] newMergedCells
-                    = new Range[mergedCells.length + mc.getRanges().length];
-            System.arraycopy(mergedCells, 0, newMergedCells, 0,
-                    mergedCells.length);
-            System.arraycopy(mc.getRanges(),
-                    0,
-                    newMergedCells, mergedCells.length,
-                    mc.getRanges().length);
-            mergedCells = newMergedCells;
-          }
+          mergedCells.addAll(mc.getRanges());
           break;
 
         case MULRK: {
@@ -1083,7 +1071,7 @@ final class SheetReader
    *
    * @return the row properties
    */
-  final ArrayList<RowRecord> getRowProperties()
+  final List<RowRecord> getRowProperties()
   {
     return rowProperties;
   }
@@ -1093,7 +1081,7 @@ final class SheetReader
    *
    * @return the column information
    */
-  final ArrayList<ColumnInfoRecord> getColumnInfosArray()
+  final List<ColumnInfoRecord> getColumnInfosArray()
   {
     return columnInfosArray;
   }
@@ -1103,7 +1091,7 @@ final class SheetReader
    *
    * @return the hyperlinks
    */
-  final ArrayList<Hyperlink> getHyperlinks()
+  final List<Hyperlink> getHyperlinks()
   {
     return hyperlinks;
   }
@@ -1113,7 +1101,7 @@ final class SheetReader
    *
    * @return the conditional formatting
    */
-  final ArrayList<ConditionalFormat> getConditionalFormats()
+  final List<ConditionalFormat> getConditionalFormats()
   {
     return conditionalFormats;
   }
@@ -1133,7 +1121,7 @@ final class SheetReader
    *
    * @return the charts
    */
-  final ArrayList<Chart> getCharts()
+  final List<Chart> getCharts()
   {
     return charts;
   }
@@ -1143,7 +1131,7 @@ final class SheetReader
    *
    * @return the drawings
    */
-  final ArrayList<DrawingGroupObject> getDrawings()
+  final List<DrawingGroupObject> getDrawings()
   {
     return drawings;
   }
@@ -1163,7 +1151,7 @@ final class SheetReader
    *
    * @return the ranges
    */
-  final Range[] getMergedCells()
+  final List<Range> getMergedCells()
   {
     return mergedCells;
   }

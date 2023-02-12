@@ -20,8 +20,7 @@
 package jxl.write.biff;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.*;
 
 import jxl.common.Assert;
 import jxl.common.Logger;
@@ -49,7 +48,7 @@ class MergedCells
   /**
    * The list of merged cells
    */
-  private ArrayList<SheetRangeImpl> ranges = new ArrayList<>();
+  private List<SheetRangeImpl> ranges = new ArrayList<>();
 
   /**
    * The sheet containing the cells
@@ -148,18 +147,11 @@ class MergedCells
   /**
    * Gets the cells which have been merged on this sheet
    *
-   * @return an array of range objects
+   * @return an unmodifiable view of range objects
    */
-  Range[] getMergedCells()
+  List<SheetRangeImpl> getMergedCells()
   {
-    Range[] cells = new Range[ranges.size()];
-
-    for (int i=0; i < cells.length; i++)
-    {
-      cells[i] = ranges.get(i);
-    }
-
-    return cells;
+    return Collections.unmodifiableList(ranges);
   }
 
   /**

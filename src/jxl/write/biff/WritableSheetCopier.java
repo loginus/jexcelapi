@@ -223,10 +223,8 @@ class WritableSheetCopier
       toColumnFormats.add(new ColumnInfoRecord(toCopy));
 
     // Copy the merged cells
-    Range[] merged = fromMergedCells.getMergedCells();
-
-    for (Range m : merged)
-      toMergedCells.add(new SheetRangeImpl((SheetRangeImpl) m, toSheet));
+    for (var range : fromMergedCells.getMergedCells())
+      toMergedCells.add(new SheetRangeImpl(range, toSheet));
 
     try
     {
