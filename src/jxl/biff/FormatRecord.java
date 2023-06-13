@@ -23,6 +23,7 @@ import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
+import java.util.*;
 
 import jxl.common.Logger;
 
@@ -45,11 +46,6 @@ public class FormatRecord extends WritableRecordData
    * Initialized flag
    */
   private boolean initialized;
-
-  /**
-   * The raw data
-   */
-  private byte[] data;
 
   /**
    * The index code
@@ -79,8 +75,7 @@ public class FormatRecord extends WritableRecordData
   /**
    * The date strings to look for
    */
-  private static String[] dateStrings = new String[]
-  {
+  private static final Set<String> DATE_STRINGS = Set.of(
     "dd",
     "mm",
     "yy",
@@ -88,11 +83,11 @@ public class FormatRecord extends WritableRecordData
     "ss",
     "m/",
     "/d"
-  };
+  );
 
   // Type to distinguish between biff7 and biff8
-  private static class BiffType
-  {
+  public static final class BiffType {
+    private BiffType() { }
   }
 
   public static final BiffType biff8 = new BiffType();
@@ -141,62 +136,36 @@ public class FormatRecord extends WritableRecordData
    * Constructs this object from the raw data.  Used when reading in a
    * format record
    *
-   * @param t the raw data
+   * @param r the raw data
    * @param ws the workbook settings
    * @param biffType biff type dummy overload
    */
-  public FormatRecord(Record t, WorkbookSettings ws, BiffType biffType)
+  public FormatRecord(Record r, WorkbookSettings ws, BiffType biffType)
   {
-    super(t);
+    super(r);
 
-    byte[] data = getRecord().getData();
+    byte[] data = r.getData();
     indexCode = IntegerHelper.getInt(data[0], data[1]);
     initialized = true;
 
     if (biffType == biff8)
-    {
-      int numchars = IntegerHelper.getInt(data[2], data[3]);
-      if (data[4] == 0)
-      {
-        formatString = StringHelper.getString(data, numchars, 5, ws);
-      }
-      else
-      {
-        formatString = StringHelper.getUnicodeString(data, numchars, 5);
-      }
-    }
-    else
-    {
+      formatString = StringHelper.readBiff8String(data, 2);
+    else {
       int numchars = data[2];
       byte[] chars = new byte[numchars];
       System.arraycopy(data, 3, chars, 0, chars.length);
       formatString = new String(chars);
     }
 
-    date = false;
-    number = false;
-
     // First see if this is a date format
-    for (int i = 0 ; i < dateStrings.length; i++)
-    {
-      String dateString = dateStrings[i];
-      if (formatString.indexOf(dateString) != -1 || 
-          formatString.indexOf(dateString.toUpperCase()) != -1)
-      {
-        date = true;
-        break;
-      }
-    }
+    date = DATE_STRINGS.stream()
+            .anyMatch(dateFormat ->
+                    formatString.contains(dateFormat) ||
+                    formatString.contains(dateFormat.toUpperCase()));
 
     // See if this is number format - look for the # or 0 characters
-    if (!date)
-    {
-      if (formatString.indexOf('#') != -1 ||
-          formatString.indexOf('0') != -1 )
-      {
-        number = true;
-      }
-    }
+    number = (!date)
+            && (formatString.contains("#") || formatString.contains("0") );
   }
 
   /**
@@ -204,9 +173,10 @@ public class FormatRecord extends WritableRecordData
    *
    * @return the raw data
    */
+  @Override
   public byte[] getData()
   {
-    data = new byte[formatString.length() * 2 + 3 + 2];
+    byte[] data = new byte[formatString.length() * 2 + 3 + 2];
 
     IntegerHelper.getTwoBytes(indexCode, data, 0);
     IntegerHelper.getTwoBytes(formatString.length(), data, 2);
@@ -397,7 +367,7 @@ public class FormatRecord extends WritableRecordData
 
     fmt = sb.toString();
 
-    // If the date format starts with anything inside square brackets then 
+    // If the date format starts with anything inside square brackets then
     // filter tham out
     if (fmt.charAt(0) == '[')
     {
@@ -407,7 +377,7 @@ public class FormatRecord extends WritableRecordData
         fmt = fmt.substring(end+1);
       }
     }
-    
+
     // Get rid of some spurious characters that can creep in
     fmt = replace(fmt, ";@", "");
 

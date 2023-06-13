@@ -19,33 +19,30 @@
 
 package jxl.read.biff;
 
-import jxl.common.Logger;
-
-import jxl.biff.IntegerHelper;
-import jxl.biff.RecordData;
+import java.util.*;
+import java.util.stream.Collectors;
+import jxl.biff.*;
 
 /**
  * Contains the cell dimensions of this worksheet
  */
-class HorizontalPageBreaksRecord extends RecordData
-{
-  /**
-   * The logger
-   */
-  private final Logger logger = Logger.getLogger
-    (HorizontalPageBreaksRecord.class);
+public class HorizontalPageBreaksRecord extends RecordData implements IHorizontalPageBreaks {
 
   /**
    * The row page breaks
    */
-  private int[] rowBreaks;
+  private final List<RowIndex> rowBreaks = new ArrayList<>();
 
   /**
    * Dummy indicators for overloading the constructor
    */
   private static class Biff7 {};
-  public static Biff7 biff7 = new Biff7();
+  public final static Biff7 biff7 = new Biff7();
 
+  public HorizontalPageBreaksRecord() {
+    super(Type.HORIZONTALPAGEBREAKS);
+  }
+  
   /**
    * Constructs the dimensions from the raw data
    *
@@ -56,14 +53,15 @@ class HorizontalPageBreaksRecord extends RecordData
     super(t);
 
     byte[] data = t.getData();
-
     int numbreaks = IntegerHelper.getInt(data[0], data[1]);
     int pos = 2;
-    rowBreaks = new int[numbreaks];
 
     for (int i = 0; i < numbreaks; i++)
     {
-      rowBreaks[i] = IntegerHelper.getInt(data[pos], data[pos + 1]);
+      rowBreaks.add(new RowIndex(
+              IntegerHelper.getInt(data[pos], data[pos + 1]),
+              IntegerHelper.getInt(data[pos + 2], data[pos + 3]),
+              IntegerHelper.getInt(data[pos + 4], data[pos + 5])));
       pos += 6;
     }
   }
@@ -81,10 +79,12 @@ class HorizontalPageBreaksRecord extends RecordData
     byte[] data = t.getData();
     int numbreaks = IntegerHelper.getInt(data[0], data[1]);
     int pos = 2;
-    rowBreaks = new int[numbreaks];
     for (int i = 0; i < numbreaks; i++)
     {
-      rowBreaks[i] = IntegerHelper.getInt(data[pos], data[pos + 1]);
+      rowBreaks.add(new RowIndex(
+              IntegerHelper.getInt(data[pos], data[pos + 1]),
+              0,
+              0xffff));
       pos += 2;
     }
   }
@@ -94,15 +94,12 @@ class HorizontalPageBreaksRecord extends RecordData
    *
    * @return the row breaks on the current sheet
    */
-  public int[] getRowBreaks()
+  @Override
+  public List<Integer> getRowBreaks()
   {
-    return rowBreaks;
+    return rowBreaks.stream()
+            .map(RowIndex::getFirstRowBelowBreak)
+            .collect(Collectors.toList());
   }
+  
 }
-
-
-
-
-
-
-

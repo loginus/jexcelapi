@@ -40,16 +40,14 @@ abstract class Operator extends ParseItem
   {
     operands = new ParseItem[0];
   }
-  
+
   /**
    * Tells the operands to use the alternate code
    */
   protected void setOperandAlternateCode()
   {
-    for (int i = 0 ; i < operands.length ; i++)
-    {
-      operands[i].setAlternateCode();
-    }
+    for (ParseItem operand : operands)
+      operand.setAlternateCode();
   }
 
   /**
@@ -66,10 +64,10 @@ abstract class Operator extends ParseItem
     operands = newOperands;
   }
 
-  /** 
-   * Gets the operands for this operator from the stack 
+  /**
+   * Gets the operands for this operator from the stack
    */
-  public abstract void getOperands(Stack s);
+  public abstract void getOperands(Stack<ParseItem> s);
 
   /**
    * Gets the operands ie. the children of the node
@@ -80,7 +78,7 @@ abstract class Operator extends ParseItem
   }
 
   /**
-   * Gets the precedence for this operator.  Operator precedents run from 
+   * Gets the precedence for this operator.  Operator precedents run from
    * 1 to 5, one being the highest, 5 being the lowest
    *
    * @return the operator precedence

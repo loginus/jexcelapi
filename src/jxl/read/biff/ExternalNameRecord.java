@@ -76,7 +76,7 @@ public class ExternalNameRecord extends RecordData
 
     if (unicode)
     {
-      name = StringHelper.getUnicodeString(data, length, 8);
+      name = StringHelper.getUnicodeString(data, 8, length);
     }
     else
     { 

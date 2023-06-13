@@ -20,48 +20,31 @@
 package jxl.read.biff;
 
 import jxl.common.Assert;
-import jxl.common.Logger;
-
-
-import jxl.CellType;
-import jxl.LabelCell;
-import jxl.StringFormulaCell;
-import jxl.WorkbookSettings;
-import jxl.biff.FormattingRecords;
-import jxl.biff.FormulaData;
-import jxl.biff.IntegerHelper;
-import jxl.biff.StringHelper;
-import jxl.biff.Type;
-import jxl.biff.WorkbookMethods;
-import jxl.biff.formula.ExternalSheet;
-import jxl.biff.formula.FormulaException;
-import jxl.biff.formula.FormulaParser;
+import jxl.*;
+import jxl.biff.*;
+import jxl.biff.formula.*;
 
 /**
  * A string formula's last calculated value
  */
-class StringFormulaRecord extends CellValue
+abstract class StringFormulaRecord extends CellValue
   implements LabelCell, FormulaData, StringFormulaCell
 {
-  /**
-   * The logger
-   */
-  private static Logger logger = Logger.getLogger(StringFormulaRecord.class);
 
   /**
    * The last calculated value of the formula
    */
-  private String value;
+  protected String value;
 
   /**
    * A handle to the class needed to access external sheets
    */
-  private ExternalSheet externalSheet;
+  private final ExternalSheet externalSheet;
 
   /**
    * A handle to the name table
    */
-  private WorkbookMethods nameTable;
+  private final WorkbookMethods nameTable;
 
   /**
    * The formula as an excel string
@@ -71,7 +54,9 @@ class StringFormulaRecord extends CellValue
   /**
    * The raw data
    */
-  private byte[] data;
+  private final byte[] data;
+
+  protected byte[] stringData;
 
   /**
    * Constructs this object from the raw data.  We need to use the excelFile
@@ -83,21 +68,19 @@ class StringFormulaRecord extends CellValue
    * @param es the external sheet records
    * @param nt the workbook
    * @param si the sheet impl
-   * @param ws the workbook settings
    */
-  public StringFormulaRecord(Record t, File excelFile,
+  protected StringFormulaRecord(Record t, File excelFile,
                              FormattingRecords fr,
                              ExternalSheet es,
                              WorkbookMethods nt,
-                             SheetImpl si,
-                             WorkbookSettings ws)
+                             SheetImpl si)
   {
     super(t, fr, si);
 
     externalSheet = es;
     nameTable = nt;
 
-    data = getRecord().getData();
+    data = t.getData();
 
     int pos = excelFile.getPos();
 
@@ -112,7 +95,7 @@ class StringFormulaRecord extends CellValue
       count++;
     }
     Assert.verify(count < 4, " @ " + pos);
-		byte[] stringData = nextRecord.getData();
+		stringData = nextRecord.getData();
 
 		// Read in any continuation records
 		nextRecord = excelFile.peek();
@@ -121,12 +104,11 @@ class StringFormulaRecord extends CellValue
 			nextRecord = excelFile.next(); // move the pointer within the data
 			byte[] d = new byte[stringData.length + nextRecord.getLength() - 1];
 			System.arraycopy(stringData, 0, d, 0, stringData.length);
-			System.arraycopy(nextRecord.getData(), 1, d, 
+			System.arraycopy(nextRecord.getData(), 1, d,
 											 stringData.length, nextRecord.getLength() - 1);
 			stringData = d;
 			nextRecord = excelFile.peek();
 		}
-    readString(stringData, ws);
   }
 
   /**
@@ -140,7 +122,7 @@ class StringFormulaRecord extends CellValue
    * @param si the sheet impl
    * @param ws the workbook settings
    */
-  public StringFormulaRecord(Record t,
+  protected StringFormulaRecord(Record t,
                              FormattingRecords fr,
                              ExternalSheet es,
                              WorkbookMethods nt,
@@ -151,68 +133,8 @@ class StringFormulaRecord extends CellValue
     externalSheet = es;
     nameTable = nt;
 
-    data = getRecord().getData();
+    data = t.getData();
     value = "";
-  }
-
-
-  /**
-   * Reads in the string
-   *
-   * @param d the data
-   * @param ws the workbook settings
-   */
-  private void readString(byte[] d, WorkbookSettings ws)
-  {
-    int pos = 0;
-    int chars = IntegerHelper.getInt(d[0], d[1]);
-
-    if (chars == 0)
-    {
-      value="";
-      return;
-    }
-    pos += 2;
-    int optionFlags = d[pos];
-    pos++;
-
-    if ((optionFlags & 0xf) != optionFlags)
-    {
-      // Uh oh - looks like a plain old string, not unicode
-      // Recalculate all the positions
-      pos = 0;
-      chars = IntegerHelper.getInt(d[0], (byte) 0);
-      optionFlags = d[1];
-      pos = 2;
-    }
-
-    // See if it is an extended string
-    boolean extendedString = ((optionFlags & 0x04) != 0);
-
-    // See if string contains formatting information
-    boolean richString = ((optionFlags & 0x08) != 0);
-
-    if (richString)
-    {
-      pos += 2;
-    }
-
-    if (extendedString)
-    {
-      pos += 4;
-    }
-
-    // See if string is ASCII (compressed) or unicode
-    boolean asciiEncoding = ((optionFlags & 0x01) == 0);
-
-    if (asciiEncoding)
-    {
-      value = StringHelper.getString(d, chars, pos, ws);
-    }
-    else
-    {
-      value = StringHelper.getUnicodeString(d, chars, pos);
-    }
   }
 
   /**
@@ -220,6 +142,7 @@ class StringFormulaRecord extends CellValue
    *
    * @return the last calculated value of the formula
    */
+  @Override
   public String getContents()
   {
     return value;
@@ -230,6 +153,7 @@ class StringFormulaRecord extends CellValue
    *
    * @return the last calculated value of the formula
    */
+  @Override
   public String getString()
   {
     return value;
@@ -240,6 +164,7 @@ class StringFormulaRecord extends CellValue
    *
    * @return The cell type
    */
+  @Override
   public CellType getType()
   {
     return CellType.STRING_FORMULA;
@@ -251,6 +176,7 @@ class StringFormulaRecord extends CellValue
    *
    * @return the raw record data
    */
+  @Override
   public byte[] getFormulaData() throws FormulaException
   {
     if (!getSheet().getWorkbook().getWorkbookBof().isBiff8())
@@ -271,6 +197,7 @@ class StringFormulaRecord extends CellValue
    * @return the formula as an excel string
    * @exception FormulaException
    */
+  @Override
   public String getFormula() throws FormulaException
   {
     if (formulaString == null)

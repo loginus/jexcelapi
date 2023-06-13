@@ -56,7 +56,7 @@ class WriteAccessRecord extends WritableRecordData
         userName :
         authorString + " v" + Workbook.getVersion();
 
-    StringHelper.getBytes(astring, data, 0);
+    StringHelper.getUnicodeBytes(astring, data, 0);
 
     // Pad out the record with space characters
     for (int i = astring.length() ; i < data.length ;i++)

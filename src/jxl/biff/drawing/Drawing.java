@@ -19,8 +19,8 @@
 
 package jxl.biff.drawing;
 
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.*;
 
 import jxl.common.Assert;
 import jxl.common.Logger;
@@ -67,7 +67,7 @@ public class Drawing implements DrawingGroupObject, Image
   /**
    * The file containing the image
    */
-  private java.io.File imageFile;
+  private Path imageFile;
 
   /**
    * The raw image data, used instead of an image file
@@ -277,7 +277,7 @@ public class Drawing implements DrawingGroupObject, Image
                  double y,
                  double w,
                  double h,
-                 java.io.File image)
+                 Path image)
   {
     imageFile = image;
     initialized = true;
@@ -341,20 +341,16 @@ public class Drawing implements DrawingGroupObject, Image
     Opt opt = (Opt) readSpContainer.getChildren()[1];
 
     if (opt.getProperty(260) != null)
-    {
       blipId = opt.getProperty(260).value;
-    }
 
     if (opt.getProperty(261) != null)
-    {
-      imageFile = new java.io.File(opt.getProperty(261).stringValue);
-    }
+      imageFile = Paths.get(cutTailingZeros(opt.getProperty(261).stringValue));
     else
     {
       if (type == ShapeType.PICTURE_FRAME)
       {
         logger.warn("no filename property for drawing");
-        imageFile = new java.io.File(Integer.toString(blipId));
+        imageFile = Paths.get(Integer.toString(blipId));
       }
     }
 
@@ -389,12 +385,19 @@ public class Drawing implements DrawingGroupObject, Image
     initialized = true;
   }
 
+  private String cutTailingZeros(String s) {
+    while ((! s.isEmpty())
+            && s.codePointAt(s.length() - 1) == '\0')
+      s = s.substring(0, s.length() - 1);
+    return s;
+  }
+
   /**
    * Accessor for the image file
    *
    * @return the image file
    */
-  public java.io.File getImageFile()
+  public Path getImageFile()
   {
     return imageFile;
   }
@@ -414,7 +417,7 @@ public class Drawing implements DrawingGroupObject, Image
       return blipId != 0 ? Integer.toString(blipId) : "__new__image__";
     }
 
-    return imageFile.getPath();
+    return imageFile.toString();
   }
 
   /**
@@ -517,7 +520,7 @@ public class Drawing implements DrawingGroupObject, Image
 
     if (type == ShapeType.PICTURE_FRAME)
     {
-      String filePath = imageFile != null ? imageFile.getPath() : "";
+      String filePath = imageFile != null ? imageFile.toString() : "";
       opt.addProperty(261, true, true, filePath.length() * 2, filePath);
       opt.addProperty(447, false, false, 65536);
       opt.addProperty(959, false, false, 524288);
@@ -774,10 +777,10 @@ public class Drawing implements DrawingGroupObject, Image
       return imageData;
     }
 
-    byte[] data = new byte[(int) imageFile.length()];
-    FileInputStream fis = new FileInputStream(imageFile);
-    fis.read(data, 0, data.length);
-    fis.close();
+    byte[] data = new byte[(int) Files.size(imageFile)];
+    try (InputStream fis = Files.newInputStream(imageFile)) {
+      fis.read(data, 0, data.length);
+    }
     return data;
   }
 

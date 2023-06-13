@@ -20,22 +20,13 @@
 package jxl.biff.drawing;
 
 import java.util.ArrayList;
-import java.util.Iterator;
-
-import jxl.common.Logger;
-
-import jxl.biff.IntegerHelper;
-import jxl.biff.StringHelper;
+import jxl.biff.*;
 
 /**
  * An options record in the escher stream
  */
 class Opt extends EscherAtom
 {
-  /**
-   * The logger
-   */
-  private static Logger logger = Logger.getLogger(Opt.class);
 
   /**
    * The binary data
@@ -50,7 +41,7 @@ class Opt extends EscherAtom
   /**
    * The list of properties
    */
-  private ArrayList properties;
+  private final ArrayList<Property> properties = new ArrayList<>();
 
   /**
    * Properties enumeration inner class
@@ -71,7 +62,7 @@ class Opt extends EscherAtom
      * @param co complex flag
      * @param v the value
      */
-    public Property(int i, boolean bl, boolean co, int v)
+    Property(int i, boolean bl, boolean co, int v)
     {
       id = i;
       blipId = bl;
@@ -103,7 +94,7 @@ class Opt extends EscherAtom
    *
    * @param erd the escher record data
    */
-  public Opt(EscherRecordData erd)
+  Opt(EscherRecordData erd)
   {
     super(erd);
     numProperties = getInstance();
@@ -115,7 +106,6 @@ class Opt extends EscherAtom
    */
   private void readProperties()
   {
-    properties = new ArrayList();
     int pos = 0;
     byte[] bytes = getBytes();
 
@@ -133,25 +123,21 @@ class Opt extends EscherAtom
       properties.add(p);
     }
 
-    for (Iterator i = properties.iterator(); i.hasNext();)
-    {
-      Property p = (Property) i.next();
+    for (Property p : properties)
       if (p.complex)
       {
-        p.stringValue = StringHelper.getUnicodeString(bytes, p.value / 2,
-                                                      pos);
+        p.stringValue = StringHelper.getUnicodeString(bytes,
+                pos, p.value / 2);
         pos += p.value;
       }
-    }
   }
 
   /**
    * Constructor
    */
-  public Opt()
+  Opt()
   {
     super(EscherRecordType.OPT);
-    properties = new ArrayList();
     setVersion(3);
   }
 
@@ -160,6 +146,7 @@ class Opt extends EscherAtom
    *
    * @return the binary data
    */
+  @Override
   byte[] getData()
   {
     numProperties = properties.size();
@@ -169,9 +156,7 @@ class Opt extends EscherAtom
     int pos = 0;
 
     // Add in the root data
-    for (Iterator i = properties.iterator(); i.hasNext();)
-    {
-      Property p = (Property) i.next();
+    for (Property p : properties) {
       int val = p.id & 0x3fff;
 
       if (p.blipId)
@@ -190,19 +175,15 @@ class Opt extends EscherAtom
     }
 
     // Add in any complex data
-    for (Iterator i = properties.iterator(); i.hasNext();)
-    {
-      Property p = (Property) i.next();
-
+    for (Property p : properties)
       if (p.complex && p.stringValue != null)
       {
         byte[] newData =
-          new byte[data.length + p.stringValue.length() * 2];
+                new byte[data.length + p.stringValue.length() * 2];
         System.arraycopy(data, 0, newData, 0, data.length);
         StringHelper.getUnicodeBytes(p.stringValue, newData, data.length);
         data = newData;
       }
-    }
 
     return setHeaderData(data);
   }
@@ -217,8 +198,7 @@ class Opt extends EscherAtom
    */
   void addProperty(int id, boolean blip, boolean complex, int val)
   {
-    Property p = new Property(id, blip, complex, val);
-    properties.add(p);
+    properties.add(new Property(id, blip, complex, val));
   }
 
   /**
@@ -232,8 +212,7 @@ class Opt extends EscherAtom
    */
   void addProperty(int id, boolean blip, boolean complex, int val, String s)
   {
-    Property p = new Property(id, blip, complex, val, s);
-    properties.add(p);
+    properties.add(new Property(id, blip, complex, val, s));
   }
 
   /**
@@ -244,16 +223,10 @@ class Opt extends EscherAtom
    */
   Property getProperty(int id)
   {
-    boolean found = false;
-    Property p = null;
-    for (Iterator i = properties.iterator(); i.hasNext() && !found;)
-    {
-      p = (Property) i.next();
+    for (Property p : properties)
       if (p.id == id)
-      {
-        found = true;
-      }
-    }
-    return found ? p : null;
+        return p;
+    
+    return null;
   }
 }

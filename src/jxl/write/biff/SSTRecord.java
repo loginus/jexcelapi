@@ -20,7 +20,6 @@
 package jxl.write.biff;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 
 import jxl.biff.IntegerHelper;
 import jxl.biff.StringHelper;
@@ -28,26 +27,26 @@ import jxl.biff.Type;
 import jxl.biff.WritableRecordData;
 
 /**
- * A shared string table record. 
+ * A shared string table record.
  */
 class SSTRecord extends WritableRecordData
 {
   /**
    * The number of string references in the workbook
    */
-  private int numReferences;
+  private final int numReferences;
   /**
    * The number of strings in this table
    */
-  private int numStrings;
+  private final int numStrings;
   /**
    * The list of strings
    */
-  private ArrayList strings;
+  private final ArrayList<String> strings = new ArrayList<>(50);
   /**
    * The list of string lengths
    */
-  private ArrayList stringLengths;
+  private final ArrayList<Integer> stringLengths = new ArrayList<>(50);
   /**
    * The binary data
    */
@@ -55,7 +54,7 @@ class SSTRecord extends WritableRecordData
   /**
    * The count of bytes needed so far to contain this record
    */
-  private int byteCount;
+  private int byteCount = 0;
 
   /**
    * The maximum amount of bytes available for the SST record
@@ -76,9 +75,6 @@ class SSTRecord extends WritableRecordData
 
     numReferences = numRefs;
     numStrings = s;
-    byteCount = 0;
-    strings = new ArrayList(50);
-    stringLengths = new ArrayList(50);
   }
 
   /**
@@ -101,7 +97,7 @@ class SSTRecord extends WritableRecordData
       // value in order to force the creation of a continue record
     }
 
-    stringLengths.add(new Integer(s.length()));
+    stringLengths.add(s.length());
 
     if (bytes + byteCount < maxBytes)
     {
@@ -135,7 +131,7 @@ class SSTRecord extends WritableRecordData
 
   /**
    * Gets the binary data for output to file
-   * 
+   *
    * @return the binary data
    */
   public byte[] getData()
@@ -147,20 +143,15 @@ class SSTRecord extends WritableRecordData
     int pos = 8;
     int count = 0;
 
-    Iterator i = strings.iterator();
-    String s = null;
-    int length = 0;
-    while (i.hasNext())
-    {
-      s = (String) i.next();
-      length = ( (Integer) stringLengths.get(count)).intValue();
+    for (String s : strings) {
+      int length = stringLengths.get(count);
       IntegerHelper.getTwoBytes(length, data, pos);
-      data[pos+2] = 0x01;
+      data[pos+2] = 0x01; // uncompressed 16 bit values
       StringHelper.getUnicodeBytes(s, data, pos+3);
       pos += s.length() * 2 + 3;
       count++;
     }
-    
+
     return data;
   }
 }

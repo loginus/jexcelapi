@@ -19,18 +19,18 @@
 
 package jxl.write;
 
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.Path;
+import java.util.*;
 
-import jxl.Range;
-import jxl.Sheet;
-import jxl.Workbook;
+import jxl.*;
 import jxl.format.Colour;
 import jxl.format.UnderlineStyle;
 
 /**
  * A writable workbook
  */
-public abstract class WritableWorkbook
+public abstract class WritableWorkbook implements Closeable
 {
   // Globally available stuff
 
@@ -66,7 +66,7 @@ public abstract class WritableWorkbook
   /**
    * A cell format used to hide the cell contents
    */
-  public static final WritableCellFormat HIDDEN_STYLE = 
+  public static final WritableCellFormat HIDDEN_STYLE =
     new WritableCellFormat(new DateFormat(";;;"));
 
   /**
@@ -133,10 +133,10 @@ public abstract class WritableWorkbook
    * for garbage collection.  Also closes the underlying output stream
    * if necessary.
    *
-   * @exception IOException
-   * @exception WriteException
+   * @throws IOException
    */
-  public abstract void close() throws IOException, WriteException;
+  @Override
+  public abstract void close() throws IOException;
 
   /**
    * Creates, and returns a worksheet at the specified position
@@ -161,7 +161,7 @@ public abstract class WritableWorkbook
    * @param sheet the sheet (from another workbook) to merge into this one
    * @return the new sheet
    */
-  public abstract WritableSheet importSheet(String name, int index, Sheet s);
+  public abstract WritableSheet importSheet(String name, int index, Sheet sheet);
 
   /**
    * Copy sheet within the same workbook.  The sheet specified is copied to
@@ -238,6 +238,19 @@ public abstract class WritableWorkbook
   }
 
   /**
+   * Gets the location from this workbook.  If the name refers to a
+   * range of cells, then the location on the top left is returned.  If
+   * the name cannot be found, null is returned
+   *
+   * @param  name of the cell/range to search for
+   * @return the cell in the top left of the range if found, NULL
+   *         otherwise
+   * @throws NoSuchElementException when a range with the name could
+   *         not be found.
+   */
+  public abstract CellLocation findCellLocationByName(String name) throws NoSuchElementException;
+
+  /**
    * Gets the named cell from this workbook.  The name refers to a
    * range of cells, then the cell on the top left is returned.  If
    * the name cannot be, null is returned
@@ -269,10 +282,10 @@ public abstract class WritableWorkbook
    *
    * @return the list of named cells within the workbook
    */
-  public abstract String[] getRangeNames();
+  public abstract Set<String> getRangeNames();
 
   /**
-   * Removes the specified named range from the workbook.  Note that 
+   * Removes the specified named range from the workbook.  Note that
    * removing a name could cause formulas which use that name to
    * calculate their results incorrectly
    *
@@ -305,6 +318,6 @@ public abstract class WritableWorkbook
    * @param fileName the file name
    * @exception IOException
    */
-  public abstract void setOutputFile(java.io.File fileName)
+  public abstract void setOutputFile(Path fileName)
     throws IOException;
 }

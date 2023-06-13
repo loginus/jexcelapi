@@ -19,10 +19,10 @@
 
 package jxl.demo;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -75,32 +75,32 @@ public class ReadWrite
   /**
    * The spreadsheet to read in
    */
-  private File inputWorkbook;
+  private Path inputWorkbook;
   /**
    * The spreadsheet to output
    */
-  private File outputWorkbook;
+  private Path outputWorkbook;
 
   /**
    * Constructor
-   * 
-   * @param output 
-   * @param input 
+   *
+   * @param output
+   * @param input
    */
   public ReadWrite(String input, String output)
   {
-    inputWorkbook = new File(input);
-    outputWorkbook = new File(output);
+    inputWorkbook = Paths.get(input);
+    outputWorkbook = Paths.get(output);
     logger.setSuppressWarnings(Boolean.getBoolean("jxl.nowarnings"));
-    logger.info("Input file:  " + input);    
+    logger.info("Input file:  " + input);
     logger.info("Output file:  " + output);
   }
 
   /**
    * Reads in the inputFile and creates a writable copy of it called outputFile
-   * 
-   * @exception IOException 
-   * @exception BiffException 
+   *
+   * @exception IOException
+   * @exception BiffException
    */
   public void readWrite() throws IOException, BiffException, WriteException
   {
@@ -108,30 +108,27 @@ public class ReadWrite
     Workbook w1 = Workbook.getWorkbook(inputWorkbook);
 
     logger.info("Copying...");
-    WritableWorkbook w2 = Workbook.createWorkbook(outputWorkbook, w1);
+    try (WritableWorkbook w2 = Workbook.createWorkbook(outputWorkbook, w1)) {
+      if (inputWorkbook.getFileName().toString().equals("jxlrwtest.xls"))
+        modify(w2);
 
-    if (inputWorkbook.getName().equals("jxlrwtest.xls"))
-    {
-      modify(w2);
+      w2.write();
     }
-
-    w2.write();
-    w2.close();
     logger.info("Done");
   }
 
   /**
    * If the inputFile was the test spreadsheet, then it modifies certain fields
    * of the writable copy
-   * 
-   * @param w 
+   *
+   * @param w
    */
   private void modify(WritableWorkbook w) throws WriteException
   {
     logger.info("Modifying...");
 
     WritableSheet sheet = w.getSheet("modified");
-    
+
     WritableCell cell = null;
     CellFormat cf = null;
     Label l = null;
@@ -139,8 +136,8 @@ public class ReadWrite
 
     // Change the format of cell B4 to be emboldened
     cell = sheet.getWritableCell(1,3);
-    WritableFont bold = new WritableFont(WritableFont.ARIAL, 
-                                         WritableFont.DEFAULT_POINT_SIZE, 
+    WritableFont bold = new WritableFont(WritableFont.ARIAL,
+                                         WritableFont.DEFAULT_POINT_SIZE,
                                          WritableFont.BOLD);
     cf = new WritableCellFormat(bold);
     cell.setCellFormat(cf);
@@ -175,13 +172,13 @@ public class ReadWrite
     cf = new WritableCellFormat(sevendps);
     cell.setCellFormat(cf);
 
-    
+
     // Change cell B11 to display in the format 1e4
     cell = sheet.getWritableCell(1,10);
     NumberFormat exp4 = new NumberFormat("0.####E0");
     cf = new WritableCellFormat(exp4);
     cell.setCellFormat(cf);
-    
+
     // Change cell B12 to be normal display
     cell = sheet.getWritableCell(1,11);
     cell.setCellFormat(WritableWorkbook.NORMAL_STYLE);
@@ -224,7 +221,7 @@ public class ReadWrite
       dt.setDate(d);
     }
 
-    // Change the value in B23 to be 6.8.  This should recalculate the 
+    // Change the value in B23 to be 6.8.  This should recalculate the
     // formula
     cell = sheet.getWritableCell(1,22);
     if (cell.getType() == CellType.NUMBER)
@@ -278,11 +275,11 @@ public class ReadWrite
       }
       else if (wh.getColumn() == 1 && wh.getRow() == 40)
       {
-        wh.setFile(new File("../jexcelapi/docs/overview-summary.html"));
+        wh.setFile(Paths.get("../jexcelapi/docs/overview-summary.html"));
       }
       else if (wh.getColumn() == 1 && wh.getRow() == 41)
       {
-        wh.setFile(new File("d:/home/jexcelapi/docs/jxl/package-summary.html"));
+        wh.setFile(Paths.get("d:/home/jexcelapi/docs/jxl/package-summary.html"));
       }
       else if (wh.getColumn() == 1 && wh.getRow() == 44)
       {
@@ -290,7 +287,7 @@ public class ReadWrite
         sheet.removeHyperlink(wh);
       }
     }
-    
+
     // Change the background of cell F31 from blue to red
     WritableCell c = sheet.getWritableCell(5,30);
     WritableCellFormat newFormat = new WritableCellFormat(c.getCellFormat());
@@ -304,7 +301,7 @@ public class ReadWrite
     // Modify the chart data
     Number n = (Number) sheet.getWritableCell(0, 70);
     n.setValue(9);
-    
+
     n = (Number) sheet.getWritableCell(0, 71);
     n.setValue(10);
 
@@ -375,7 +372,7 @@ public class ReadWrite
 
     label = new Label(0,101, "A brand new formula");
     sheet.addCell(label);
-    
+
     Formula formula = new Formula(1, 101, "SUM(B94:B96)");
     sheet.addCell(formula);
 
@@ -389,8 +386,8 @@ public class ReadWrite
     WritableImage wi = sheet.getImage(1);
     sheet.removeImage(wi);
 
-    wi = new WritableImage(1, 116, 2, 9, 
-                           new File("resources/littlemoretonhall.png"));
+    wi = new WritableImage(1, 116, 2, 9,
+                           Paths.get("resources/littlemoretonhall.png"));
     sheet.addImage(wi);
 
     // Add a list data validations
@@ -399,7 +396,7 @@ public class ReadWrite
 
     Blank b = new Blank(1, 151);
     wcf = new WritableCellFeatures();
-    ArrayList al = new ArrayList();
+    ArrayList<String> al = new ArrayList<>();
     al.add("The Fellowship of the Ring");
     al.add("The Two Towers");
     al.add("The Return of the King");
@@ -435,7 +432,7 @@ public class ReadWrite
     Range r = wcf.getSharedDataValidationRange();
     Cell botright = r.getBottomRight();
     sheet.removeSharedDataValidation(cell);
-    al = new ArrayList();
+    al = new ArrayList<>();
     al.add("Stanley Featherstonehaugh Ukridge");
     al.add("Major Plank");
     al.add("Earl of Ickenham");
@@ -445,7 +442,7 @@ public class ReadWrite
     al.add("Bingo Little");
     wcf.setDataValidationList(al);
     cell.setCellFeatures(wcf);
-    sheet.applySharedDataValidation(cell, 
+    sheet.applySharedDataValidation(cell,
                                     botright.getColumn() - cell.getColumn(),
                                     1);//botright.getRow() - cell.getRow());
   }

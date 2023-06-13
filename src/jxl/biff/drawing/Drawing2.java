@@ -19,8 +19,8 @@
 
 package jxl.biff.drawing;
 
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.*;
 
 import jxl.common.Assert;
 import jxl.common.Logger;
@@ -58,7 +58,7 @@ public class Drawing2 implements DrawingGroupObject
   /**
    * The file containing the image
    */
-  private java.io.File imageFile;
+  private Path imageFile;
 
   /**
    * The raw image data, used instead of an image file
@@ -193,7 +193,7 @@ public class Drawing2 implements DrawingGroupObject
                   double y,
                   double w,
                   double h,
-                  java.io.File image)
+                  Path image)
   {
     imageFile = image;
     initialized = true;
@@ -574,11 +574,7 @@ public class Drawing2 implements DrawingGroupObject
       return imageData;
     }
 
-    byte[] data = new byte[(int) imageFile.length()];
-    FileInputStream fis = new FileInputStream(imageFile);
-    fis.read(data, 0, data.length);
-    fis.close();
-    return data;
+    return Files.readAllBytes(imageFile);
   }
 
   /**

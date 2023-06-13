@@ -84,7 +84,7 @@ class StringValue extends Operand implements ParsedThing
     }
     else
     {
-      value = StringHelper.getUnicodeString(data, length, pos+2);
+      value = StringHelper.getUnicodeString(data, pos+2, length);
       consumed += length * 2;
     }
 
@@ -99,7 +99,7 @@ class StringValue extends Operand implements ParsedThing
   byte[] getBytes()
   {
     byte[] data = new byte[value.length() * 2 + 3];
-    data[0] = Token.STRING.getCode();
+    data[0] = Token.STRING.getReferenceCode();
     data[1] = (byte) (value.length());
     data[2] = 0x01;
     StringHelper.getUnicodeBytes(value, data, 3);

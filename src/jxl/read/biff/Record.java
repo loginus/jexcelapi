@@ -20,27 +20,19 @@
 package jxl.read.biff;
 
 import java.util.ArrayList;
-
-import jxl.common.Logger;
-
-import jxl.biff.IntegerHelper;
-import jxl.biff.Type;
+import jxl.biff.*;
 
 
 /**
  * A container for the raw record data within a biff file
  */
-public final class Record
+public class Record
 {
-  /**
-   * The logger
-   */
-  private static final Logger logger = Logger.getLogger(Record.class);
 
   /**
    * The excel biff code
    */
-  private int code;
+  private final int code;
   /**
    * The data type
    */
@@ -48,15 +40,15 @@ public final class Record
   /**
    * The length of this record
    */
-  private int length;
+  private final int length;
   /**
    * A pointer to the beginning of the actual data
    */
-  private int dataPos;
+  private final int dataPos;
   /**
    * A handle to the excel 97 file
    */
-  private File file;
+  private final File file;
   /**
    * The raw data within this record
    */
@@ -65,7 +57,7 @@ public final class Record
   /**
    * Any continue records
    */
-  private ArrayList continueRecords;
+  private ArrayList<Record> continueRecords;
 
   /**
    * Constructor
@@ -85,6 +77,15 @@ public final class Record
     type = Type.getType(code);
   }
 
+  protected Record(byte[] header, byte [] data) {
+    code = IntegerHelper.getInt(header[0], header[1]);
+    length = IntegerHelper.getInt(header[2], header[3]);
+    dataPos = 0;
+    file = null;
+    type = Type.getType(code);
+    this.data = data;
+  }
+  
   /**
    * Gets the biff type
    *
@@ -124,7 +125,7 @@ public final class Record
       byte[][] contData = new byte[continueRecords.size()][];
       for (int i = 0; i < continueRecords.size(); i++)
       {
-        Record r = (Record) continueRecords.get(i);
+        Record r = continueRecords.get(i);
         contData[i] = r.getData();
         byte[] d2 = contData[i];
         size += d2.length;
@@ -133,9 +134,7 @@ public final class Record
       byte[] d3 = new byte[data.length + size];
       System.arraycopy(data, 0, d3, 0, data.length);
       int pos = data.length;
-      for (int i = 0; i < contData.length; i++)
-      {
-        byte[] d2 = contData[i];
+      for (byte[] d2 : contData) {
         System.arraycopy(d2, 0, d3, pos, d2.length);
         pos += d2.length;
       }
@@ -175,9 +174,7 @@ public final class Record
   public void addContinueRecord(Record d)
   {
     if (continueRecords == null)
-    {
-      continueRecords = new ArrayList();
-    }
+      continueRecords = new ArrayList<>();
 
     continueRecords.add(d);
   }

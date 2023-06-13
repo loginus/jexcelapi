@@ -69,7 +69,7 @@ class SharedFormulaRecord
   /**
    * The rest of the cells  comprising this shared formula
    */
-  private ArrayList formulas;
+  private final ArrayList<BaseSharedFormulaRecord> formulas = new ArrayList<>();
 
   /**
    * The token data
@@ -110,8 +110,6 @@ class SharedFormulaRecord
     firstCol = data[4] & 0xff;
     lastCol  = data[5] & 0xff;
 
-    formulas = new ArrayList();
-
     templateFormula = fr;
 
     tokens = new byte[data.length - 10];
@@ -126,13 +124,13 @@ class SharedFormulaRecord
    * @return TRUE if the formulas was added, FALSE otherwise
    */
   public boolean add(BaseSharedFormulaRecord fr)
-  {    
+  {
     boolean added = false;
     int r = fr.getRow();
-    if (r >= firstRow && r <= lastRow) 
+    if (r >= firstRow && r <= lastRow)
     {
       int c = fr.getColumn();
-      if (c >= firstCol && c <= lastCol) 
+      if (c >= firstCol && c <= lastCol)
       {
         formulas.add(fr);
         added = true;
@@ -153,7 +151,6 @@ class SharedFormulaRecord
    */
   Cell[] getFormulas(FormattingRecords fr, boolean nf)
   {
-    Cell[] sfs = new Cell[formulas.size() + 1];
 
     // This can happen if there are many identical formulas in the
     // sheet and excel has not sliced and diced them exclusively
@@ -181,13 +178,13 @@ class SharedFormulaRecord
       }
     }
 
+    Cell[] sfs = new Cell[formulas.size() + 1];
     sfs[0] = templateFormula;
 
-    BaseSharedFormulaRecord f = null;
 
     for (int i = 0; i < formulas.size(); i++)
     {
-      f = (BaseSharedFormulaRecord) formulas.get(i);
+      BaseSharedFormulaRecord f = formulas.get(i);
 
       // See if the formula evaluates to date
       if (f.getType() == CellType.NUMBER_FORMULA)
@@ -201,7 +198,7 @@ class SharedFormulaRecord
         }
         else
         {
-          ;// snfr.setNumberFormat(templateNumberFormat);
+          // snfr.setNumberFormat(templateNumberFormat);
         }
       }
 

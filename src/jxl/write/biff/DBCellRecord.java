@@ -27,7 +27,7 @@ import jxl.biff.Type;
 import jxl.biff.WritableRecordData;
 
 /**
- * Indexes the first row record of the block and each individual cell.  
+ * Indexes the first row record of the block and each individual cell.
  * This is invoked by the sheets write process
  */
 class DBCellRecord extends WritableRecordData
@@ -35,7 +35,7 @@ class DBCellRecord extends WritableRecordData
   /**
    * The file position of the first Row record in this block
    */
-  private int rowPos;
+  private final int rowPos;
 
   /**
    * The position of the start of the next cell after the first row.  This
@@ -46,7 +46,7 @@ class DBCellRecord extends WritableRecordData
   /**
    * The list of all cell positions in this block
    */
-  private ArrayList cellRowPositions;
+  private final ArrayList<Integer> cellRowPositions = new ArrayList<>(10);
 
   /**
    * The position of this record in the file.  Vital for calculating offsets
@@ -55,19 +55,18 @@ class DBCellRecord extends WritableRecordData
 
   /**
    * Constructor
-   * 
+   *
    * @param rp the position of this row
    */
   public DBCellRecord(int rp)
   {
     super(Type.DBCELL);
     rowPos = rp;
-    cellRowPositions = new ArrayList(10);
   }
 
   /**
    * Sets the offset of this cell record within the sheet stream
-   * 
+   *
    * @param pos the offset
    */
   void setCellOffset(int pos)
@@ -77,17 +76,17 @@ class DBCellRecord extends WritableRecordData
 
   /**
    * Adds a cell
-   * 
-   * @param pos 
+   *
+   * @param pos
    */
   void addCellRowPosition(int pos)
   {
-    cellRowPositions.add(new Integer(pos));
+    cellRowPositions.add(pos);
   }
 
   /**
    * Sets the position of this cell within the sheet stream
-   * 
+   *
    * @param pos the position
    */
   void setPosition(int pos)
@@ -97,7 +96,7 @@ class DBCellRecord extends WritableRecordData
 
   /**
    * Gets the binary data for this cell record
-   * 
+   *
    * @return the binary data
    */
   protected byte[] getData()
@@ -110,10 +109,7 @@ class DBCellRecord extends WritableRecordData
     // Now add in all the cell offsets
     int pos = 4;
     int lastCellPos = cellOffset;
-    Iterator i = cellRowPositions.iterator();
-    while (i.hasNext())
-    {
-      int cellPos = ((Integer) i.next()).intValue();
+    for (int cellPos : cellRowPositions) {
       IntegerHelper.getTwoBytes(cellPos - lastCellPos, data, pos);
       lastCellPos = cellPos;
       pos += 2;

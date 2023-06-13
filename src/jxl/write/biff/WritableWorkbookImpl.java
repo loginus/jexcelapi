@@ -19,69 +19,51 @@
 
 package jxl.write.biff;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-
-import jxl.common.Assert;
-import jxl.common.Logger;
-
-import jxl.Range;
-import jxl.Sheet;
-import jxl.Workbook;
-import jxl.WorkbookSettings;
-import jxl.biff.BuiltInName;
+import java.io.*;
+import java.nio.file.*;
+import java.util.*;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
+import static java.util.stream.Collectors.toSet;
+import jxl.*;
+import jxl.biff.*;
 import jxl.biff.CellReferenceHelper;
-import jxl.biff.CountryCode;
-import jxl.biff.Fonts;
-import jxl.biff.FormattingRecords;
-import jxl.biff.IndexMapping;
-import jxl.biff.IntegerHelper;
-import jxl.biff.RangeImpl;
-import jxl.biff.WorkbookMethods;
-import jxl.biff.XCTRecord;
-import jxl.biff.drawing.Drawing;
-import jxl.biff.drawing.DrawingGroup;
-import jxl.biff.drawing.DrawingGroupObject;
-import jxl.biff.drawing.Origin;
+import jxl.biff.drawing.*;
 import jxl.biff.formula.ExternalSheet;
+import jxl.common.*;
+import jxl.format.*;
 import jxl.format.Colour;
-import jxl.format.RGB;
+import static jxl.read.biff.SupbookRecord.*;
 import jxl.read.biff.WorkbookParser;
-import jxl.write.WritableCell;
-import jxl.write.WritableSheet;
-import jxl.write.WritableWorkbook;
+import jxl.write.*;
 
 
 /**
  * A writable workbook
  */
-public class WritableWorkbookImpl extends WritableWorkbook 
+public class WritableWorkbookImpl extends WritableWorkbook
   implements ExternalSheet, WorkbookMethods
 {
   /**
    * The logger
    */
-  private static Logger logger = Logger.getLogger(WritableWorkbookImpl.class);
+  private static final Logger LOGGER = Logger.getLogger(WritableWorkbookImpl.class);
   /**
    * The list of formats available within this workbook
    */
-  private FormattingRecords formatRecords;
+  private final FormattingRecords formatRecords;
   /**
    * The output file to write the workbook to
    */
-  private File outputFile;
+  private final File outputFile;
   /**
    * The list of sheets within this workbook
    */
-  private ArrayList sheets;
+  private final List<WritableSheetImpl> sheets = new ArrayList<>();
   /**
    * The list of fonts available within this workbook
    */
-  private Fonts fonts;
+  private final Fonts fonts;
   /**
    * The list of external sheets, used by cell references in formulas
    */
@@ -90,29 +72,29 @@ public class WritableWorkbookImpl extends WritableWorkbook
   /**
    * The supbook records
    */
-  private ArrayList supbooks;
+  private ArrayList<SupbookRecord> supbooks;
 
   /**
    * The name records
    */
-  private ArrayList names;
+  private final List<NameRecord> names = new ArrayList<>();
 
   /**
    * A lookup hash map of the name records
    */
-  private HashMap nameRecords;
+  private final Map<String, NameRecord> nameRecords = new HashMap<>();
 
   /**
    * The shared strings used by this workbook
    */
-  private SharedStrings sharedStrings;
+  private final SharedStrings sharedStrings = new SharedStrings();
 
   /**
    * Indicates whether or not the output stream should be closed.  This
    * depends on whether this Workbook was created with an output stream,
    * or a flat file (flat file closes the stream
    */
-  private boolean closeStream;
+  private final boolean closeStream;
 
   /**
    * The workbook protection flag
@@ -122,13 +104,13 @@ public class WritableWorkbookImpl extends WritableWorkbook
   /**
    * The settings for the workbook
    */
-  private WorkbookSettings settings;
+  private final WorkbookSettings settings;
 
   /**
-   * The list of cells for the entire workbook which need to be updated 
+   * The list of cells for the entire workbook which need to be updated
    * following a row/column insert or remove
    */
-  private ArrayList rcirCells;
+  private final List<CellValue> rcirCells = new ArrayList<>();
 
   /**
    * The drawing group
@@ -138,7 +120,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
   /**
    * The jxl.common.workbook styles
    */
-  private Styles styles;
+  private final Styles styles = new Styles();
 
   /**
    * Contains macros flag
@@ -156,21 +138,22 @@ public class WritableWorkbookImpl extends WritableWorkbook
   private CountryRecord countryRecord;
 
   // synchronizer object for static unitiatialization
-  private static Object SYNCHRONIZER = new Object();
+  private static final Object SYNCHRONIZER = new Object();
+
   /**
    * The names of any add in functions
    */
-  private String[] addInFunctionNames;
+  private final List<String> addInFunctionNames;
 
   /**
    * The XCT records
    */
-  private XCTRecord[] xctRecords;
+  private final List<XCTRecord> xctRecords;
 
   /**
    * Constructor.  Writes the workbook direct to the existing output stream
-   * 
-   * @exception IOException 
+   *
+   * @exception IOException
    * @param os the output stream
    * @param cs TRUE if the workbook should close the output stream, FALSE
    * @param ws the configuration for this workbook
@@ -181,18 +164,13 @@ public class WritableWorkbookImpl extends WritableWorkbook
   {
     super();
     outputFile = new File(os, ws, null);
-    sheets = new ArrayList();
-    sharedStrings = new SharedStrings();
-    nameRecords = new HashMap();
     closeStream = cs;
     wbProtected = false;
     containsMacros = false;
     settings = ws;
-    rcirCells = new ArrayList();
-    styles = new Styles();
 
     // Reset the statically declared styles.  These are no longer needed
-    // because the Styles class will intercept all calls within 
+    // because the Styles class will intercept all calls within
     // CellValue.setCellDetails and if it detects a standard format, then it
     // will return a clone.  In short, the static cell values will
     // never get initialized anyway.  Still, just to be extra sure...
@@ -206,19 +184,20 @@ public class WritableWorkbookImpl extends WritableWorkbook
       DateRecord.defaultDateFormat.uninitialize();
      }
 
-    WritableFonts wf = new WritableFonts(this);
-    fonts = wf;
+    fonts = new WritableFonts(this);
 
-    WritableFormattingRecords wfr = new WritableFormattingRecords(fonts, 
+    WritableFormattingRecords wfr = new WritableFormattingRecords(fonts,
                                                                   styles);
     formatRecords = wfr;
+    addInFunctionNames = new ArrayList<>();
+    xctRecords = new ArrayList<>();
   }
 
   /**
    * A pseudo copy constructor.  Takes the handles to the font and formatting
    * records
-   * 
-   * @exception IOException 
+   *
+   * @exception IOException
    * @param w the workbook to copy
    * @param os the output stream to write the data to
    * @param cs TRUE if the workbook should close the output stream, FALSE
@@ -233,7 +212,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
     WorkbookParser wp = (WorkbookParser) w;
 
     // Reset the statically declared styles.  These are no longer needed
-    // because the Styles class will intercept all calls within 
+    // because the Styles class will intercept all calls within
     // CellValue.setCellDetails and if it detects a standard format, then it
     // will return a clone.  In short, the static cell values will
     // never get initialized anyway.  Still, just to be extra sure...
@@ -248,15 +227,10 @@ public class WritableWorkbookImpl extends WritableWorkbook
      }
 
     closeStream = cs;
-    sheets = new ArrayList();
-    sharedStrings = new SharedStrings();
-    nameRecords = new HashMap();
     fonts = wp.getFonts();
     formatRecords = wp.getFormattingRecords();
     wbProtected = false;
     settings = ws;
-    rcirCells = new ArrayList();
-    styles = new Styles();
     outputFile = new File(os, ws, wp.getCompoundFile());
 
     containsMacros = false;
@@ -283,22 +257,22 @@ public class WritableWorkbookImpl extends WritableWorkbook
       externSheet = new ExternalSheetRecord(wp.getExternalSheetRecord());
 
       // Get the associated supbooks
-      jxl.read.biff.SupbookRecord[] readsr = wp.getSupbookRecords();
-      supbooks = new ArrayList(readsr.length);
+      List<jxl.read.biff.SupbookRecord> readsr = wp.getSupbookRecords();
+      supbooks = new ArrayList<>(readsr.size());
 
-      for (int i = 0; i < readsr.length; i++)
+      for (int i = 0; i < readsr.size(); i++)
       {
-        jxl.read.biff.SupbookRecord readSupbook = readsr[i];
-        if (readSupbook.getType() == readSupbook.INTERNAL ||
-            readSupbook.getType() == readSupbook.EXTERNAL)
+        jxl.read.biff.SupbookRecord readSupbook = readsr.get(i);
+        if (readSupbook.getType() == INTERNAL ||
+            readSupbook.getType() == EXTERNAL)
         {
           supbooks.add(new SupbookRecord(readSupbook, settings));
         }
         else
         {
-          if (readSupbook.getType() != readSupbook.ADDIN)
+          if (readSupbook.getType() != ADDIN)
           {
-            logger.warn("unsupported supbook type - ignoring");
+            LOGGER.warn("unsupported supbook type - ignoring");
           }
         }
       }
@@ -321,28 +295,27 @@ public class WritableWorkbookImpl extends WritableWorkbook
     // Copy any names
     if (!settings.getNamesDisabled())
     {
-      jxl.read.biff.NameRecord[] na = wp.getNameRecords();
-      names = new ArrayList(na.length);
-      
-      for (int i = 0; i < na.length; i++)
+      List<jxl.read.biff.NameRecord> na = wp.getNameRecords();
+
+      for (int i = 0; i < na.size(); i++)
       {
-        if (na[i].isBiff8())
+        jxl.read.biff.NameRecord nr = na.get(i);
+        if (nr.isBiff8())
         {
-          NameRecord n = new NameRecord(na[i], i);
+          NameRecord n = new NameRecord(nr, i, settings);
           names.add(n);
-          String name = n.getName();
-          nameRecords.put(name, n);
+          nameRecords.put(n.getName(), n);
         }
         else
         {
-          logger.warn("Cannot copy Biff7 name records - ignoring");
+          LOGGER.warn("Cannot copy Biff7 name records - ignoring");
         }
       }
     }
-    
+
     copyWorkbook(w);
 
-    // The copy process may have caused some critical fields in the 
+    // The copy process may have caused some critical fields in the
     // read drawing group to change.  Make sure these updates are reflected
     // in the writable drawing group
     if (drawingGroup != null)
@@ -354,13 +327,14 @@ public class WritableWorkbookImpl extends WritableWorkbook
   /**
    * Gets the sheets within this workbook.  Use of this method for
    * large worksheets can cause performance problems.
-   * 
+   *
    * @return an array of the individual sheets
    */
+  @Override
   public WritableSheet[] getSheets()
   {
     WritableSheet[] sheetArray = new WritableSheet[getNumberOfSheets()];
-    
+
     for (int i = 0 ; i < getNumberOfSheets() ; i++)
     {
       sheetArray[i] = getSheet(i);
@@ -373,6 +347,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
    *
    * @return an array of strings containing the sheet names
    */
+  @Override
   public String[] getSheetNames()
   {
     String[] sheetNames = new String[getNumberOfSheets()];
@@ -386,12 +361,13 @@ public class WritableWorkbookImpl extends WritableWorkbook
   }
 
   /**
-   * Interface method from WorkbookMethods - gets the specified 
+   * Interface method from WorkbookMethods - gets the specified
    * sheet within this workbook
    *
    * @param index the zero based index of the required sheet
    * @return The sheet specified by the index
    */
+  @Override
   public Sheet getReadSheet(int index)
   {
     return getSheet(index);
@@ -399,32 +375,34 @@ public class WritableWorkbookImpl extends WritableWorkbook
 
   /**
    * Gets the specified sheet within this workbook
-   * 
+   *
    * @param index the zero based index of the reQuired sheet
    * @return The sheet specified by the index
    */
+  @Override
   public WritableSheet getSheet(int index)
   {
-    return (WritableSheet) sheets.get(index);
+    return sheets.get(index);
   }
 
   /**
    * Gets the sheet with the specified name from within this workbook
-   * 
+   *
    * @param name the sheet name
    * @return The sheet with the specified name, or null if it is not found
    */
+  @Override
   public WritableSheet getSheet(String name)
   {
     // Iterate through the boundsheet records
     boolean found = false;
-    Iterator i = sheets.iterator();
+    Iterator<WritableSheetImpl> i = sheets.iterator();
     WritableSheet s = null;
 
     while (i.hasNext() && !found)
     {
-      s = (WritableSheet) i.next();
-      
+      s = i.next();
+
       if (s.getName().equals(name))
       {
         found = true;
@@ -436,9 +414,10 @@ public class WritableWorkbookImpl extends WritableWorkbook
 
   /**
    * Returns the number of sheets in this workbook
-   * 
+   *
    * @return the number of sheets in this workbook
    */
+  @Override
   public int getNumberOfSheets()
   {
     return sheets.size();
@@ -447,13 +426,17 @@ public class WritableWorkbookImpl extends WritableWorkbook
   /**
    * Closes this workbook, and frees makes any memory allocated available
    * for garbage collection
-   * 
-   * @exception IOException 
-   * @exception JxlWriteException
+   *
+   * @exception IOException
    */
-  public void close() throws IOException, JxlWriteException
+  @Override
+  public void close() throws IOException
   {
-    outputFile.close(closeStream);
+    try {
+      outputFile.close(closeStream);
+    } catch (JxlWriteException ex) {
+      throw new IOException(ex);
+    }
   }
 
   /**
@@ -464,9 +447,10 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * @param fileName the file name
    * @exception IOException
    */
-  public void setOutputFile(java.io.File fileName) throws IOException
+  @Override
+  public void setOutputFile(Path fileName) throws IOException
   {
-    FileOutputStream fos = new FileOutputStream(fileName);
+    OutputStream fos = Files.newOutputStream(fileName);
     outputFile.setOutputFile(fos);
   }
 
@@ -478,14 +462,14 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * @param index
    * @param handleRefs flag indicating whether or not to handle external
    *                   sheet references
-   * @return 
+   * @return
    */
-  private WritableSheet createSheet(String name, int index, 
+  private WritableSheetImpl createSheet(String name, int index,
                                     boolean handleRefs)
   {
-    WritableSheet w = new WritableSheetImpl(name, 
-                                            outputFile, 
-                                            formatRecords, 
+    WritableSheetImpl w = new WritableSheetImpl(name,
+                                            outputFile,
+                                            formatRecords,
                                             sharedStrings,
                                             settings,
                                             this);
@@ -514,7 +498,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
 
     if (supbooks != null && supbooks.size() > 0)
     {
-      SupbookRecord supbook = (SupbookRecord) supbooks.get(0);
+      SupbookRecord supbook = supbooks.get(0);
       if (supbook.getType() == SupbookRecord.INTERNAL)
       {
         supbook.adjustInternal(sheets.size());
@@ -528,11 +512,12 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * Creates a new sheet within the workbook, at the specified position.
    * The new sheet is inserted at the specified position, or prepended/appended
    * to the list of sheets if the index specified is somehow inappropriate
-   * 
+   *
    * @param name the name of the new sheet
    * @param index the index at which to add the sheet
    * @return the created sheet
    */
+  @Override
   public WritableSheet createSheet(String name, int index)
   {
     return createSheet(name, index, true);
@@ -542,9 +527,10 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * Removes a sheet from this workbook, the other sheets indices being
    * altered accordingly. If the sheet referenced by the index
    * does not exist, then no action is taken.
-   * 
+   *
    * @param index the index of the sheet to remove
    */
+  @Override
   public void removeSheet(int index)
   {
     int pos = index;
@@ -570,23 +556,21 @@ public class WritableWorkbookImpl extends WritableWorkbook
 
     if (supbooks != null && supbooks.size() > 0)
     {
-      SupbookRecord supbook = (SupbookRecord) supbooks.get(0);
+      SupbookRecord supbook = supbooks.get(0);
       if (supbook.getType() == SupbookRecord.INTERNAL)
       {
         supbook.adjustInternal(sheets.size());
       }
     }
 
-    if (names != null && names.size() > 0)
+    if (names.size() > 0)
     {
-      for (int i=0; i< names.size();i++)
-      {
-        NameRecord n = (NameRecord) names.get(i);
+      for (NameRecord n : names) {
         int oldRef = n.getSheetRef();
         if(oldRef == (pos+1))
         {
           n.setSheetRef(0); // make a global name reference
-        } 
+        }
         else if (oldRef > (pos+1))
         {
           if(oldRef < 1)
@@ -602,22 +586,23 @@ public class WritableWorkbookImpl extends WritableWorkbook
   /**
    * Moves the specified sheet within this workbook to another index
    * position.
-   * 
+   *
    * @param fromIndex the zero based index of the reQuired sheet
    * @param toIndex the zero based index of the reQuired sheet
    * @return the sheet that has been moved
    */
+  @Override
   public WritableSheet moveSheet(int fromIndex, int toIndex)
   {
-    // Handle dodgy index 
+    // Handle dodgy index
     fromIndex = Math.max(fromIndex, 0);
     fromIndex = Math.min(fromIndex, sheets.size() - 1);
     toIndex   = Math.max(toIndex, 0);
     toIndex   = Math.min(toIndex, sheets.size() - 1);
 
-    WritableSheet sheet= (WritableSheet)sheets.remove(fromIndex);
+    WritableSheetImpl sheet= sheets.remove(fromIndex);
     sheets.add(toIndex, sheet);
-    
+
     return sheet;
   }
 
@@ -625,76 +610,21 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * Writes out this sheet to the output file.  First it writes out
    * the standard workbook information required by excel, before calling
    * the write method on each sheet individually
-   * 
-   * @exception IOException 
+   *
+   * @exception IOException
    */
+  @Override
   public void write() throws IOException
   {
     // Perform some preliminary sheet check before we start writing out
     // the workbook
-    WritableSheetImpl wsi = null;
-    for (int i = 0; i < getNumberOfSheets(); i++)
+    for (WritableSheetImpl wsi : sheets)
     {
-      wsi = (WritableSheetImpl) getSheet(i);
-
       // Check the merged records.  This has to be done before the
       // globals are written out because some more XF formats might be created
       wsi.checkMergedBorders();
-
-      // Check to see if there are any predefined names
-      Range range = wsi.getSettings().getPrintArea();
-      if (range != null)
-      {
-        addNameArea(BuiltInName.PRINT_AREA,
-                    wsi,
-                    range.getTopLeft().getColumn(),
-                    range.getTopLeft().getRow(),
-                    range.getBottomRight().getColumn(),
-                    range.getBottomRight().getRow(),
-                    false);
-      }
-      
-      // Check to see if print titles by row were set
-      Range rangeR = wsi.getSettings().getPrintTitlesRow();
-      Range rangeC = wsi.getSettings().getPrintTitlesCol();      
-      if (rangeR != null && rangeC != null)
-      {
-        addNameArea(BuiltInName.PRINT_TITLES, 
-                    wsi,
-                    rangeR.getTopLeft().getColumn(),
-                    rangeR.getTopLeft().getRow(),
-                    rangeR.getBottomRight().getColumn(),
-                    rangeR.getBottomRight().getRow(),
-                    rangeC.getTopLeft().getColumn(),
-                    rangeC.getTopLeft().getRow(),
-                    rangeC.getBottomRight().getColumn(),
-                    rangeC.getBottomRight().getRow(),
-                    false);  
-      }
-      // Check to see if print titles by row were set
-      else if (rangeR != null)
-      {
-    	  addNameArea(BuiltInName.PRINT_TITLES, 
-                    wsi,
-                    rangeR.getTopLeft().getColumn(),
-                    rangeR.getTopLeft().getRow(),
-                    rangeR.getBottomRight().getColumn(),
-                    rangeR.getBottomRight().getRow(),
-                    false);
-      }
-      // Check to see if print titles by column were set 
-      else if (rangeC != null)
-      {
-        addNameArea(BuiltInName.PRINT_TITLES, 
-                    wsi,
-                    rangeC.getTopLeft().getColumn(),
-                    rangeC.getTopLeft().getRow(),
-                    rangeC.getBottomRight().getColumn(),
-                    rangeC.getBottomRight().getRow(), 
-                    false);
-      }
     }
-    
+
     // Rationalize all the XF and number formats
     if (!settings.getRationalizationDisabled())
     {
@@ -777,11 +707,11 @@ public class WritableWorkbookImpl extends WritableWorkbook
     // If no sheet is identified as being selected, then select
     // the first one
     boolean sheetSelected = false;
-    WritableSheetImpl wsheet = null;
+    WritableSheetImpl wsheet;
     int selectedSheetIndex = 0;
     for (int i = 0 ; i < getNumberOfSheets() && !sheetSelected ; i++)
     {
-      wsheet = (WritableSheetImpl) getSheet(i);
+      wsheet = sheets.get(i);
       if (wsheet.getSettings().isSelected())
       {
         sheetSelected = true;
@@ -797,6 +727,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
     }
 
     Window1Record w1r = new Window1Record(selectedSheetIndex);
+    w1r.setWindowHidden(settings.isWindowHidden());
     outputFile.write(w1r);
 
     BackupRecord bkr = new BackupRecord(false);
@@ -804,7 +735,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
 
     HideobjRecord ho = new HideobjRecord(settings.getHideobj());
     outputFile.write(ho);
-    
+
     NineteenFourRecord nf = new NineteenFourRecord(false);
     outputFile.write(nf);
 
@@ -832,99 +763,98 @@ public class WritableWorkbookImpl extends WritableWorkbook
     // Write out the uses elfs record
     UsesElfsRecord uer = new UsesElfsRecord();
     outputFile.write(uer);
-    
+
     // Write out the boundsheet records.  Keep a handle to each one's
     // position so we can write in the stream offset later
     int[] boundsheetPos = new int[getNumberOfSheets()];
-    Sheet sheet = null;
 
-    for (int i = 0; i < getNumberOfSheets(); i++)
-    {
-      boundsheetPos[i] = outputFile.getPos();
-      sheet = getSheet(i);
+    int number = 0;
+    for (WritableSheetImpl sheet : sheets) {
+      boundsheetPos[number++] = outputFile.getPos();
       BoundsheetRecord br = new BoundsheetRecord(sheet.getName());
       if (sheet.getSettings().isHidden())
-      {
         br.setHidden();
-      }
 
-      if ( ( (WritableSheetImpl) sheets.get(i)).isChartOnly())
-      {
+      if ( sheet.isChartOnly())
         br.setChartOnly();
-      }
 
       outputFile.write(br);
     }
 
     if (countryRecord == null)
     {
-      CountryCode lang = 
+      CountryCode lang =
         CountryCode.getCountryCode(settings.getExcelDisplayLanguage());
       if (lang == CountryCode.UNKNOWN)
       {
-        logger.warn("Unknown country code " + 
-                    settings.getExcelDisplayLanguage() + 
+        LOGGER.warn("Unknown country code " +
+                    settings.getExcelDisplayLanguage() +
                     " using " + CountryCode.USA.getCode());
         lang = CountryCode.USA;
       }
-      CountryCode region = 
+      CountryCode region =
         CountryCode.getCountryCode(settings.getExcelRegionalSettings());
       countryRecord = new CountryRecord(lang, region);
       if (region == CountryCode.UNKNOWN)
       {
-        logger.warn("Unknown country code " + 
-                    settings.getExcelDisplayLanguage() + 
+        LOGGER.warn("Unknown country code " +
+                    settings.getExcelDisplayLanguage() +
                     " using " + CountryCode.UK.getCode());
         region = CountryCode.UK;
       }
     }
 
     outputFile.write(countryRecord);
-    
+
+    // Write out the supbook record
+    //      SupbookRecord supbook = new SupbookRecord();
+    //      outputFile.write(supbook);
+
     // Write out the names of any add in functions
-    if (addInFunctionNames != null && addInFunctionNames.length > 0)
-    {
-      // Write out the supbook record
-      //      SupbookRecord supbook = new SupbookRecord();
-      //      outputFile.write(supbook);
+    for (String name : addInFunctionNames)
+      outputFile.write(new ExternalNameRecord(name));
 
-      for (int i = 0 ; i < addInFunctionNames.length; i++)
-      {
-        ExternalNameRecord enr = new ExternalNameRecord(addInFunctionNames[i]);
-        outputFile.write(enr);
-      }
-    }
-
-    if (xctRecords != null)
-    {
-      for (int i = 0 ; i < xctRecords.length; i++)
-      {
-        outputFile.write(xctRecords[i]);
-      }
-    }
+    for (XCTRecord xctRecord : xctRecords)
+      outputFile.write(xctRecord);
 
     // Write out the external sheet record, if it exists
     if (externSheet != null)
     {
       //Write out all the supbook records
-      for (int i = 0; i < supbooks.size() ; i++)
-      {
-        SupbookRecord supbook = (SupbookRecord) supbooks.get(i);
+      for (SupbookRecord supbook : supbooks)
         outputFile.write(supbook);
-      }
       outputFile.write(externSheet);
     }
 
+    Map<Integer, NameRecord> printAreas = getPrintAreas(sheets);
+    Map<Integer, NameRecord> printTitles = getPrintTitles(sheets);
     // Write out the names, if any exists
-    if (names != null)
-    {
-      for (int i = 0 ; i < names.size() ; i++)
-      {
-        NameRecord n = (NameRecord) names.get(i);
-        outputFile.write(n);
+    for (NameRecord n : names) {
+      // insert print area names in the original order to retain references to name table indices
+      if (BuiltInName.PRINT_AREA.equals(n.getBuiltInName())) {
+        var printArea = printAreas.remove(n.getIndex());
+        outputFile.write(printArea);
+        continue;
       }
+
+      // insert print title names in the original order to retain references to name table indices
+      if (BuiltInName.PRINT_TITLES.equals(n.getBuiltInName())) {
+        var printTitle = printTitles.remove(n.getIndex());
+        outputFile.write(printTitle);
+        continue;
+      }
+
+      outputFile.write(n);
     }
-  
+
+    Set<Integer> remainingPrintAreas = printAreas.keySet();
+    while (! remainingPrintAreas.isEmpty())
+      outputFile.write(printAreas.remove(remainingPrintAreas.iterator().next()));
+
+    Set<Integer> remainingPrintTitles = printTitles.keySet();
+    while (! remainingPrintTitles.isEmpty())
+      outputFile.write(printTitles.remove(remainingPrintTitles.iterator().next()));
+
     // Write out the mso drawing group, if it exists
     if (drawingGroup != null)
     {
@@ -951,23 +881,100 @@ public class WritableWorkbookImpl extends WritableWorkbook
     }
   }
 
+  private Map<Integer, NameRecord> getPrintAreas(List<WritableSheetImpl> sheets) throws IOException {
+    Map<Integer, NameRecord> printAreas = new HashMap<>();
+
+    // Check to see if there are any predefined names
+    for (var wsi : sheets) {
+      Range range = wsi.getSettings().getPrintArea();
+      if (range != null) {
+        var printArea = createNameRecord(
+                BuiltInName.PRINT_AREA,
+                wsi,
+                range.getTopLeft().getColumn(),
+                range.getTopLeft().getRow(),
+                range.getBottomRight().getColumn(),
+                range.getBottomRight().getRow(),
+                false);
+        printAreas.put(printArea.getIndex(), printArea);
+      }
+    }
+
+    return printAreas;
+  }
+
+  private Map<Integer, NameRecord> getPrintTitles(List<WritableSheetImpl> sheets) throws IOException {
+    Map<Integer, NameRecord> printTitles = new HashMap<>();
+    for (var wsi : sheets) {
+      var mayBePrintTitle = getPrintTitles(wsi);
+      if (mayBePrintTitle.isPresent())
+        printTitles.put(mayBePrintTitle.orElseThrow().getIndex(), mayBePrintTitle.orElseThrow());
+    }
+
+    return printTitles;
+  }
+
+  private Optional<NameRecord> getPrintTitles(WritableSheetImpl wsi) {
+    // Check to see if print titles by row were set
+    Range rangeR = wsi.getSettings().getPrintTitlesRow();
+    Range rangeC = wsi.getSettings().getPrintTitlesCol();
+    if (rangeR != null && rangeC != null) {
+      return of(createNameRecord(
+              BuiltInName.PRINT_TITLES,
+              wsi,
+              rangeR.getTopLeft().getColumn(),
+              rangeR.getTopLeft().getRow(),
+              rangeR.getBottomRight().getColumn(),
+              rangeR.getBottomRight().getRow(),
+              rangeC.getTopLeft().getColumn(),
+              rangeC.getTopLeft().getRow(),
+              rangeC.getBottomRight().getColumn(),
+              rangeC.getBottomRight().getRow(),
+              false));
+    }
+
+    // Check to see if print titles by row were set
+    else if (rangeR != null) {
+      return of(createNameRecord(
+              BuiltInName.PRINT_TITLES,
+              wsi,
+              rangeR.getTopLeft().getColumn(),
+              rangeR.getTopLeft().getRow(),
+              rangeR.getBottomRight().getColumn(),
+              rangeR.getBottomRight().getRow(),
+              false));
+    }
+
+    // Check to see if print titles by column were set
+    else if (rangeC != null) {
+      return of(createNameRecord(
+              BuiltInName.PRINT_TITLES,
+              wsi,
+              rangeC.getTopLeft().getColumn(),
+              rangeC.getTopLeft().getRow(),
+              rangeC.getBottomRight().getColumn(),
+              rangeC.getBottomRight().getRow(),
+              false));
+    }
+
+    return empty();
+  }
+
   /**
-   * Produces a writable copy of the workbook passed in by 
-   * creating copies of each sheet in the specified workbook and adding 
+   * Produces a writable copy of the workbook passed in by
+   * creating copies of each sheet in the specified workbook and adding
    * them to its own record
-   * 
+   *
    * @param w the workbook to copy
    */
   private void copyWorkbook(Workbook w)
   {
     int numSheets = w.getNumberOfSheets();
     wbProtected = w.isProtected();
-    Sheet s = null;
-    WritableSheetImpl ws = null;
     for (int i = 0 ; i < numSheets; i++)
     {
-      s = w.getSheet(i);
-      ws = (WritableSheetImpl) createSheet(s.getName(),i, false);
+      Sheet s = w.getSheet(i);
+      WritableSheetImpl ws = createSheet(s.getName(),i, false);
       ws.copy(s);
     }
   }
@@ -980,6 +987,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * @param name the name of the new sheet
    * @param index the position of the new sheet
    */
+  @Override
   public void copySheet(int s, String name, int index)
   {
     WritableSheet sheet = getSheet(s);
@@ -995,6 +1003,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * @param name the name of the new sheet
    * @param index the position of the new sheet
    */
+  @Override
   public void copySheet(String s, String name, int index)
   {
     WritableSheet sheet = getSheet(s);
@@ -1004,9 +1013,10 @@ public class WritableWorkbookImpl extends WritableWorkbook
 
   /**
    * Indicates whether or not this workbook is protected
-   * 
+   *
    * @param prot protected flag
    */
+  @Override
   public void setProtected(boolean prot)
   {
     wbProtected = prot;
@@ -1020,15 +1030,11 @@ public class WritableWorkbookImpl extends WritableWorkbook
   {
     IndexMapping fontMapping   = formatRecords.rationalizeFonts();
     IndexMapping formatMapping = formatRecords.rationalizeDisplayFormats();
-    IndexMapping xfMapping     = formatRecords.rationalize(fontMapping, 
+    IndexMapping xfMapping     = formatRecords.rationalize(fontMapping,
                                                            formatMapping);
 
-    WritableSheetImpl wsi = null;
-    for (int i = 0; i < sheets.size(); i++)
-    {
-      wsi = (WritableSheetImpl) sheets.get(i);
+    for (WritableSheetImpl wsi : sheets)
       wsi.rationalize(xfMapping, fontMapping, formatMapping);
-    }
   }
 
   /**
@@ -1039,18 +1045,15 @@ public class WritableWorkbookImpl extends WritableWorkbook
    */
   private int getInternalSheetIndex(String name)
   {
-    int index = -1;
-    String[] names = getSheetNames();
-    for (int i = 0 ; i < names.length; i++)
-    {
-      if (name.equals(names[i]))
-      {
-        index = i;
-        break;
-      }
+    int index = 0;
+    for (String sheetName : getSheetNames()) {
+      if (name.equals(sheetName))
+        return index;
+
+      index++;
     }
 
-    return index;
+    return -1;
   }
 
   /**
@@ -1059,13 +1062,14 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * @param index the external sheet index
    * @return the name of the external sheet
    */
+  @Override
   public String getExternalSheetName(int index)
   {
     int supbookIndex = externSheet.getSupbookIndex(index);
-    SupbookRecord sr = (SupbookRecord) supbooks.get(supbookIndex);
-    
+    SupbookRecord sr = supbooks.get(supbookIndex);
+
     int firstTab = externSheet.getFirstTabIndex(index);
-    
+
     if (sr.getType() == SupbookRecord.INTERNAL)
     {
       // It's an internal reference - get the name from the sheets list
@@ -1078,9 +1082,9 @@ public class WritableWorkbookImpl extends WritableWorkbook
       String name = sr.getFileName() + sr.getSheetName(firstTab);
       return name;
     }
-    
+
     // An unknown supbook - return unkown
-    logger.warn("Unknown Supbook 1");
+    LOGGER.warn("Unknown Supbook 1");
     return "[UNKNOWN]";
   }
 
@@ -1093,10 +1097,10 @@ public class WritableWorkbookImpl extends WritableWorkbook
   public String getLastExternalSheetName(int index)
   {
     int supbookIndex = externSheet.getSupbookIndex(index);
-    SupbookRecord sr = (SupbookRecord) supbooks.get(supbookIndex);
-    
+    SupbookRecord sr = supbooks.get(supbookIndex);
+
     int lastTab = externSheet.getLastTabIndex(index);
-    
+
     if (sr.getType() == SupbookRecord.INTERNAL)
     {
       // It's an internal reference - get the name from the sheets list
@@ -1108,9 +1112,9 @@ public class WritableWorkbookImpl extends WritableWorkbook
     {
       Assert.verify(false);
     }
-    
+
     // An unknown supbook - return unkown
-    logger.warn("Unknown Supbook 2");
+    LOGGER.warn("Unknown Supbook 2");
     return "[UNKNOWN]";
   }
 
@@ -1118,8 +1122,9 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * Parsing of formulas is only supported for a subset of the available
    * biff version, so we need to test to see if this version is acceptable
    *
-   * @return the BOF record, which 
+   * @return the BOF record, which
    */
+  @Override
   public jxl.read.biff.BOFRecord getWorkbookBof()
   {
     return null;
@@ -1127,17 +1132,16 @@ public class WritableWorkbookImpl extends WritableWorkbook
 
 
   /**
-   * Gets the index of the external sheet for the name
+   * Gets the index of the external sheet with index
    *
-   * @param sheetName
+   * @param index
    * @return the sheet index of the external sheet index
    */
+  @Override
   public int getExternalSheetIndex(int index)
   {
     if (externSheet == null)
-    {
       return index;
-    }
 
     Assert.verify(externSheet != null);
 
@@ -1147,17 +1151,16 @@ public class WritableWorkbookImpl extends WritableWorkbook
   }
 
   /**
-   * Gets the index of the external sheet for the name
+   * Gets the index of the external sheet with index
    *
-   * @param sheetName
+   * @param index
    * @return the sheet index of the external sheet index
    */
+  @Override
   public int getLastExternalSheetIndex(int index)
   {
     if (externSheet == null)
-    {
       return index;
-    }
 
     Assert.verify(externSheet != null);
 
@@ -1169,28 +1172,28 @@ public class WritableWorkbookImpl extends WritableWorkbook
   /**
    * Gets the external sheet index for the sheet name
    *
-   * @param sheetName 
+   * @param sheetName
    * @return the sheet index or -1 if the sheet could not be found
    */
+  @Override
   public int getExternalSheetIndex(String sheetName)
   {
     if (externSheet == null)
     {
       externSheet = new ExternalSheetRecord();
-      supbooks = new ArrayList();
+      supbooks = new ArrayList<>();
       supbooks.add(new SupbookRecord(getNumberOfSheets(), settings));
     }
 
     // Iterate through the sheets records
     boolean found = false;
-    Iterator i = sheets.iterator();
+    Iterator<WritableSheetImpl> i = sheets.iterator();
     int sheetpos = 0;
-    WritableSheetImpl s = null;
 
     while (i.hasNext() && !found)
     {
-      s = (WritableSheetImpl) i.next();
-      
+      WritableSheetImpl s = i.next();
+
       if (s.getName().equals(sheetName))
       {
         found = true;
@@ -1205,29 +1208,29 @@ public class WritableWorkbookImpl extends WritableWorkbook
     {
       // Check that the supbook record at position zero is internal and
       // contains all the sheets
-      SupbookRecord supbook = (SupbookRecord) supbooks.get(0);
+      SupbookRecord supbook = supbooks.get(0);
       if (supbook.getType() != SupbookRecord.INTERNAL ||
           supbook.getNumberOfSheets() != getNumberOfSheets())
       {
-        logger.warn("Cannot find sheet " + sheetName + " in supbook record");
+        LOGGER.warn("Cannot find sheet " + sheetName + " in supbook record");
       }
-      
+
       return externSheet.getIndex(0, sheetpos);
     }
 
     // Check for square brackets
     int closeSquareBracketsIndex = sheetName.lastIndexOf(']');
     int openSquareBracketsIndex = sheetName.lastIndexOf('[');
-    
+
     if (closeSquareBracketsIndex == -1 ||
         openSquareBracketsIndex == -1)
     {
-      logger.warn("Square brackets");
+      LOGGER.warn("Square brackets");
       return -1;
     }
 
     String worksheetName = sheetName.substring(closeSquareBracketsIndex+1);
-    String workbookName = sheetName.substring(openSquareBracketsIndex+1, 
+    String workbookName = sheetName.substring(openSquareBracketsIndex+1,
                                               closeSquareBracketsIndex);
     String path = sheetName.substring(0, openSquareBracketsIndex);
     String fileName = path + workbookName;
@@ -1237,7 +1240,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
     int supbookIndex = -1;
     for (int ind = 0; ind < supbooks.size() && !supbookFound ; ind++)
     {
-      externalSupbook = (SupbookRecord) supbooks.get(ind);
+      externalSupbook = supbooks.get(ind);
       if (externalSupbook.getType() == SupbookRecord.EXTERNAL &&
           externalSupbook.getFileName().equals(fileName))
       {
@@ -1252,7 +1255,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
       supbookIndex = supbooks.size();
       supbooks.add(externalSupbook);
     }
-    
+
     int sheetIndex = externalSupbook.getSheetIndex(worksheetName);
 
     return externSheet.getIndex(supbookIndex, sheetIndex);
@@ -1260,36 +1263,32 @@ public class WritableWorkbookImpl extends WritableWorkbook
 
   /**
    * Gets the last external sheet index for the sheet name
-   * @param sheetName 
+   * @param sheetName
    * @return the sheet index or -1 if the sheet could not be found
    */
+  @Override
   public int getLastExternalSheetIndex(String sheetName)
   {
     if (externSheet == null)
     {
       externSheet = new ExternalSheetRecord();
-      supbooks = new ArrayList();
+      supbooks = new ArrayList<>();
       supbooks.add(new SupbookRecord(getNumberOfSheets(), settings));
     }
 
     // Iterate through the sheets records
     boolean found = false;
-    Iterator i = sheets.iterator();
+    Iterator<WritableSheetImpl> i = sheets.iterator();
     int sheetpos = 0;
-    WritableSheetImpl s = null;
 
     while (i.hasNext() && !found)
     {
-      s = (WritableSheetImpl) i.next();
-      
+      WritableSheetImpl s = i.next();
+
       if (s.getName().equals(sheetName))
-      {
         found = true;
-      }
       else
-      {
         sheetpos++;
-      }
     }
 
     if (!found)
@@ -1299,7 +1298,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
 
     // Check that the supbook record at position zero is internal and contains
     // all the sheets
-    SupbookRecord supbook = (SupbookRecord) supbooks.get(0);
+    SupbookRecord supbook = supbooks.get(0);
     Assert.verify(supbook.getType() == SupbookRecord.INTERNAL &&
                   supbook.getNumberOfSheets() == getNumberOfSheets());
 
@@ -1314,6 +1313,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * @param g the green portion to set (0-255)
    * @param b the blue portion to set (0-255)
    */
+  @Override
   public void setColourRGB(Colour c, int r, int g, int b)
   {
     formatRecords.setColourRGB(c,r,g,b);
@@ -1322,6 +1322,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
   /**
    * Accessor for the RGB value for the specified colour
    *
+   * @param c colour
    * @return the RGB for the specified colour
    */
   public RGB getColourRGB(Colour c)
@@ -1334,23 +1335,27 @@ public class WritableWorkbookImpl extends WritableWorkbook
    *
    * @param index the index into the name table
    * @return the name of the cell
+   * @throws NameRangeException
    */
-  public String getName(int index)
+  @Override
+  public String getName(int index) throws NameRangeException
   {
-    Assert.verify(index >= 0 && index < names.size());
-    NameRecord n = (NameRecord) names.get(index);
-    return n.getName();
+    if (! (index >= 0 && index < names.size()))
+      throw new NameRangeException();
+
+    return names.get(index).getName();
   }
 
   /**
    * Gets the index of the name record for the name
    *
-   * @param name 
+   * @param name
    * @return the index in the name table
    */
+  @Override
   public int getNameIndex(String name)
   {
-    NameRecord nr = (NameRecord) nameRecords.get(name);
+    NameRecord nr = nameRecords.get(name);
     return nr != null ? nr.getIndex() : -1;
   }
 
@@ -1375,21 +1380,12 @@ public class WritableWorkbookImpl extends WritableWorkbook
   void columnInserted(WritableSheetImpl s, int col)
   {
     int externalSheetIndex = getExternalSheetIndex(s.getName());
-    for (Iterator i = rcirCells.iterator() ; i.hasNext() ;)
-    {
-      CellValue cv = (CellValue) i.next();
+    for (CellValue cv : rcirCells)
       cv.columnInserted(s, externalSheetIndex, col);
-    }
 
     // Adjust any named cells
-    if (names != null)
-    {
-      for (Iterator i = names.iterator(); i.hasNext() ;)
-      {
-        NameRecord nameRecord = (NameRecord) i.next();
-        nameRecord.columnInserted(externalSheetIndex, col);
-      }
-    }
+    for (NameRecord nameRecord : names)
+      nameRecord.columnInserted(externalSheetIndex, col);
   }
 
   /**
@@ -1402,37 +1398,15 @@ public class WritableWorkbookImpl extends WritableWorkbook
   void columnRemoved(WritableSheetImpl s, int col)
   {
     int externalSheetIndex = getExternalSheetIndex(s.getName());
-    for (Iterator i = rcirCells.iterator() ; i.hasNext() ;)
-    {
-      CellValue cv = (CellValue) i.next();
+    for (CellValue cv : rcirCells)
       cv.columnRemoved(s, externalSheetIndex, col);
-    }
 
     // Adjust any named cells
-    ArrayList removedNames = new ArrayList();
-    if (names != null)
-    {
-      for (Iterator i = names.iterator(); i.hasNext() ;)
-      {
-        NameRecord nameRecord = (NameRecord) i.next();
-        boolean removeName = nameRecord.columnRemoved(externalSheetIndex,
-                                                      col);
-
-        if (removeName)
-        {
-          removedNames.add(nameRecord);
-        }
-      }
-
-      // Remove any names which have been deleted
-      for (Iterator i = removedNames.iterator(); i.hasNext() ;)
-      {
-        NameRecord nameRecord = (NameRecord) i.next();
-        boolean removed = names.remove(nameRecord);
-        Assert.verify(removed, "Could not remove name " + 
-                      nameRecord.getName());
-      }
-    }
+    ArrayList<NameRecord> removedNames = new ArrayList<>();
+    for (NameRecord nameRecord : names)
+      if (nameRecord.columnRemoved(externalSheetIndex, col))
+        removedNames.add(nameRecord);
+    names.removeAll(removedNames);
   }
 
   /**
@@ -1445,23 +1419,14 @@ public class WritableWorkbookImpl extends WritableWorkbook
   void rowInserted(WritableSheetImpl s, int row)
   {
     int externalSheetIndex = getExternalSheetIndex(s.getName());
-    
+
     // Adjust the row infos
-    for (Iterator i = rcirCells.iterator() ; i.hasNext() ;)
-    {
-      CellValue cv = (CellValue) i.next();
+    for (CellValue cv : rcirCells)
       cv.rowInserted(s, externalSheetIndex, row);
-    }
 
     // Adjust any named cells
-    if (names != null)
-    {
-      for (Iterator i = names.iterator(); i.hasNext() ;)
-      {
-        NameRecord nameRecord = (NameRecord) i.next();
-        nameRecord.rowInserted(externalSheetIndex, row);
-      }
-    }
+    for (NameRecord nameRecord : names)
+      nameRecord.rowInserted(externalSheetIndex, row);
   }
 
   /**
@@ -1474,36 +1439,33 @@ public class WritableWorkbookImpl extends WritableWorkbook
   void rowRemoved(WritableSheetImpl s, int row)
   {
     int externalSheetIndex = getExternalSheetIndex(s.getName());
-    for (Iterator i = rcirCells.iterator() ; i.hasNext() ;)
-    {
-      CellValue cv = (CellValue) i.next();
+    for (CellValue cv : rcirCells)
       cv.rowRemoved(s, externalSheetIndex, row);
-    }
 
     // Adjust any named cells
-    ArrayList removedNames = new ArrayList();
-    if (names != null)
-    {
-      for (Iterator i = names.iterator(); i.hasNext() ;)
-      {
-        NameRecord nameRecord = (NameRecord) i.next();
-        boolean removeName = nameRecord.rowRemoved(externalSheetIndex, row);
+    ArrayList<NameRecord> removedNames = new ArrayList<>();
+    for (NameRecord nameRecord : names)
+      if (nameRecord.rowRemoved(externalSheetIndex, row))
+        removedNames.add(nameRecord);
+    // Remove any names which have been deleted
+    names.removeAll(removedNames);
+  }
 
-        if (removeName)
-        {
-          removedNames.add(nameRecord);
-        }
-      }
+  @Override
+  public CellLocation findCellLocationByName(String name) throws NoSuchElementException {
+    NameRecord nr = nameRecords.get(name);
 
-      // Remove any names which have been deleted
-      for (Iterator i = removedNames.iterator(); i.hasNext() ;)
-      {
-        NameRecord nameRecord = (NameRecord) i.next();
-        boolean removed = names.remove(nameRecord);
-        Assert.verify(removed, "Could not remove name " + 
-                      nameRecord.getName());
-      }
-    }
+    if (nr == null)
+      throw new NoSuchElementException("The range named " + name + " was not found.");
+
+    NameRecord.NameRange[] ranges = nr.getRanges();
+
+    // Go and retrieve the first cell in the first range
+    int sheetIndex = getExternalSheetIndex(ranges[0].getExternalSheet());
+    return new CellLocation(
+            getSheet(sheetIndex),
+            ranges[0].getFirstColumn(),
+            ranges[0].getFirstRow());
   }
 
   /**
@@ -1511,47 +1473,39 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * range of cells, then the cell on the top left is returned.  If
    * the name cannot be found, null is returned
    *
-   * @param  the name of the cell/range to search for
+   * @param  name of the cell/range to search for
    * @return the cell in the top left of the range if found, NULL
    *         otherwise
    */
+  @Override
   public WritableCell findCellByName(String name)
   {
-    NameRecord nr = (NameRecord) nameRecords.get(name);
-
-    if (nr == null)
-    {
+    try {
+      CellLocation cl = findCellLocationByName(name);
+      return cl.getSheet().getWritableCell(cl.getColumn(), cl.getRow());
+    } catch (NoSuchElementException ex) {
       return null;
     }
-
-    NameRecord.NameRange[] ranges = nr.getRanges();
-
-    // Go and retrieve the first cell in the first range
-    int sheetIndex = getExternalSheetIndex(ranges[0].getExternalSheet());
-    WritableSheet s    = getSheet(sheetIndex);
-    WritableCell  cell = s.getWritableCell(ranges[0].getFirstColumn(), 
-                                           ranges[0].getFirstRow());
-
-    return cell;
   }
 
   /**
    * Gets the named range from this workbook.  The Range object returns
    * contains all the cells from the top left to the bottom right
-   * of the range.  
+   * of the range.
    * If the named range comprises an adjacent range,
    * the Range[] will contain one object; for non-adjacent
    * ranges, it is necessary to return an array of length greater than
-   * one.  
+   * one.
    * If the named range contains a single cell, the top left and
    * bottom right cell will be the same cell
    *
-   * @param  the name of the cell/range to search for
+   * @param  name of the cell/range to search for
    * @return the range of cells
    */
+  @Override
   public Range[] findByName(String name)
   {
-    NameRecord nr = (NameRecord) nameRecords.get(name);
+    NameRecord nr = nameRecords.get(name);
 
     if (nr == null)
     {
@@ -1565,7 +1519,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
     for (int i = 0; i < ranges.length ; i++)
     {
       cellRanges[i] = new RangeImpl
-        (this, 
+        (this,
          getExternalSheetIndex(ranges[i].getExternalSheet()),
          ranges[i].getFirstColumn(),
          ranges[i].getFirstRow(),
@@ -1636,21 +1590,11 @@ public class WritableWorkbookImpl extends WritableWorkbook
    *
    * @return the list of named cells within the workbook
    */
-  public String[] getRangeNames()
-  {
-    if (names == null)
-    {
-      return new String[0];
-    }
-
-    String[] n = new String[names.size()];
-    for (int i = 0 ; i < names.size() ; i++)
-    {
-      NameRecord nr = (NameRecord) names.get(i);
-      n[i] = nr.getName();
-    }
-
-    return n;
+  @Override
+  public Set<String> getRangeNames() {
+    return names.stream()
+            .map(NameRecord::getName)
+            .collect(toSet());
   }
 
   /**
@@ -1658,21 +1602,18 @@ public class WritableWorkbookImpl extends WritableWorkbook
    *
    * @param name the name to remove
    */
+  @Override
   public void removeRangeName(String name)
   {
     int pos = 0;
     boolean found = false;
-    for (Iterator i = names.iterator(); i.hasNext() && !found ;)
+    for (Iterator<NameRecord> i = names.iterator(); i.hasNext() && !found ;)
     {
-      NameRecord nr = (NameRecord) i.next();
-      if (nr.getName().equals(name))
-      {
+      NameRecord nr = i.next();
+      if (name.equals(nr.getName()))
         found = true;
-      }
       else
-      {
         pos++;
-      }
     }
 
     // Remove the name from the list of names and the associated hashmap
@@ -1683,7 +1624,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
       names.remove(pos);
       if (nameRecords.remove(name) == null)
       {
-        logger.warn("Could not remove " + name + " from index lookups");
+        LOGGER.warn("Could not remove " + name + " from index lookups");
       }
     }
   }
@@ -1700,7 +1641,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
 
   /**
    * Add new named area to this workbook with the given information.
-   * 
+   *
    * @param name name to be created.
    * @param sheet sheet containing the name
    * @param firstCol  first column this name refers to.
@@ -1708,10 +1649,11 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * @param lastCol    last column this name refers to.
    * @param lastRow    last row this name refers to.
    */
-  public void addNameArea(String name, 
+  @Override
+  public void addNameArea(String name,
                           WritableSheet sheet,
-                          int firstCol, 
-                          int firstRow,  
+                          int firstCol,
+                          int firstRow,
                           int lastCol,
                           int lastRow)
   {
@@ -1720,94 +1662,69 @@ public class WritableWorkbookImpl extends WritableWorkbook
 
   /**
    * Add new named area to this workbook with the given information.
-   * 
+   *
    * @param name name to be created.
    * @param sheet sheet containing the name
    * @param firstCol  first column this name refers to.
    * @param firstRow  first row this name refers to.
    * @param lastCol    last column this name refers to.
    * @param lastRow    last row this name refers to.
-   * @param global   TRUE if this is a global name, FALSE if this is tied to 
+   * @param global   TRUE if this is a global name, FALSE if this is tied to
    *                 the sheet
    */
-  void addNameArea(String name, 
+  void addNameArea(String name,
                    WritableSheet sheet,
-                   int firstCol, 
-                   int firstRow,  
+                   int firstCol,
+                   int firstRow,
                    int lastCol,
                    int lastRow,
                    boolean global)
   {
-    if (names == null)
-    {
-      names = new ArrayList();
-    }
-
     int externalSheetIndex = getExternalSheetIndex(sheet.getName());
 
     // Create a new name record.
-    NameRecord nr = 
-      new NameRecord(name, 
+    NameRecord nr =
+      new NameRecord(name,
                      names.size(),
-                     externalSheetIndex, 
-                     firstRow, lastRow, 
-                     firstCol, lastCol, 
+                     externalSheetIndex,
+                     firstRow, lastRow,
+                     firstCol, lastCol,
                      global);
-    
+
+    // avoid name collisions
+    removeRangeName(name);
+
     // Add new name to name array.
     names.add(nr);
-    
+
     // Add new name to name hash table.
     nameRecords.put(name, nr);
   }
 
   /**
-   * Add new named area to this workbook with the given information.
-   * 
    * @param name name to be created.
    * @param sheet sheet containing the name
    * @param firstCol  first column this name refers to.
    * @param firstRow  first row this name refers to.
    * @param lastCol    last column this name refers to.
    * @param lastRow    last row this name refers to.
-   * @param global   TRUE if this is a global name, FALSE if this is tied to 
+   * @param global   TRUE if this is a global name, FALSE if this is tied to
    *                 the sheet
    */
-  void addNameArea(BuiltInName name, 
-                   WritableSheet sheet,
-                   int firstCol, 
-                   int firstRow,  
-                   int lastCol,
-                   int lastRow,
-                   boolean global)
-  {
-    if (names == null)
-    {
-      names = new ArrayList();
-    }
-
+  private NameRecord createNameRecord(
+          BuiltInName name, WritableSheet sheet, int firstCol, int firstRow, int lastCol, int lastRow, boolean global) {
     int index = getInternalSheetIndex(sheet.getName());
     int externalSheetIndex = getExternalSheetIndex(sheet.getName());
 
-    // Create a new name record.
-    NameRecord nr = 
-      new NameRecord(name, 
-                     index,
-                     externalSheetIndex, 
-                     firstRow, lastRow, 
-                     firstCol, lastCol, 
-                     global);
-    
-    // Add new name to name array.
-    names.add(nr);
-    
-    // Add new name to name hash table.
-    nameRecords.put(name, nr);
+    return new NameRecord(name,
+            index,
+            externalSheetIndex,
+            firstRow, lastRow,
+            firstCol, lastCol,
+            global);
   }
 
   /**
-   * Add new named area to this workbook with the given information.
-   * 
    * @param name name to be created.
    * @param sheet sheet containing the name
    * @param firstCol  first column this name refers to.
@@ -1818,47 +1735,23 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * @param firstRow2 first row this name refers to.
    * @param lastCol2  last column this name refers to.
    * @param lastRow2  last row this name refers to.
-   * @param global   TRUE if this is a global name, FALSE if this is tied to 
+   * @param global   TRUE if this is a global name, FALSE if this is tied to
    *                 the sheet
    */
-  void addNameArea(BuiltInName name, 
-                   WritableSheet sheet,
-                   int firstCol, 
-                   int firstRow,  
-                   int lastCol,
-                   int lastRow,
-                   int firstCol2, 
-                   int firstRow2,  
-                   int lastCol2,
-                   int lastRow2,
-                   boolean global)
-  {
-    if (names == null)
-    {
-      names = new ArrayList();
-    }
-
+  private NameRecord createNameRecord(BuiltInName name, WritableSheet sheet, int firstCol, int firstRow, int lastCol, int lastRow, int firstCol2, int firstRow2, int lastCol2, int lastRow2, boolean global) {
     int index = getInternalSheetIndex(sheet.getName());
     int externalSheetIndex = getExternalSheetIndex(sheet.getName());
 
-    // Create a new name record.
-    NameRecord nr = 
-      new NameRecord(name, 
-                     index,
-                     externalSheetIndex, 
-                     firstRow2, lastRow2, 
-                     firstCol2, lastCol2,
-                     firstRow, lastRow, 
-                     firstCol, lastCol, 
-                     global);
-    
-    // Add new name to name array.
-    names.add(nr);
-    
-    // Add new name to name hash table.
-    nameRecords.put(name, nr);
-  }  
-  
+    return new NameRecord(name,
+                    index,
+                    externalSheetIndex,
+                    firstRow2, lastRow2,
+                    firstCol2, lastCol2,
+                    firstRow, lastRow,
+                    firstCol, lastCol,
+                    global);
+  }
+
   /**
    * Accessor for the workbook settings
    */
@@ -1868,7 +1761,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
   }
 
   /**
-   * Returns the cell for the specified location eg. "Sheet1!A4".  
+   * Returns the cell for the specified location eg. "Sheet1!A4".
    * This is identical to using the CellReferenceHelper with its
    * associated performance overheads, consequently it should
    * be use sparingly
@@ -1876,9 +1769,10 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * @param loc the cell to retrieve
    * @return the cell at the specified location
    */
+  @Override
   public WritableCell getWritableCell(String loc)
   {
-    WritableSheet s = getSheet(CellReferenceHelper.getSheet(loc)); 
+    WritableSheet s = getSheet(CellReferenceHelper.getSheet(loc));
     return s.getWritableCell(loc);
   }
 
@@ -1891,6 +1785,7 @@ public class WritableWorkbookImpl extends WritableWorkbook
    * @param sheet the sheet (from another workbook) to merge into this one
    * @return the new sheet
    */
+  @Override
   public WritableSheet importSheet(String name, int index, Sheet sheet)
   {
     WritableSheet ws = createSheet(name, index);

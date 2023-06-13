@@ -70,7 +70,7 @@ class ErrorConstant extends Operand implements ParsedThing
   byte[] getBytes()
   {
     byte[] data = new byte[2];
-    data[0] = Token.ERR.getCode();
+    data[0] = Token.ERR.getReferenceCode();
     data[1] = (byte) error.getCode();
 
     return data;

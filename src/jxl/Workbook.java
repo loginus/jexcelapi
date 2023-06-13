@@ -19,16 +19,11 @@
 
 package jxl;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
-import jxl.read.biff.BiffException;
+import java.io.*;
+import java.nio.file.*;
+import java.util.*;
+import jxl.read.biff.*;
 import jxl.read.biff.File;
-import jxl.read.biff.PasswordException;
-import jxl.read.biff.WorkbookParser;
 import jxl.write.WritableWorkbook;
 import jxl.write.biff.WritableWorkbookImpl;
 
@@ -36,7 +31,7 @@ import jxl.write.biff.WritableWorkbookImpl;
  * Represents a Workbook.  Contains the various factory methods and provides
  * a variety of accessors which provide access to the work sheets.
  */
-public abstract class Workbook
+public abstract class Workbook implements Closeable
 {
   /**
    * The current version of the software
@@ -54,16 +49,16 @@ public abstract class Workbook
    * Gets the sheets within this workbook.  Use of this method for
    * large worksheets can cause performance problems.
    *
-   * @return an array of the individual sheets
+   * @return a list of the individual sheets
    */
-  public abstract Sheet[] getSheets();
+  public abstract List<Sheet> getSheets();
 
   /**
    * Gets the sheet names
    *
-   * @return an array of strings containing the sheet names
+   * @return a list of strings containing the sheet names
    */
-  public abstract String[] getSheetNames();
+  public abstract List<String> getSheetNames();
 
   /**
    * Gets the specified sheet within this workbook
@@ -75,7 +70,7 @@ public abstract class Workbook
    *
    * @param index the zero based index of the reQuired sheet
    * @return The sheet specified by the index
-   * @exception IndexOutOfBoundException when index refers to a non-existent
+   * @throws IndexOutOfBoundsException when index refers to a non-existent
    *            sheet
    */
   public abstract Sheet getSheet(int index)
@@ -182,6 +177,7 @@ public abstract class Workbook
    * Closes this workbook, and frees makes any memory allocated available
    * for garbage collection
    */
+  @Override
   public abstract void close();
 
   /**
@@ -192,7 +188,7 @@ public abstract class Workbook
    * @param file the excel 97 spreadsheet to parse
    * @return a workbook instance
    */
-  public static Workbook getWorkbook(java.io.File file)
+  public static Workbook getWorkbook(Path file)
     throws IOException, BiffException
   {
     return getWorkbook(file, new WorkbookSettings());
@@ -207,36 +203,15 @@ public abstract class Workbook
    * @param ws the settings for the workbook
    * @return a workbook instance
    */
-  public static Workbook getWorkbook(java.io.File file, WorkbookSettings ws)
-    throws IOException, BiffException
-  {
-    FileInputStream fis = new FileInputStream(file);
+  public static Workbook getWorkbook(Path file, WorkbookSettings ws)
+    throws IOException, BiffException {
+    try (InputStream fis = Files.newInputStream(file)) {
+      File dataFile = new File(fis, ws);
+      Workbook workbook = new WorkbookParser(dataFile, ws);
+      workbook.parse();
 
-    // Always close down the input stream, regardless of whether or not the
-    // file can be parsed.  Thanks to Steve Hahn for this
-    File dataFile = null;
-
-    try
-    {
-      dataFile = new File(fis, ws);
+      return workbook;
     }
-    catch (IOException e)
-    {
-      fis.close();
-      throw e;
-    }
-    catch (BiffException e)
-    {
-      fis.close();
-      throw e;
-    }
-
-    fis.close();
-
-    Workbook workbook = new WorkbookParser(dataFile, ws);
-    workbook.parse();
-
-    return workbook;
   }
 
   /**
@@ -280,7 +255,7 @@ public abstract class Workbook
    * @return a writable workbook
    * @exception IOException
    */
-  public static WritableWorkbook createWorkbook(java.io.File file)
+  public static WritableWorkbook createWorkbook(Path file)
     throws IOException
   {
     return createWorkbook(file, new WorkbookSettings());
@@ -294,11 +269,11 @@ public abstract class Workbook
    * @return a writable workbook
    * @exception IOException
    */
-  public static WritableWorkbook createWorkbook(java.io.File file,
+  public static WritableWorkbook createWorkbook(Path file,
                                                 WorkbookSettings ws)
     throws IOException
   {
-    FileOutputStream fos = new FileOutputStream(file);
+    OutputStream fos = Files.newOutputStream(file);
     WritableWorkbook w = new WritableWorkbookImpl(fos, true, ws);
     return w;
   }
@@ -313,7 +288,7 @@ public abstract class Workbook
    * @return a writable workbook
    * @exception IOException
    */
-  public static WritableWorkbook createWorkbook(java.io.File file,
+  public static WritableWorkbook createWorkbook(Path file,
                                                 Workbook in)
     throws IOException
   {
@@ -329,13 +304,14 @@ public abstract class Workbook
    * @param in the workbook to copy
    * @param ws the configuration for this workbook
    * @return a writable workbook
+   * @throws IOException
    */
-  public static WritableWorkbook createWorkbook(java.io.File file,
+  public static WritableWorkbook createWorkbook(Path file,
                                                 Workbook in,
                                                 WorkbookSettings ws)
     throws IOException
   {
-    FileOutputStream fos = new FileOutputStream(file);
+    OutputStream fos = Files.newOutputStream(file);
     WritableWorkbook w = new WritableWorkbookImpl(fos, in, true, ws);
     return w;
   }
@@ -412,8 +388,3 @@ public abstract class Workbook
     return w;
   }
 }
-
-
-
-
-

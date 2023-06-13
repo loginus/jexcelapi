@@ -32,23 +32,23 @@ class BoundsheetRecord extends RecordData
   /**
    * The offset into the sheet
    */
-  private int offset;
+  private final int offset;
   /**
    * The type of sheet this is
    */
-  private byte typeFlag;
+  private final byte typeFlag;
   /**
    * The visibility flag
    */
-  private byte visibilityFlag;
+  private final byte visibilityFlag;
   /**
    * The length of the worksheet name
    */
-  private int length;
+  private final int length;
   /**
    * The worksheet name
    */
-  private String name;
+  private final String name;
 
   /**
    * Dummy indicators for overloading the constructor
@@ -83,7 +83,7 @@ class BoundsheetRecord extends RecordData
       // little endian Unicode encoding
       byte[] bytes = new byte[length * 2];
       System.arraycopy(data, 8, bytes, 0, length * 2);
-      name = StringHelper.getUnicodeString(bytes, length, 0);
+      name = StringHelper.getUnicodeString(bytes, 0, length);
     }
   }
 

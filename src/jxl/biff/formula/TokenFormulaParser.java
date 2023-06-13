@@ -22,7 +22,6 @@ package jxl.biff.formula;
 import java.util.Stack;
 
 import jxl.common.Assert;
-import jxl.common.Logger;
 
 import jxl.Cell;
 import jxl.WorkbookSettings;
@@ -34,20 +33,15 @@ import jxl.biff.WorkbookMethods;
 class TokenFormulaParser implements Parser
 {
   /**
-   * The logger
-   */
-  private static Logger logger = Logger.getLogger(TokenFormulaParser.class);
-
-  /**
    * The Excel ptgs
    */
-  private byte[] tokenData;
+  private final byte[] tokenData;
 
   /**
    * The cell containing the formula.  This is used in order to determine
    * relative cell values
    */
-  private Cell relativeTo;
+  private final Cell relativeTo;
 
   /**
    * The current position within the array
@@ -62,35 +56,35 @@ class TokenFormulaParser implements Parser
   /**
    * The hash table of items that have been parsed
    */
-  private Stack tokenStack;
+  private Stack<ParseItem> tokenStack = new Stack<>();
 
   /**
    * A reference to the workbook which holds the external sheet
    * information
    */
-  private ExternalSheet workbook;
+  private final ExternalSheet workbook;
 
   /**
    * A reference to the name table
    */
-  private WorkbookMethods nameTable;
+  private final WorkbookMethods nameTable;
 
   /**
    * The workbook settings
    */
-  private WorkbookSettings settings;
+  private final WorkbookSettings settings;
 
   /**
    * The parse context
    */
-  private ParseContext parseContext;
+  private final ParseContext parseContext;
 
   /**
    * Constructor
    */
-  public TokenFormulaParser(byte[] data, 
-                            Cell c, 
-                            ExternalSheet es, 
+  public TokenFormulaParser(byte[] data,
+                            Cell c,
+                            ExternalSheet es,
                             WorkbookMethods nt,
                             WorkbookSettings ws,
                             ParseContext pc)
@@ -100,10 +94,9 @@ class TokenFormulaParser implements Parser
     relativeTo = c;
     workbook = es;
     nameTable = nt;
-    tokenStack = new Stack();
     settings = ws;
     parseContext = pc;
-    
+
     Assert.verify(nameTable != null);
   }
 
@@ -113,13 +106,14 @@ class TokenFormulaParser implements Parser
    *
    * @exception FormulaException
    */
+  @Override
   public void parse() throws FormulaException
   {
     parseSubExpression(tokenData.length);
 
     // Finally, there should be one thing left on the stack.  Get that
     // and add it to the root node
-    root = (ParseItem) tokenStack.pop();
+    root = tokenStack.pop();
 
     Assert.verify(tokenStack.empty());
 
@@ -134,289 +128,231 @@ class TokenFormulaParser implements Parser
    */
   private void parseSubExpression(int len) throws FormulaException
   {
-    int tokenVal = 0;
-    Token t = null;
-    
+
     // Indicates that we are parsing the incredibly complicated and
     // hacky if construct that MS saw fit to include, the gits
-    Stack ifStack = new Stack();
+    Stack<Attribute> ifStack = new Stack<>();
 
     // The end position of the sub-expression
     int endpos = pos + len;
 
     while (pos < endpos)
     {
-      tokenVal = tokenData[pos];
+      byte tokenVal = tokenData[pos];
       pos++;
 
-      t = Token.getToken(tokenVal);
+      switch (Token.getToken(tokenVal)) {
+        case UNKNOWN -> throw new FormulaException(FormulaException.UNRECOGNIZED_TOKEN, tokenVal);
 
-      if (t == Token.UNKNOWN)
-      {
-        throw new FormulaException
-          (FormulaException.UNRECOGNIZED_TOKEN, tokenVal);
-      }
-
-      Assert.verify(t != Token.UNKNOWN);
-
-      // Operands
-      if (t == Token.REF)
-      {
-        CellReference cr = new CellReference(relativeTo);
-        pos += cr.read(tokenData, pos);
-        tokenStack.push(cr);
-      }
-      else if (t == Token.REFERR)
-      {
-        CellReferenceError cr = new CellReferenceError();
-        pos += cr.read(tokenData, pos);
-        tokenStack.push(cr);
-      }
-      else if (t == Token.ERR)
-      {
-        ErrorConstant ec = new ErrorConstant();
-        pos += ec.read(tokenData, pos);
-        tokenStack.push(ec);
-      }
-      else if (t == Token.REFV)
-      {
-        SharedFormulaCellReference cr = 
-          new SharedFormulaCellReference(relativeTo);
-        pos += cr.read(tokenData, pos);
-        tokenStack.push(cr);
-      }
-      else if (t == Token.REF3D)
-      {
-        CellReference3d cr = new CellReference3d(relativeTo, workbook);
-        pos += cr.read(tokenData, pos);
-        tokenStack.push(cr);
-      }
-      else if (t == Token.AREA)
-      {
-        Area a = new Area();
-        pos += a.read(tokenData, pos);
-        tokenStack.push(a);
-      }
-      else if (t == Token.AREAV)
-      {
-        SharedFormulaArea a = new SharedFormulaArea(relativeTo);
-        pos += a.read(tokenData, pos);
-        tokenStack.push(a);
-      }
-      else if (t == Token.AREA3D)
-      {
-        Area3d a = new Area3d(workbook);
-        pos += a.read(tokenData, pos);
-        tokenStack.push(a);
-      }
-      else if (t == Token.NAME)
-      {
-        Name n = new Name();
-        pos += n.read(tokenData, pos);
-        n.setParseContext(parseContext);
-        tokenStack.push(n);
-      }
-      else if (t == Token.NAMED_RANGE)
-      {
-        NameRange nr = new NameRange(nameTable);
-        pos += nr.read(tokenData, pos);
-        nr.setParseContext(parseContext);
-        tokenStack.push(nr);
-      }
-      else if (t == Token.INTEGER)
-      {
-        IntegerValue i = new IntegerValue();
-        pos += i.read(tokenData, pos);
-        tokenStack.push(i);
-      }
-      else if (t == Token.DOUBLE)
-      {
-        DoubleValue d = new DoubleValue();
-        pos += d.read(tokenData, pos);
-        tokenStack.push(d);
-      }
-      else if (t == Token.BOOL)
-      {
-        BooleanValue bv = new BooleanValue();
-        pos += bv.read(tokenData, pos);
-        tokenStack.push(bv);
-      }
-      else if (t == Token.STRING)
-      {
-        StringValue sv = new StringValue(settings);
-        pos += sv.read(tokenData, pos);
-        tokenStack.push(sv);
-      }
-      else if (t == Token.MISSING_ARG)
-      {
-        MissingArg ma = new MissingArg();
-        pos += ma.read(tokenData, pos);
-        tokenStack.push(ma);
-      }
-
-      // Unary Operators
-      else if (t == Token.UNARY_PLUS)
-      {
-        UnaryPlus up = new UnaryPlus();
-        pos += up.read(tokenData, pos);
-        addOperator(up);
-      }
-      else if (t == Token.UNARY_MINUS)
-      {
-        UnaryMinus um = new UnaryMinus();
-        pos += um.read(tokenData, pos);
-        addOperator(um);
-      }
-      else if (t == Token.PERCENT)
-      {
-        Percent p = new Percent();
-        pos += p.read(tokenData, pos);
-        addOperator(p);
-      }
-
-      // Binary Operators
-      else if (t == Token.SUBTRACT)
-      {
-        Subtract s = new Subtract();
-        pos += s.read(tokenData, pos);
-        addOperator(s);
-      }
-      else if (t == Token.ADD)
-      {
-        Add s = new Add();
-        pos += s.read(tokenData, pos);
-        addOperator(s);
-      }
-      else if (t == Token.MULTIPLY)
-      {
-        Multiply s = new Multiply();
-        pos += s.read(tokenData, pos);
-        addOperator(s);
-      }
-      else if (t == Token.DIVIDE)
-      {
-        Divide s = new Divide();
-        pos += s.read(tokenData, pos);
-        addOperator(s);
-      }
-      else if (t == Token.CONCAT)
-      {
-        Concatenate c = new Concatenate();
-        pos += c.read(tokenData, pos);
-        addOperator(c);
-      }
-      else if (t == Token.POWER)
-      {
-        Power p = new Power();
-        pos += p.read(tokenData, pos);
-        addOperator(p);
-      }
-      else if (t == Token.LESS_THAN)
-      {
-        LessThan lt = new LessThan();
-        pos += lt.read(tokenData, pos);
-        addOperator(lt);
-      }
-      else if (t == Token.LESS_EQUAL)
-      {
-        LessEqual lte = new LessEqual();
-        pos += lte.read(tokenData, pos);
-        addOperator(lte);
-      }
-      else if (t == Token.GREATER_THAN)
-      {
-        GreaterThan gt = new GreaterThan();
-        pos += gt.read(tokenData, pos);
-        addOperator(gt);
-      }
-      else if (t == Token.GREATER_EQUAL)
-      {
-        GreaterEqual gte = new GreaterEqual();
-        pos += gte.read(tokenData, pos);
-        addOperator(gte);
-      }
-      else if (t == Token.NOT_EQUAL)
-      {
-        NotEqual ne = new NotEqual();
-        pos += ne.read(tokenData, pos);
-        addOperator(ne);
-      }
-      else if (t == Token.EQUAL)
-      {
-        Equal e = new Equal();
-        pos += e.read(tokenData, pos);
-        addOperator(e);
-      }
-      else if (t == Token.PARENTHESIS)
-      {
-        Parenthesis p = new Parenthesis();
-        pos += p.read(tokenData, pos);
-        addOperator(p);
-      }
-
-      // Functions
-      else if (t == Token.ATTRIBUTE)
-      {
-        Attribute a = new Attribute(settings);
-        pos += a.read(tokenData, pos);
-
-        if (a.isSum())
-        {
-          addOperator(a);
+        // Operands
+        case REF -> {
+          CellReference cr = new CellReference(relativeTo);
+          pos += cr.read(tokenData, pos);
+          tokenStack.push(cr);
         }
-        else if (a.isIf())
-        {
-          // Add it to a special stack for ifs
-          ifStack.push(a);
+        case REFERR -> {
+          CellReferenceError cr = new CellReferenceError();
+          pos += cr.read(tokenData, pos);
+          tokenStack.push(cr);
         }
-      }
-      else if (t == Token.FUNCTION)
-      {
-        BuiltInFunction bif = new BuiltInFunction(settings);
-        pos += bif.read(tokenData, pos);
-
-        addOperator(bif);
-      }
-      else if (t == Token.FUNCTIONVARARG)
-      {
-        VariableArgFunction vaf = new VariableArgFunction(settings);
-        pos += vaf.read(tokenData, pos);
-
-        if (vaf.getFunction() != Function.ATTRIBUTE)
-        {
-          addOperator(vaf);
+        case ERR -> {
+          ErrorConstant ec = new ErrorConstant();
+          pos += ec.read(tokenData, pos);
+          tokenStack.push(ec);
         }
-        else
-        {
-          // This is part of an IF function.  Get the operands, but then
-          // add it to the top of the if stack
-          vaf.getOperands(tokenStack);
+        case REF_N -> {
+          SharedFormulaCellReference cr = new SharedFormulaCellReference(relativeTo);
+          pos += cr.read(tokenData, pos);
+          tokenStack.push(cr);
+        }
+        case REF3D -> {
+          CellReference3d cr = new CellReference3d(relativeTo, workbook);
+          pos += cr.read(tokenData, pos);
+          tokenStack.push(cr);
+        }
+        case AREA -> {
+          Area a = new Area();
+          pos += a.read(tokenData, pos);
+          tokenStack.push(a);
+        }
+        case AREA_N -> {
+          SharedFormulaArea a = new SharedFormulaArea(relativeTo);
+          pos += a.read(tokenData, pos);
+          tokenStack.push(a);
+        }
+        case AREA3D -> {
+          Area3d a = new Area3d(workbook);
+          pos += a.read(tokenData, pos);
+          tokenStack.push(a);
+        }
+        case NAME_X -> {
+          Name n = new Name();
+          pos += n.read(tokenData, pos);
+          n.setParseContext(parseContext);
+          tokenStack.push(n);
+        }
+        case NAME -> {
+          NameRange nr = new NameRange(nameTable);
+          pos += nr.read(tokenData, pos);
+          nr.setParseContext(parseContext);
+          tokenStack.push(nr);
+        }
+        case INTEGER -> {
+          IntegerValue i = new IntegerValue();
+          pos += i.read(tokenData, pos);
+          tokenStack.push(i);
+        }
+        case DOUBLE -> {
+          DoubleValue d = new DoubleValue();
+          pos += d.read(tokenData, pos);
+          tokenStack.push(d);
+        }
+        case BOOL -> {
+          BooleanValue bv = new BooleanValue();
+          pos += bv.read(tokenData, pos);
+          tokenStack.push(bv);
+        }
+        case STRING -> {
+          StringValue sv = new StringValue(settings);
+          pos += sv.read(tokenData, pos);
+          tokenStack.push(sv);
+        }
+        case MISSING_ARG -> {
+          MissingArg ma = new MissingArg();
+          pos += ma.read(tokenData, pos);
+          tokenStack.push(ma);
+        }
 
-          Attribute ifattr = null;
-          if (ifStack.empty())
+        // Unary Operators
+        case UNARY_PLUS -> {
+          UnaryPlus up = new UnaryPlus();
+          pos += up.read(tokenData, pos);
+          addOperator(up);
+        }
+        case UNARY_MINUS -> {
+          UnaryMinus um = new UnaryMinus();
+          pos += um.read(tokenData, pos);
+          addOperator(um);
+        }
+        case PERCENT -> {
+          Percent p = new Percent();
+          pos += p.read(tokenData, pos);
+          addOperator(p);
+        }
+
+        // Binary Operators
+        case SUBTRACT -> {
+          Subtract s = new Subtract();
+          pos += s.read(tokenData, pos);
+          addOperator(s);
+        }
+        case ADD -> {
+          Add s = new Add();
+          pos += s.read(tokenData, pos);
+          addOperator(s);
+        }
+        case MULTIPLY -> {
+          Multiply s = new Multiply();
+          pos += s.read(tokenData, pos);
+          addOperator(s);
+        }
+        case DIVIDE -> {
+          Divide s = new Divide();
+          pos += s.read(tokenData, pos);
+          addOperator(s);
+        }
+        case CONCAT -> {
+          Concatenate c = new Concatenate();
+          pos += c.read(tokenData, pos);
+          addOperator(c);
+        }
+        case POWER -> {
+          Power p = new Power();
+          pos += p.read(tokenData, pos);
+          addOperator(p);
+        }
+        case LESS_THAN -> {
+          LessThan lt = new LessThan();
+          pos += lt.read(tokenData, pos);
+          addOperator(lt);
+        }
+        case LESS_EQUAL -> {
+          LessEqual lte = new LessEqual();
+          pos += lte.read(tokenData, pos);
+          addOperator(lte);
+        }
+        case GREATER_THAN -> {
+          GreaterThan gt = new GreaterThan();
+          pos += gt.read(tokenData, pos);
+          addOperator(gt);
+        }
+        case GREATER_EQUAL -> {
+          GreaterEqual gte = new GreaterEqual();
+          pos += gte.read(tokenData, pos);
+          addOperator(gte);
+        }
+        case NOT_EQUAL -> {
+          NotEqual ne = new NotEqual();
+          pos += ne.read(tokenData, pos);
+          addOperator(ne);
+        }
+        case EQUAL -> {
+          Equal e = new Equal();
+          pos += e.read(tokenData, pos);
+          addOperator(e);
+        }
+        case PARENTHESIS -> {
+          Parenthesis p = new Parenthesis();
+          pos += p.read(tokenData, pos);
+          addOperator(p);
+        }
+
+        // Functions
+        case ATTRIBUTE -> {
+          Attribute a = new Attribute(settings);
+          pos += a.read(tokenData, pos);
+          if (a.isSum())
+            addOperator(a);
+          else if (a.isIf())
+            // Add it to a special stack for ifs
+            ifStack.push(a);
+        }
+        case FUNCTION -> {
+          BuiltInFunction bif = new BuiltInFunction(settings);
+          pos += bif.read(tokenData, pos);
+          addOperator(bif);
+        }
+        case FUNCTIONVARARG -> {
+          VariableArgFunction vaf = new VariableArgFunction(settings);
+          pos += vaf.read(tokenData, pos);
+          if (vaf.getFunction() != Function.ATTRIBUTE)
           {
-            ifattr = new Attribute(settings);
+            addOperator(vaf);
           }
           else
           {
-            ifattr = (Attribute) ifStack.pop();
-          }
-          
-          ifattr.setIfConditions(vaf);
-          tokenStack.push(ifattr);
-        }
-      }
+            // This is part of an IF function.  Get the operands, but then
+            // add it to the top of the if stack
+            vaf.getOperands(tokenStack);
 
-      // Other things
-      else if (t == Token.MEM_FUNC)
-      {
-        MemFunc memFunc = new MemFunc();
-        handleMemoryFunction(memFunc);
-      }
-      else if (t == Token.MEM_AREA)
-      {
-        MemArea memArea = new MemArea();
-        handleMemoryFunction(memArea);
+            Attribute ifattr = ifStack.empty()
+                    ? new Attribute(settings)
+                    : ifStack.pop();
+
+            ifattr.setIfConditions(vaf);
+            tokenStack.push(ifattr);
+          }
+        }
+
+        // Other things
+        case MEM_FUNC -> {
+          MemFunc memFunc = new MemFunc();
+          handleMemoryFunction(memFunc);
+        }
+        case MEM_AREA -> {
+          MemArea memArea = new MemArea();
+          handleMemoryFunction(memArea);
+        }
       }
     }
   }
@@ -424,14 +360,14 @@ class TokenFormulaParser implements Parser
   /**
    * Handles a memory function
    */
-  private void handleMemoryFunction(SubExpression subxp) 
+  private void handleMemoryFunction(SubExpression subxp)
     throws FormulaException
   {
     pos += subxp.read(tokenData, pos);
 
     // Create new tokenStack for the sub expression
-    Stack oldStack = tokenStack;
-    tokenStack = new Stack();
+    Stack<ParseItem> oldStack = tokenStack;
+    tokenStack = new Stack<>();
 
     parseSubExpression(subxp.getLength());
 
@@ -439,12 +375,12 @@ class TokenFormulaParser implements Parser
     int i = 0;
     while (!tokenStack.isEmpty())
     {
-      subexpr[i] = (ParseItem) tokenStack.pop();
+      subexpr[i] = tokenStack.pop();
       i++;
     }
 
     subxp.setSubExpression(subexpr);
-        
+
     tokenStack = oldStack;
     tokenStack.push(subxp);
   }
@@ -465,6 +401,7 @@ class TokenFormulaParser implements Parser
   /**
    * Gets the formula as a string
    */
+  @Override
   public String getFormula()
   {
     StringBuffer sb = new StringBuffer();
@@ -479,6 +416,7 @@ class TokenFormulaParser implements Parser
    * @param colAdjust the amount to add on to each relative cell reference
    * @param rowAdjust the amount to add on to each relative row reference
    */
+  @Override
   public void adjustRelativeCellReferences(int colAdjust, int rowAdjust)
   {
     root.adjustRelativeCellReferences(colAdjust, rowAdjust);
@@ -490,6 +428,7 @@ class TokenFormulaParser implements Parser
    *
    * @return the bytes in RPN
    */
+  @Override
   public byte[] getBytes()
   {
     return root.getBytes();
@@ -505,6 +444,7 @@ class TokenFormulaParser implements Parser
    * @param currentSheet TRUE if this formula is on the sheet in which the
    * column was inserted, FALSE otherwise
    */
+  @Override
   public void columnInserted(int sheetIndex, int col, boolean currentSheet)
   {
     root.columnInserted(sheetIndex, col, currentSheet);
@@ -519,6 +459,7 @@ class TokenFormulaParser implements Parser
    * @param currentSheet TRUE if this formula is on the sheet in which the
    * column was inserted, FALSE otherwise
    */
+  @Override
   public void columnRemoved(int sheetIndex, int col, boolean currentSheet)
   {
     root.columnRemoved(sheetIndex, col, currentSheet);
@@ -534,6 +475,7 @@ class TokenFormulaParser implements Parser
    * @param currentSheet TRUE if this formula is on the sheet in which the
    * column was inserted, FALSE otherwise
    */
+  @Override
   public void rowInserted(int sheetIndex, int row, boolean currentSheet)
   {
     root.rowInserted(sheetIndex, row, currentSheet);
@@ -549,6 +491,7 @@ class TokenFormulaParser implements Parser
    * @param currentSheet TRUE if this formula is on the sheet in which the
    * column was inserted, FALSE otherwise
    */
+  @Override
   public void rowRemoved(int sheetIndex, int row, boolean currentSheet)
   {
     root.rowRemoved(sheetIndex, row, currentSheet);
@@ -560,6 +503,7 @@ class TokenFormulaParser implements Parser
    *
    * @return TRUE if the formula is valid import, FALSE otherwise
    */
+  @Override
   public boolean handleImportedCellReferences()
   {
     root.handleImportedCellReferences();

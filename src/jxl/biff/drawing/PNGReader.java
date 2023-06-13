@@ -19,8 +19,7 @@
 
 package jxl.biff.drawing;
 
-import java.io.File;
-import java.io.FileInputStream;
+import java.nio.file.*;
 import java.util.Arrays;
 
 public class PNGReader
@@ -138,15 +137,9 @@ public class PNGReader
   {
     try
     {
-      File f = new File(args[0]);
-      int size = (int) f.length();
+      Path f = Paths.get(args[0]);
 
-      byte[] data = new byte[size];
-
-      FileInputStream fis = new FileInputStream(f);
-      fis.read(data);
-      fis.close();
-      PNGReader reader = new PNGReader(data);
+      PNGReader reader = new PNGReader(Files.readAllBytes(f));
       reader.read();
     }
     catch (Throwable t)

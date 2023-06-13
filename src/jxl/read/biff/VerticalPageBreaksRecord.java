@@ -19,33 +19,29 @@
 
 package jxl.read.biff;
 
-import jxl.common.Logger;
-
-import jxl.biff.IntegerHelper;
-import jxl.biff.RecordData;
+import java.util.*;
+import java.util.stream.Collectors;
+import jxl.biff.*;
 
 /**
  * Contains the cell dimensions of this worksheet
  */
-class VerticalPageBreaksRecord extends RecordData
-{
-  /**
-   * The logger
-   */
-  private final Logger logger = Logger.getLogger
-    (VerticalPageBreaksRecord.class);
+public class VerticalPageBreaksRecord extends RecordData implements IVerticalPageBreaks {
 
   /**
    * The row page breaks
    */
-  private int[] columnBreaks;
+  private final List<ColumnIndex> columnBreaks = new ArrayList<>();
 
   /**
    * Dummy indicators for overloading the constructor
    */
   private static class Biff7 {};
-  public static Biff7 biff7 = new Biff7();
+  public static final Biff7 biff7 = new Biff7();
 
+  public VerticalPageBreaksRecord() {
+    super(Type.VERTICALPAGEBREAKS);
+  }
   /**
    * Constructs the dimensions from the raw data
    *
@@ -59,11 +55,13 @@ class VerticalPageBreaksRecord extends RecordData
 
     int numbreaks = IntegerHelper.getInt(data[0], data[1]);
     int pos = 2;
-    columnBreaks = new int[numbreaks];
 
     for (int i = 0; i < numbreaks; i++)
     {
-      columnBreaks[i] = IntegerHelper.getInt(data[pos], data[pos + 1]);
+      columnBreaks.add(new ColumnIndex(
+              IntegerHelper.getInt(data[pos], data[pos + 1]),
+              IntegerHelper.getInt(data[pos + 2], data[pos + 3]),
+              IntegerHelper.getInt(data[pos + 4], data[pos + 5])));
       pos += 6;
     }
   }
@@ -81,10 +79,12 @@ class VerticalPageBreaksRecord extends RecordData
     byte[] data = t.getData();
     int numbreaks = IntegerHelper.getInt(data[0], data[1]);
     int pos = 2;
-    columnBreaks = new int[numbreaks];
     for (int i = 0; i < numbreaks; i++)
     {
-      columnBreaks[i] = IntegerHelper.getInt(data[pos], data[pos + 1]);
+      columnBreaks.add(new ColumnIndex(
+              IntegerHelper.getInt(data[pos], data[pos + 1]),
+              0,
+              0xffff));
       pos += 2;
     }
   }
@@ -94,15 +94,12 @@ class VerticalPageBreaksRecord extends RecordData
    *
    * @return the row breaks on the current sheet
    */
-  public int[] getColumnBreaks()
+  @Override
+  public List<Integer> getColumnBreaks()
   {
-    return columnBreaks;
+    return columnBreaks.stream()
+            .map(ColumnIndex::getFirstColumnFollowingBreak)
+            .collect(Collectors.toList());
   }
+
 }
-
-
-
-
-
-
-

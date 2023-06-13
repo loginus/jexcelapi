@@ -19,30 +19,30 @@
 
 package jxl.write.biff;
 
-import jxl.biff.IntegerHelper;
-import jxl.biff.Type;
-import jxl.biff.WritableRecordData;
+import java.io.IOException;
+import java.util.*;
+import java.util.stream.Collectors;
+import jxl.biff.*;
+import jxl.read.biff.IVerticalPageBreaks;
 
 /**
  * Contains the list of explicit horizontal page breaks on the current sheet
  */
-class VerticalPageBreaksRecord extends WritableRecordData
-{
+class VerticalPageBreaksRecord extends WritableRecordData implements IVerticalPageBreaks {
+  
   /**
    * The row breaks
    */
-  private int[] columnBreaks;
+  private List<ColumnIndex> columnBreaks = new ArrayList<>();
   
   /**
    * Constructor
    * 
    * @param break the row breaks
    */
-  public VerticalPageBreaksRecord(int[] breaks)
+  VerticalPageBreaksRecord()
   {
     super(Type.VERTICALPAGEBREAKS);
-
-    columnBreaks = breaks;
   }
 
   /**
@@ -50,23 +50,82 @@ class VerticalPageBreaksRecord extends WritableRecordData
    * 
    * @return the binary data
    */
+  @Override
   public byte[] getData()
   {
-    byte[] data = new byte[columnBreaks.length * 6 + 2];
+    byte[] data = new byte[columnBreaks.size() * 6 + 2];
 
     // The number of breaks on the list
-    IntegerHelper.getTwoBytes(columnBreaks.length, data, 0);
+    IntegerHelper.getTwoBytes(columnBreaks.size(), data, 0);
     int pos = 2;
 
-    for (int i = 0; i < columnBreaks.length; i++)
-    {
-      IntegerHelper.getTwoBytes(columnBreaks[i], data, pos);
-      IntegerHelper.getTwoBytes(0xff, data, pos+4);
+    for (ColumnIndex cb : columnBreaks) {
+      IntegerHelper.getTwoBytes(cb.getFirstColumnFollowingBreak(), data, pos);
+      IntegerHelper.getTwoBytes(cb.getFirstRow(), data, pos+2);
+      IntegerHelper.getTwoBytes(cb.getLastRow(), data, pos+4);
       pos += 6;
     }
 
     return data;
   }
+
+  @Override
+  public List<Integer> getColumnBreaks() {
+    return columnBreaks.stream()
+            .map(ColumnIndex::getFirstColumnFollowingBreak)
+            .collect(Collectors.toList());
+  }
+
+  void setColumnBreaks(IVerticalPageBreaks breaks) {
+    columnBreaks = breaks.getColumnBreaks().stream()
+            .map(i -> colToColumnIndex(i))
+            .collect(Collectors.toList());
+  }
+
+  void clear() {
+    columnBreaks.clear();
+  }
+
+  void addBreak(int col) {
+    // First check that the row is not already present
+    Iterator<ColumnIndex> i = columnBreaks.iterator();
+
+    while (i.hasNext())
+      if (i.next().getFirstColumnFollowingBreak() == col)
+        return;
+
+    columnBreaks.add(colToColumnIndex(col));
+  }
+
+  private ColumnIndex colToColumnIndex(int col) {
+    return new ColumnIndex(col, 0, 0xffff);
+  }
+
+  void insertColumn(int col) {
+    ListIterator<ColumnIndex> ri = columnBreaks.listIterator();
+    while (ri.hasNext())
+    {
+      ColumnIndex val = ri.next();
+      if (val.getFirstColumnFollowingBreak() >= col)
+        ri.set(val.withFirstColumnFollowingBreak(val.getFirstColumnFollowingBreak()+1));
+    }
+  }
+
+  void removeColumn(int col) {
+    ListIterator<ColumnIndex> ri = columnBreaks.listIterator();
+    while (ri.hasNext())
+    {
+      ColumnIndex val = ri.next();
+      if (val.getFirstColumnFollowingBreak() == col)
+        ri.remove();
+      else if (val.getFirstColumnFollowingBreak() > col)
+        ri.set(val.withFirstColumnFollowingBreak(val.getFirstColumnFollowingBreak()-1));
+    }
+  }
+
+  void write(File outputFile) throws IOException {
+    if (columnBreaks.size() > 0)
+      outputFile.write(this);
+  }
+ 
 }
-
-

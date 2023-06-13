@@ -19,8 +19,8 @@
 
 package jxl.demo;
 
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.*;
 
 import jxl.WorkbookSettings;
 import jxl.biff.StringHelper;
@@ -37,11 +37,11 @@ class WriteAccess
 {
   private BiffRecordReader reader;
 
-  public WriteAccess(java.io.File file) 
+  public WriteAccess(Path file) 
     throws IOException, BiffException
   {
     WorkbookSettings ws = new WorkbookSettings();
-    FileInputStream fis = new FileInputStream(file);
+    InputStream fis = Files.newInputStream(file);
     File f = new File(fis, ws);
     reader = new BiffRecordReader(f);
 

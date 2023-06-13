@@ -46,28 +46,11 @@ public class FooterRecord extends RecordData
    * @param t the record data
    * @param ws the workbook settings
    */
-  FooterRecord(Record t, WorkbookSettings ws)
+  FooterRecord(Record t)
   {
     super(t);
-    byte[] data = getRecord().getData();
-
-    if (data.length == 0)
-    {
-      return;
-    }
-
-    int chars = IntegerHelper.getInt(data[0], data[1]);
-
-    boolean unicode = data[2] == 1;
-
-    if (unicode)
-    {
-      footer = StringHelper.getUnicodeString(data, chars, 3);
-    }
-    else
-    {
-      footer = StringHelper.getString(data, chars, 3, ws);
-    }
+    if (t.getData().length > 0)
+      footer = StringHelper.readBiff8String(t.getData());
   }
 
   /**

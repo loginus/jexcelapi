@@ -35,15 +35,11 @@ import jxl.biff.formula.ExternalSheet;
  */
 class FormulaRecord extends CellValue
 {
-  /**
-   * The logger
-   */
-  private static Logger logger = Logger.getLogger(FormulaRecord.class);
 
   /**
    * The "real" formula record - will be either a string a or a number
    */
-  private CellValue formula;
+  private final CellValue formula;
 
   /**
    * Flag to indicate whether this is a shared formula
@@ -77,11 +73,12 @@ class FormulaRecord extends CellValue
                        ExternalSheet es,
                        WorkbookMethods nt,
                        SheetImpl si,
-                       WorkbookSettings ws)
+                       WorkbookSettings ws,
+                       boolean isBiff8)
   {
     super(t, fr, si);
 
-    byte[] data = getRecord().getData();
+    byte[] data = t.getData();
 
     shared = false;
 
@@ -95,13 +92,13 @@ class FormulaRecord extends CellValue
       {
         // It is a shared string formula
         formula = new SharedStringFormulaRecord
-          (t, excelFile, fr, es, nt, si, ws);
+          (t, excelFile, fr, es, nt, si);
       }
       else if (data[6]  == 3 && data[12] == -1 &&  data[13] == -1)
       {
         // We have a string which evaluates to null
         formula = new SharedStringFormulaRecord
-          (t, excelFile, fr, es, nt, si, 
+          (t, excelFile, fr, es, nt, si,
            SharedStringFormulaRecord.EMPTY_STRING);
       }
       else if (data[6]  == 2 &&
@@ -110,14 +107,14 @@ class FormulaRecord extends CellValue
       {
         // The cell is in error
         int errorCode = data[8];
-        formula = new SharedErrorFormulaRecord(t, excelFile, errorCode, 
+        formula = new SharedErrorFormulaRecord(t, excelFile, errorCode,
                                                fr, es, nt, si);
       }
       else if (data[6]  == 1  &&
                data[12] == -1 &&
                data[13] == -1)
       {
-        boolean value = data[8] == 1 ? true : false;
+        boolean value = data[8] == 1;
         formula = new SharedBooleanFormulaRecord
           (t, excelFile, value, fr, es, nt, si);
       }
@@ -139,7 +136,9 @@ class FormulaRecord extends CellValue
     if (data[6] == 0 && data[12] == -1 && data[13] == -1)
     {
       // we have a string
-      formula = new StringFormulaRecord(t, excelFile, fr, es, nt, si, ws);
+      formula = isBiff8
+              ? new StringFormulaRecordBiff8(t, excelFile, fr, es, nt, si)
+              : new StringFormulaRecordBiff7(t, excelFile, fr, es, nt, si, ws);
     }
     else if (data[6]  == 1  &&
              data[12] == -1 &&
@@ -159,7 +158,9 @@ class FormulaRecord extends CellValue
     else if (data[6] == 3 && data[12] == -1 && data[13] == -1)
     {
       // we have a string which evaluates to null
-      formula = new StringFormulaRecord(t, fr, es, nt, si);
+      formula = isBiff8
+              ? new StringFormulaRecordBiff8(t, fr, es, nt, si)
+              : new StringFormulaRecordBiff7(t, fr, es, nt, si);
     }
     else
     {
@@ -190,10 +191,11 @@ class FormulaRecord extends CellValue
                        WorkbookMethods nt,
                        IgnoreSharedFormula i,
                        SheetImpl si,
-                       WorkbookSettings ws)
+                       WorkbookSettings ws,
+                       boolean isBiff8)
   {
     super(t, fr, si);
-    byte[] data = getRecord().getData();
+    byte[] data = t.getData();
 
     shared = false;
 
@@ -202,7 +204,9 @@ class FormulaRecord extends CellValue
     if (data[6] == 0 && data[12] == -1 && data[13] == -1)
     {
       // we have a string
-      formula = new StringFormulaRecord(t, excelFile, fr, es, nt, si, ws);
+      formula = isBiff8
+              ? new StringFormulaRecordBiff8(t, excelFile, fr, es, nt, si)
+              : new StringFormulaRecordBiff7(t, excelFile, fr, es, nt, si, ws);
     }
     else if (data[6]  == 1  &&
              data[12] == -1 &&
@@ -231,6 +235,7 @@ class FormulaRecord extends CellValue
    *
    * @return The numerical value of the formula as a string
    */
+  @Override
   public String getContents()
   {
     Assert.verify(false);
@@ -242,6 +247,7 @@ class FormulaRecord extends CellValue
    *
    * @return The cell type
    */
+  @Override
   public CellType getType()
   {
     Assert.verify(false);

@@ -19,8 +19,10 @@
 
 package jxl;
 
+import java.util.List;
 import java.util.regex.Pattern;
 import jxl.format.CellFormat;
+import jxl.read.biff.*;
 
 /**
  * Represents a sheet within a workbook.  Provides a handle to the individual
@@ -90,22 +92,6 @@ public interface Sheet
   public String getName();
 
   /**
-   * Determines whether the sheet is hidden
-   *
-   * @return whether or not the sheet is hidden
-   * @deprecated in favour of the getSettings() method
-   */
-  public boolean isHidden();
-
-  /**
-   * Determines whether the sheet is protected
-   *
-   * @return whether or not the sheet is protected
-   * @deprecated in favour of the getSettings() method
-   */
-  public boolean isProtected();
-
-  /**
    * Gets the cell whose contents match the string passed in.
    * If no match is found, then null is returned.  The search is performed
    * on a row by row basis, so the lower the row number, the more
@@ -121,7 +107,7 @@ public interface Sheet
    * If no match is found, then null is returned.  The search is performed
    * on a row by row basis, so the lower the row number, the more
    * efficiently the algorithm will perform
-   * 
+   *
    * @param contents the string to match
    * @param firstCol the first column within the range
    * @param firstRow the first row of the range
@@ -130,11 +116,11 @@ public interface Sheet
    * @param reverse indicates whether to perform a reverse search or not
    * @return the Cell whose contents match the parameter, null if not found
    */
-  public Cell findCell(String contents, 
-                       int firstCol, 
-                       int firstRow, 
-                       int lastCol, 
-                       int lastRow, 
+  public Cell findCell(String contents,
+                       int firstCol,
+                       int firstRow,
+                       int lastCol,
+                       int lastRow,
                        boolean reverse);
 
   /**
@@ -142,7 +128,7 @@ public interface Sheet
    * If no match is found, then null is returned.  The search is performed
    * on a row by row basis, so the lower the row number, the more
    * efficiently the algorithm will perform
-   * 
+   *
    * @param pattern the regular expression string to match
    * @param firstCol the first column within the range
    * @param firstRow the first row of the rang
@@ -151,11 +137,11 @@ public interface Sheet
    * @param reverse indicates whether to perform a reverse search or not
    * @return the Cell whose contents match the parameter, null if not found
    */
-  public Cell findCell(Pattern pattern, 
-                       int firstCol, 
+  public Cell findCell(Pattern pattern,
+                       int firstCol,
                        int firstRow,
-                       int lastCol,  
-                       int lastRow, 
+                       int lastCol,
+                       int lastRow,
                        boolean reverse);
 
   /**
@@ -182,9 +168,9 @@ public interface Sheet
   /**
    * Gets the cells which have been merged on this sheet
    *
-   * @return an array of range objects
+   * @return a List of range objects
    */
-  public Range[] getMergedCells();
+  public List<Range> getMergedCells();
 
   /**
    * Gets the settings used on a particular sheet
@@ -260,14 +246,14 @@ public interface Sheet
    *
    * @return the page breaks on this sheet
    */
-  public int[] getRowPageBreaks();
+  public IHorizontalPageBreaks getRowPageBreaks();
 
   /**
    * Accessor for the page breaks on this sheet
    *
    * @return the page breaks on this sheet
    */
-  public int[] getColumnPageBreaks();
+  public IVerticalPageBreaks getColumnPageBreaks();
 
 }
 

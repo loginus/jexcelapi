@@ -19,12 +19,9 @@
 
 package jxl.write;
 
-import jxl.CellView;
-import jxl.Range;
-import jxl.Sheet;
+import jxl.*;
+import jxl.format.*;
 import jxl.format.CellFormat;
-import jxl.format.PageOrientation;
-import jxl.format.PaperSize;
 import jxl.write.biff.RowsExceededException;
 
 /**
@@ -42,7 +39,7 @@ public interface WritableSheet extends Sheet
    * class of RowsExceededException
    *
    * @param cell the cell to add
-   * @exception jxl.write..WriteException
+   * @exception jxl.write.WriteException
    * @exception jxl.write.biff.RowsExceededException
    */
   public void addCell(WritableCell cell)
@@ -53,20 +50,6 @@ public interface WritableSheet extends Sheet
    * @param name the name of the sheet
    */
   public void setName(String name);
-  /**
-   * Indicates whether or not this sheet is hidden
-   *
-   * @param hidden hidden flag
-   * @deprecated use the SheetSettings bean instead
-   */
-  public void setHidden(boolean hidden);
-  /**
-   * Indicates whether or not this sheet is protected
-   *
-   * @param prot Protected flag
-   * @deprecated use the SheetSettings bean instead
-   */
-  public void setProtected(boolean prot);
 
   /**
    * Sets the width of the column on this sheet, in characters.  This causes
@@ -78,18 +61,6 @@ public interface WritableSheet extends Sheet
    * @param width the width of the column
    */
   public void setColumnView(int col, int width);
-
-  /**
-   * Sets the width and style of every cell in the specified column.
-   * If the columns specified already has view information associated
-   * with it, then it is replaced by the new data
-   *
-   * @param col the column to be formatted
-   * @param format the format of every cell in the column
-   * @param width the width of the column, in characters
-   * @deprecated Use the CellView bean instead
-   */
-  public void setColumnView(int col, int width, CellFormat format);
 
   /**
    * Sets the view for this column
@@ -118,18 +89,6 @@ public interface WritableSheet extends Sheet
    */
   public void setRowView(int row, boolean collapsed)
     throws RowsExceededException;
-
-  /**
-   * Sets the height of the specified row, as well as its collapse status
-   *
-   * @param row the row to be formatted
-   * @param height the row height in 1/20th of a point
-   * @param collapsed indicates whether the row is collapsed
-   * @exception jxl.write.biff.RowsExceededException
-   */
-  public void setRowView(int row, int height,
-                         boolean collapsed)
-                         throws RowsExceededException;
 
   /**
    * Sets the view for this column
@@ -171,12 +130,13 @@ public interface WritableSheet extends Sheet
   public WritableHyperlink[] getWritableHyperlinks();
 
   /**
-   * Inserts a blank row into this spreadsheet.  If the row is out of range
+   * Inserts a blank row into this spreadsheet. If the row is out of range
    * of the rows in the sheet, then no action is taken
    *
    * @param row the row to insert
+   * @throws jxl.write.biff.RowsExceededException
    */
-  public void insertRow(int row);
+  public void insertRow(int row) throws RowsExceededException;
 
   /**
    * Inserts a blank column into this spreadsheet.  If the column is out of
@@ -217,7 +177,7 @@ public interface WritableSheet extends Sheet
   public Range mergeCells(int col1, int row1, int col2, int row2)
     throws WriteException, RowsExceededException;
 
-  /** 
+  /**
    * Sets a row grouping
    *
    * @param row1 the first row of the group
@@ -229,7 +189,7 @@ public interface WritableSheet extends Sheet
   public void setRowGroup(int row1, int row2, boolean collapsed)
     throws WriteException, RowsExceededException;
 
-  /** 
+  /**
    * Unsets a row grouping
    *
    * @param row1 the first row to unset
@@ -240,7 +200,7 @@ public interface WritableSheet extends Sheet
   public void unsetRowGroup(int row1, int row2)
     throws WriteException, RowsExceededException;
 
-  /** 
+  /**
    * Sets a column grouping
    *
    * @param col1 the first column of the group
@@ -252,7 +212,7 @@ public interface WritableSheet extends Sheet
   public void setColumnGroup(int col1, int col2, boolean collapsed)
     throws WriteException, RowsExceededException;
 
-  /** 
+  /**
    * Unsets a column grouping
    *
    * @param col1 the first column to unset
@@ -262,7 +222,7 @@ public interface WritableSheet extends Sheet
    */
   public void unsetColumnGroup(int col1, int col2)
     throws WriteException, RowsExceededException;
-    
+
   /**
    * Unmerges the specified cells.  The Range passed in should be one that
    * has been previously returned as a result of the getMergedCells method
@@ -366,7 +326,7 @@ public interface WritableSheet extends Sheet
    * @param row the row to break at
    */
   public void addRowPageBreak(int row);
-  
+
   /**
    * Forces a page break at the specified column
    *
@@ -386,6 +346,7 @@ public interface WritableSheet extends Sheet
    *
    * @return the number of images on this sheet
    */
+  @Override
   public int getNumberOfImages();
 
   /**
@@ -406,7 +367,7 @@ public interface WritableSheet extends Sheet
   public void removeImage(WritableImage wi);
 
   /**
-   * Extend the data validation contained in the specified cell across and 
+   * Extend the data validation contained in the specified cell across and
    * downwards.
    * NOTE:  The source cell (top left) must have been added to the sheet prior
    * to this method being called
@@ -414,12 +375,12 @@ public interface WritableSheet extends Sheet
    * @param col the number of cells accross to apply this data validation
    * @param row the number of cells downwards to apply this data validation
    */
-  public void applySharedDataValidation(WritableCell cell, int col, int row) 
+  public void applySharedDataValidation(WritableCell cell, int col, int row)
     throws WriteException;
 
   /**
-   * Remove the shared data validation from multiple cells.  The cell passed 
-   * in is the top left cell.  The data validation is removed from this 
+   * Remove the shared data validation from multiple cells.  The cell passed
+   * in is the top left cell.  The data validation is removed from this
    * cell and all cells which share the same validation.
    *
    * @param cell the top left cell containing the shared data validation

@@ -153,7 +153,7 @@ public class SupbookRecord extends RecordData
       pos = 7;
       if (encoding == 0)
       {
-        fileName = StringHelper.getUnicodeString(data, ln, pos);
+        fileName = StringHelper.getUnicodeString(data, pos, ln);
         pos += ln * 2;
       }
       else
@@ -166,20 +166,7 @@ public class SupbookRecord extends RecordData
     sheetNames = new String[numSheets];
 
     for (int i = 0; i < sheetNames.length; i++)
-    {
-      ln = IntegerHelper.getInt(data[pos], data[pos + 1]);
-
-      if (data[pos + 2] == 0x0)
-      {
-        sheetNames[i] = StringHelper.getString(data, ln, pos + 3, ws);
-        pos += ln + 3;
-      }
-      else if (data[pos + 2] == 0x1)
-      {
-        sheetNames[i] = StringHelper.getUnicodeString(data, ln, pos + 3);
-        pos += ln * 2 + 3;
-      }
-    }
+      sheetNames[i] = StringHelper.readBiff8String(data, pos);
   }
 
   /**

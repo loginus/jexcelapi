@@ -72,7 +72,7 @@ public class SortRecord extends RecordData
 		}
     else 
     {
-			col1Name = StringHelper.getUnicodeString(data, col1Size, curPos);
+			col1Name = StringHelper.getUnicodeString(data, curPos, col1Size);
 			curPos += col1Size * 2;
 		}
 
@@ -85,7 +85,7 @@ public class SortRecord extends RecordData
 			} 
       else 
       {
-				col2Name = StringHelper.getUnicodeString(data, col2Size, curPos);
+				col2Name = StringHelper.getUnicodeString(data, curPos, col2Size);
 				curPos += col2Size * 2;
 			}
 		} 
@@ -102,7 +102,7 @@ public class SortRecord extends RecordData
 			} 
       else 
       {
-				col3Name = StringHelper.getUnicodeString(data, col3Size, curPos);
+				col3Name = StringHelper.getUnicodeString(data, curPos, col3Size);
 				curPos += col3Size * 2;
 			}
 		} 

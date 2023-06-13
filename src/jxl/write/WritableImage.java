@@ -19,11 +19,8 @@
 
 package jxl.write;
 
-import java.io.File;
-
-import jxl.biff.drawing.Drawing;
-import jxl.biff.drawing.DrawingGroup;
-import jxl.biff.drawing.DrawingGroupObject;
+import java.nio.file.Path;
+import jxl.biff.drawing.*;
 
 /**
  * Allows an image to be created, or an existing image to be manipulated
@@ -68,7 +65,7 @@ public class WritableImage extends Drawing
    */
   public WritableImage(double x, double y,
                        double width, double height,
-                       File image)
+                       Path image)
   {
     super(x, y, width, height, image);
   }
@@ -191,7 +188,7 @@ public class WritableImage extends Drawing
    *
    * @return the file which the image references
    */
-  public File getImageFile()
+  public Path getImageFile()
   {
     return super.getImageFile();
   }

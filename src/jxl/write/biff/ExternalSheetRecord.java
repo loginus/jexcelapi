@@ -40,7 +40,7 @@ class ExternalSheetRecord extends WritableRecordData
   /**
    * The list of XTI structures
    */
-  private ArrayList xtis;
+  private final ArrayList<XTI> xtis;
 
   /**
    * An XTI structure
@@ -97,19 +97,18 @@ class ExternalSheetRecord extends WritableRecordData
 
   /**
    * Constructor
-   * 
+   *
    * @param esf the external sheet record to copy
    */
   public ExternalSheetRecord(jxl.read.biff.ExternalSheetRecord esf)
   {
     super(Type.EXTERNSHEET);
 
-    xtis = new ArrayList(esf.getNumRecords());
-    XTI xti = null;
+    xtis = new ArrayList<>(esf.getNumRecords());
     for (int i = 0 ; i < esf.getNumRecords(); i++)
     {
-      xti = new XTI(esf.getSupbookIndex(i), 
-                    esf.getFirstTabIndex(i), 
+      XTI xti = new XTI(esf.getSupbookIndex(i),
+                    esf.getFirstTabIndex(i),
                     esf.getLastTabIndex(i));
       xtis.add(xti);
     }
@@ -121,7 +120,7 @@ class ExternalSheetRecord extends WritableRecordData
   public ExternalSheetRecord()
   {
     super(Type.EXTERNSHEET);
-    xtis = new ArrayList();
+    xtis = new ArrayList<>();
   }
 
   /**
@@ -132,13 +131,12 @@ class ExternalSheetRecord extends WritableRecordData
    */
   int getIndex(int supbookind, int sheetind)
   {
-    Iterator i = xtis.iterator();
-    XTI xti = null;
+    Iterator<XTI> i = xtis.iterator();
     boolean found = false;
     int pos = 0;
     while (i.hasNext() && !found)
     {
-      xti = (XTI) i.next();
+      XTI xti = i.next();
 
       if (xti.supbookIndex == supbookind &&
           xti.firstTab == sheetind)
@@ -153,7 +151,7 @@ class ExternalSheetRecord extends WritableRecordData
 
     if (!found)
     {
-      xti = new XTI(supbookind, sheetind, sheetind);
+      XTI xti = new XTI(supbookind, sheetind, sheetind);
       xtis.add(xti);
       pos = xtis.size() - 1;
     }
@@ -163,7 +161,7 @@ class ExternalSheetRecord extends WritableRecordData
 
   /**
    * Gets the binary data for output to file
-   * 
+   *
    * @return the binary data
    */
   public byte[] getData()
@@ -174,51 +172,47 @@ class ExternalSheetRecord extends WritableRecordData
     IntegerHelper.getTwoBytes(xtis.size(), data, 0);
     pos += 2;
 
-    Iterator i = xtis.iterator();
-    XTI xti = null;
-    while (i.hasNext())
-    {
-      xti = (XTI) i.next();
+    for (XTI xti : xtis) {
       IntegerHelper.getTwoBytes(xti.supbookIndex, data, pos);
       IntegerHelper.getTwoBytes(xti.firstTab, data, pos+2);
       IntegerHelper.getTwoBytes(xti.lastTab, data, pos+4);
       pos +=6 ;
     }
-  
+
     return data;
   }
 
   /**
    * Gets the supbook index for the specified external sheet
-   * 
+   *
    * @param the index of the supbook record
-   * @return the supbook index 
+   * @return the supbook index
    */
   public int getSupbookIndex(int index)
   {
-    return ((XTI) xtis.get(index)).supbookIndex;
+    return xtis.get(index).supbookIndex;
   }
 
   /**
    * Gets the first tab index for the specified external sheet
-   * 
+   *
    * @param the index of the supbook record
    * @return the first tab index
    */
   public int getFirstTabIndex(int index)
   {
-    return ((XTI) xtis.get(index)).firstTab;
+    return xtis.get(index).firstTab;
   }
 
   /**
    * Gets the last tab index for the specified external sheet
-   * 
+   *
    * @param the index of the supbook record
    * @return the last tab index
    */
   public int getLastTabIndex(int index)
   {
-    return ((XTI) xtis.get(index)).lastTab;
+    return xtis.get(index).lastTab;
   }
 
   /**
@@ -227,12 +221,8 @@ class ExternalSheetRecord extends WritableRecordData
    */
   void sheetInserted(int index)
   {
-    XTI xti = null;
-    for (Iterator i = xtis.iterator(); i.hasNext() ; )
-    {
-      xti = (XTI) i.next();
+    for (XTI xti : xtis)
       xti.sheetInserted(index);
-    }
   }
 
   /**
@@ -241,12 +231,8 @@ class ExternalSheetRecord extends WritableRecordData
    */
   void sheetRemoved(int index)
   {
-    XTI xti = null;
-    for (Iterator i = xtis.iterator(); i.hasNext() ; )
-    {
-      xti = (XTI) i.next();
+    for (XTI xti : xtis)
       xti.sheetRemoved(index);
-    }
   }
 
 }

@@ -39,7 +39,7 @@ public final class StringHelper
   // Due to a a Sun bug in some versions of JVM 1.4, the UnicodeLittle
   // encoding doesn't always work.  Making this a public static field
   // enables client code access to this (but in an undocumented and
-  // unsupported fashion).  Suggested alternative values for this 
+  // unsupported fashion).  Suggested alternative values for this
   // are  "UTF-16LE" or "UnicodeLittleUnmarked"
   public static String UNICODE_ENCODING = "UnicodeLittle";
 
@@ -127,6 +127,20 @@ public final class StringHelper
     System.arraycopy(b, 0, d, pos, b.length);
   }
 
+/**
+   * Gets the ASCII bytes from the specified string and places them in the
+   * array at the specified position
+   *
+   * @param pos the position at which to place the converted data
+   * @param s the string to convert
+   * @param d the byte array which will contain the converted string data
+   */
+  public static void getBytes(String s, byte[] d, int pos, WorkbookSettings ws)
+  {
+    byte[] b = getBytes(s, ws);
+    System.arraycopy(b, 0, d, pos, b.length);
+  }
+
   /**
    * Inserts the unicode byte representation of the specified string into the
    * array passed in
@@ -173,20 +187,82 @@ public final class StringHelper
     }
   }
 
+  public static String readBiff8String(byte[] data) {
+    return readBiff8String(data, 0);
+  }
+
+  public static String readBiff8String(byte[] data, int offset) {
+    int numberOfChars = IntegerHelper.getInt(data[offset], data[offset+1]);
+
+    if (numberOfChars == 0)
+      return "";
+
+    int optionFlags = data[offset+2];
+    boolean compressedUFT16 = (optionFlags & 0x01) == 0;
+    boolean containsAsianPhoneticSettings = ((optionFlags & 0x04) != 0);
+    boolean containsRichTextSettings = ((optionFlags & 0x08) != 0);
+
+    int start = 3;
+    if (containsRichTextSettings) {
+      int numberOfRtRuns = IntegerHelper.getInt(data[offset+start], data[offset+start+1]);
+      start += 2;
+    }
+
+    if (containsAsianPhoneticSettings) {
+      int phoneticSize = IntegerHelper.getInt(data[offset+start], data[offset+start+1], data[offset+start+2], data[offset+start+3]);
+      start += 4;
+    }
+
+    if (compressedUFT16)
+      return getCompressedUnicodeString(data, offset+start, numberOfChars);
+    else
+      return getUnicodeString(data, offset+start, numberOfChars);
+  }
+
+  public static String readShortBiff8String(byte[] data) {
+    int length = data.length;
+    boolean compressedUFT16 = (data[0] & 0x01) == 0;
+    if (compressedUFT16)
+      return getCompressedUnicodeString(data, 1, length - 1);
+    else
+      return getUnicodeString(data, 1, (length-1) / 2);
+  }
+
+
+  /**
+   * Gets a string from the data array when compressed
+   *
+   * A compressed string, omits the high bytes of all characters, if they are
+   * all zero. See "The Microsoft Excel File Format"
+   * Chapter 2.5.3 Unicode Strings (BIFF8).
+   *
+   * @param d The byte data
+   * @param length The number of characters to be converted into a string
+   * @param start The start position of the string
+   * @return the string built up from the unicode characters
+   */
+  public static String getCompressedUnicodeString(byte[] d, int start, int length) {
+    byte[] b = new byte[length * 2];
+    for (int i = 0; i < length; i++)
+      b[i*2] = d[i + start];
+
+    return getUnicodeString(b, 0, length);
+  }
+
   /**
    * Gets a string from the data array
    *
-   * @param pos The start position of the string
+   * @param start The start position of the string
    * @param length The number of characters to be converted into a string
    * @param d The byte data
    * @return the string built up from the unicode characters
    */
-  public static String getUnicodeString(byte[] d, int length, int pos)
+  public static String getUnicodeString(byte[] d, int start, int length)
   {
     try
     {
       byte[] b = new byte[length * 2];
-      System.arraycopy(d, pos, b, 0, length * 2);
+      System.arraycopy(d, start, b, 0, length * 2);
       return new String(b, UNICODE_ENCODING);
     }
     catch (UnsupportedEncodingException e)
@@ -197,7 +273,7 @@ public final class StringHelper
   }
 
   /**
-   * Replaces all instances of search with replace in the input.  
+   * Replaces all instances of search with replace in the input.
    * Even though later versions of java can use string.replace()
    * this is included Java 1.2 compatibility
    *
@@ -206,8 +282,8 @@ public final class StringHelper
    * @param replace the java equivalent
    * @return the input string with the specified substring replaced
    */
-  public static final String replace(String input, 
-                                     String search, 
+  public static final String replace(String input,
+                                     String search,
                                      String replace)
   {
     String fmtstr = input;

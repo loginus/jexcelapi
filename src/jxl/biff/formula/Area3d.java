@@ -228,7 +228,7 @@ class Area3d extends Operand implements ParsedThing
   byte[] getBytes()
   {
     byte[] data = new byte[11];
-    data[0] = Token.AREA3D.getCode();
+    data[0] = Token.AREA3D.getReferenceCode();
 
     IntegerHelper.getTwoBytes(sheet, data, 1);
 

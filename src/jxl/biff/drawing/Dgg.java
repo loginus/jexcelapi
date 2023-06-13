@@ -63,7 +63,7 @@ class Dgg extends EscherAtom
   /**
    * The clusters
    */
-  private ArrayList clusters;
+  private final ArrayList<Cluster> clusters = new ArrayList<>();
 
   /**
    * The cluster structure
@@ -101,7 +101,6 @@ class Dgg extends EscherAtom
   public Dgg(EscherRecordData erd)
   {
     super(erd);
-    clusters = new ArrayList();
     byte[] bytes = getBytes();
     maxShapeId = IntegerHelper.getInt
       (bytes[0], bytes[1], bytes[2], bytes[3]);
@@ -134,7 +133,6 @@ class Dgg extends EscherAtom
     super(EscherRecordType.DGG);
     shapesSaved = numShapes;
     drawingsSaved = numDrawings;
-    clusters = new ArrayList();
   }
 
   /**

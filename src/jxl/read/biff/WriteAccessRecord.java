@@ -47,7 +47,7 @@ class WriteAccessRecord extends RecordData
     byte[] data = t.getData();
     if (isBiff8)
     {
-        wauser= StringHelper.getUnicodeString(data, 112/2, 0);
+        wauser= StringHelper.getUnicodeString(data, 0, 112/2);
     }
     else
     {

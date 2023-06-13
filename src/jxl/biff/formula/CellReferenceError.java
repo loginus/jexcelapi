@@ -70,7 +70,7 @@ class CellReferenceError extends Operand implements ParsedThing
   byte[] getBytes()
   {
     byte[] data = new byte[5];
-    data[0] = Token.REFERR.getCode();
+    data[0] = Token.REFERR.getReferenceCode();
 
     // bytes 1-5 are unused
 

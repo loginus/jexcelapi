@@ -43,16 +43,11 @@ import jxl.biff.formula.FormulaParser;
 public class SharedStringFormulaRecord extends BaseSharedFormulaRecord
   implements LabelCell, FormulaData, StringFormulaCell
 {
-  /**
-   * The logger
-   */
-  private static Logger logger = Logger.getLogger
-    (SharedStringFormulaRecord.class);
 
   /**
    * The value of this string formula
    */
-  private String value;
+  private final String value;
 
   // Dummy value for overloading the constructor when the string evaluates
   // to null
@@ -75,8 +70,7 @@ public class SharedStringFormulaRecord extends BaseSharedFormulaRecord
                                    FormattingRecords fr,
                                    ExternalSheet es,
                                    WorkbookMethods nt,
-                                   SheetImpl si,
-                                   WorkbookSettings ws)
+                                   SheetImpl si)
   {
     super(t, fr, es, nt, si, excelFile.getPos());
     int pos = excelFile.getPos();
@@ -104,44 +98,13 @@ public class SharedStringFormulaRecord extends BaseSharedFormulaRecord
 			nextRecord = excelFile.next(); // move the pointer within the data
 			byte[] d = new byte[stringData.length + nextRecord.getLength() - 1];
 			System.arraycopy(stringData, 0, d, 0, stringData.length);
-			System.arraycopy(nextRecord.getData(), 1, d, 
+			System.arraycopy(nextRecord.getData(), 1, d,
 											 stringData.length, nextRecord.getLength() - 1);
 			stringData = d;
 			nextRecord = excelFile.peek();
 		}
 
-    int chars = IntegerHelper.getInt(stringData[0], stringData[1]);
-
-    boolean unicode = false;
-    int startpos = 3;
-    if (stringData.length == chars + 2)
-    {
-      // String might only consist of a one byte length indicator, instead
-      // of the more normal 2
-      startpos = 2;
-      unicode = false;
-    }
-    else if (stringData[2] == 0x1)
-    {
-      // unicode string, two byte length indicator
-      startpos = 3;
-      unicode = true;
-    }
-    else
-    {
-      // ascii string, two byte length indicator
-      startpos = 3;
-      unicode = false;
-    }
-
-    if (!unicode)
-    {
-      value = StringHelper.getString(stringData, chars, startpos, ws);
-    }
-    else
-    {
-      value = StringHelper.getUnicodeString(stringData, chars, startpos);
-    }
+    value = StringHelper.readBiff8String(stringData);
 
     // Restore the position in the excel file, to enable the SHRFMLA
     // record to be picked up
@@ -177,6 +140,7 @@ public class SharedStringFormulaRecord extends BaseSharedFormulaRecord
    *
    * @return the value
    */
+  @Override
   public String getString()
   {
     return value;
@@ -187,6 +151,7 @@ public class SharedStringFormulaRecord extends BaseSharedFormulaRecord
    *
    * @return the value as a string
    */
+  @Override
   public String getContents()
   {
     return value;
@@ -197,6 +162,7 @@ public class SharedStringFormulaRecord extends BaseSharedFormulaRecord
    *
    * @return the cell type
    */
+  @Override
   public CellType getType()
   {
     return CellType.STRING_FORMULA;
@@ -209,6 +175,7 @@ public class SharedStringFormulaRecord extends BaseSharedFormulaRecord
    * @return the raw record data
    * @exception FormulaException
    */
+  @Override
   public byte[] getFormulaData() throws FormulaException
   {
     if (!getSheet().getWorkbookBof().isBiff8())

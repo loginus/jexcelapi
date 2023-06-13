@@ -22,12 +22,12 @@ package jxl.write.biff;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import jxl.common.Logger;
 
 import jxl.CellType;
 import jxl.SheetSettings;
-import jxl.WorkbookSettings;
 import jxl.biff.CellReferenceHelper;
 import jxl.biff.IndexMapping;
 import jxl.biff.IntegerHelper;
@@ -48,10 +48,6 @@ class RowRecord extends WritableRecordData
    */
   private static final Logger logger = Logger.getLogger(RowRecord.class);
 
-  /**
-   * The binary data
-   */
-  private byte[] data;
   /**
    * The cells which comprise this row
    */
@@ -91,46 +87,46 @@ class RowRecord extends WritableRecordData
   /**
    * The amount to grow the cells array by
    */
-  private static final int growSize = 10;
+  private static final int GROW_SIZE = 10;
 
   /**
    * The maximum integer value that can be squeezed into 30 bits
    */
-  private static final int maxRKValue = 0x1fffffff;
+  private static final int MAX_RK_VALUE = 0x1fffffff;
 
   /**
    * The minimum integer value that can be squeezed into 30 bits
    */
-  private static final int minRKValue = -0x20000000;
+  private static final int MIN_RK_VALUE = -0x20000000;
 
   /**
    * Indicates that the row is default height
    */
-  private static int defaultHeightIndicator = 0xff;
+  private static final int DEFAULT_HEIGHT_INDICATOR = 0xff;
 
   /**
    * The maximum number of columns
    */
-  private static int maxColumns = 256;
+  private static final int MAX_COLUMNS = 256;
 
-  /** 
+  /**
    * The outline level of the row
    */
   private int outlineLevel;
 
-  /** 
+  /**
    * Is this the icon indicator row of a group?
    */
   private boolean groupStart;
- 
+
   /**
    * A handle back to the sheet
    */
-  private WritableSheet sheet;
+  private final WritableSheet sheet;
 
   /**
    * Constructs an empty row which has the specified row number
-   * 
+   *
    * @param rn the row number of this row
    */
   public RowRecord(int rn, WritableSheet ws)
@@ -139,7 +135,7 @@ class RowRecord extends WritableRecordData
     rowNumber  = rn;
     cells      = new CellValue[0];
     numColumns  = 0;
-    rowHeight  = defaultHeightIndicator;
+    rowHeight  = DEFAULT_HEIGHT_INDICATOR;
     collapsed  = false;
     matchesDefFontHeight = true;
     sheet = ws;
@@ -147,7 +143,7 @@ class RowRecord extends WritableRecordData
 
   /**
    * Sets the height of this row
-   * 
+   *
    * @param h the row height
    */
   public void setRowHeight(int h)
@@ -175,10 +171,10 @@ class RowRecord extends WritableRecordData
    * @param gs the group start
    * @param xf the xfrecord for the row (NULL if no default is set)
    */
-  void setRowDetails(int height, 
-                     boolean mdfh, 
-                     boolean col, 
-                     int ol, 
+  void setRowDetails(int height,
+                     boolean mdfh,
+                     boolean col,
+                     int ol,
                      boolean gs,
                      XFRecord xfr)
   {
@@ -187,7 +183,7 @@ class RowRecord extends WritableRecordData
     matchesDefFontHeight = mdfh;
     outlineLevel = ol;
     groupStart = gs;
-    
+
     if (xfr != null)
     {
       defaultFormat = true;
@@ -205,10 +201,10 @@ class RowRecord extends WritableRecordData
   {
     collapsed = c;
   }
-  
+
   /**
    * Gets the row number of this row
-   * 
+   *
    * @return the row number
    */
   public int getRowNumber()
@@ -218,18 +214,18 @@ class RowRecord extends WritableRecordData
 
   /**
    * Adds a cell to this row, growing the array of cells as required
-   * 
+   *
    * @param cv the cell to add
    */
   public void addCell(CellValue cv)
   {
     int col = cv.getColumn();
 
-    if (col >= maxColumns)
+    if (col >= MAX_COLUMNS)
     {
-      logger.warn("Could not add cell at " + 
-                  CellReferenceHelper.getCellReference(cv.getRow(), 
-                                                       cv.getColumn()) + 
+      logger.warn("Could not add cell at " +
+                  CellReferenceHelper.getCellReference(cv.getRow(),
+                                                       cv.getColumn()) +
                   " because it exceeds the maximum column limit");
       return;
     }
@@ -238,9 +234,8 @@ class RowRecord extends WritableRecordData
     if (col >= cells.length)
     {
       CellValue[] oldCells = cells;
-      cells = new CellValue[Math.max(oldCells.length + growSize, col+1)];
+      cells = new CellValue[Math.max(oldCells.length + GROW_SIZE, col+1)];
       System.arraycopy(oldCells, 0, cells, 0, oldCells.length);
-      oldCells = null;
     }
 
     // Remove any cell features from the cell being replaced
@@ -269,7 +264,7 @@ class RowRecord extends WritableRecordData
 
   /**
    * Removes a cell from this row
-   * 
+   *
    * @param col the column at which to remove the cell
    */
   public void removeCell(int col)
@@ -285,8 +280,8 @@ class RowRecord extends WritableRecordData
 
   /**
    * Writes out the row information data (but not the individual cells)
-   * 
-   * @exception IOException 
+   *
+   * @exception IOException
    * @param outputFile the output file
    */
   public void write(File outputFile) throws IOException
@@ -298,21 +293,20 @@ class RowRecord extends WritableRecordData
    * Writes out all the cells in this row.  If more than three integer
    * values occur consecutively, then a MulRK record is used to group the
    * numbers
-   * 
-   * @exception IOException 
+   *
+   * @exception IOException
    * @param outputFile the output file
    */
-  public void writeCells(File outputFile) 
+  public void writeCells(File outputFile)
     throws IOException
   {
     // This is the list for integer values
-    ArrayList integerValues = new ArrayList();
-    boolean integerValue = false;
+    List<Number> integerValues = new ArrayList<>();
 
     // Write out all the records
     for (int i = 0; i < numColumns; i++)
     {
-      integerValue = false;
+      boolean integerValue = false;
       if (cells[i] != null)
       {
         // See if this cell is a 30-bit integer value (without additional
@@ -320,9 +314,9 @@ class RowRecord extends WritableRecordData
         if (cells[i].getType() == CellType.NUMBER)
         {
           Number nc = (Number) cells[i];
-          if (nc.getValue() == (int) nc.getValue() && 
-              nc.getValue() < maxRKValue &&
-              nc.getValue() > minRKValue &&
+          if (nc.getValue() == (int) nc.getValue() &&
+              nc.getValue() < MAX_RK_VALUE &&
+              nc.getValue() > MIN_RK_VALUE &&
               nc.getCellFeatures() == null)
           {
             integerValue = true;
@@ -332,7 +326,7 @@ class RowRecord extends WritableRecordData
         if (integerValue)
         {
           // This cell is an integer, add it to the list
-          integerValues.add(cells[i]);
+          integerValues.add((Number) cells[i]);
         }
         else
         {
@@ -357,7 +351,7 @@ class RowRecord extends WritableRecordData
         writeIntegerValues(integerValues, outputFile);
       }
     }
-    
+
     // All done.  Write out any remaining integer values
     writeIntegerValues(integerValues, outputFile);
   }
@@ -365,15 +359,15 @@ class RowRecord extends WritableRecordData
   /**
    * Writes out the list of integer values.  If there are more than three,
    * a MulRK record is used, otherwise a sequence of Numbers is used
-   * 
-   * @exception IOException 
+   *
+   * @exception IOException
    * @param outputFile the output file
    * @param integerValues the array of integer values
    */
-  private void writeIntegerValues(ArrayList integerValues, File outputFile)
+  private void writeIntegerValues(List<Number> integerValues, File outputFile)
    throws IOException
   {
-    if (integerValues.size() == 0)
+    if (integerValues.isEmpty())
     {
       return;
     }
@@ -387,10 +381,10 @@ class RowRecord extends WritableRecordData
     else
     {
       // Write out as number records
-      Iterator i = integerValues.iterator();
+      Iterator<Number> i = integerValues.iterator();
       while (i.hasNext())
       {
-        outputFile.write((CellValue) i.next());
+        outputFile.write(i.next());
       }
     }
 
@@ -400,24 +394,25 @@ class RowRecord extends WritableRecordData
 
   /**
    * Gets the row data to output to file
-   * 
+   *
    * @return the binary data
    */
+  @Override
   public byte[] getData()
   {
     // Write out the row record
     byte[] data = new byte[16];
 
     // If the default row height has been changed in the sheet settings,
-    // then we need to set the rowHeight on this row explicitly, as 
+    // then we need to set the rowHeight on this row explicitly, as
     // specifying the "match default" flag doesn't work
     int rh = rowHeight;
-    if (sheet.getSettings().getDefaultRowHeight() != 
+    if (sheet.getSettings().getDefaultRowHeight() !=
         SheetSettings.DEFAULT_DEFAULT_ROW_HEIGHT)
     {
       // the default row height has been changed.  If this row does not
       // have a specific row height set on it, then set it to the default
-      if (rh == defaultHeightIndicator)
+      if (rh == DEFAULT_HEIGHT_INDICATOR)
       {
         rh = sheet.getSettings().getDefaultRowHeight();
       }
@@ -451,13 +446,13 @@ class RowRecord extends WritableRecordData
     }
 
     IntegerHelper.getFourBytes(options, data, 12);
-    
+
     return data;
   }
 
   /**
    * Gets the maximum column value which occurs in this row
-   * 
+   *
    * @return the maximum column value
    */
   public int getMaxColumn()
@@ -467,9 +462,9 @@ class RowRecord extends WritableRecordData
 
   /**
    * Gets the cell which occurs at the specified column value
-   * 
+   *
    * @param col the colun for which to return the cell
-   * @return the cell value at the specified position, or null if the column 
+   * @return the cell value at the specified position, or null if the column
    *     is invalid
    */
   public CellValue getCell(int col)
@@ -478,36 +473,28 @@ class RowRecord extends WritableRecordData
   }
 
   /**
-   * Increments the row of this cell by one.  Invoked by the sheet when 
+   * Increments the row of this cell by one.  Invoked by the sheet when
    * inserting rows
    */
   void incrementRow()
   {
     rowNumber++;
 
-    for (int i = 0; i < cells.length; i++)
-    {
-      if (cells[i] != null)
-      {
-        cells[i].incrementRow();
-      }
-    }
+    for (CellValue cell : cells)
+      if (cell != null)
+        cell.incrementRow();
   }
 
   /**
-   * Decrements the row of this cell by one.  Invoked by the sheet when 
+   * Decrements the row of this cell by one.  Invoked by the sheet when
    * removing rows
    */
   void decrementRow()
   {
     rowNumber--;
-    for (int i = 0; i < cells.length; i++)
-    {
-      if (cells[i] != null)
-      {
-        cells[i].decrementRow();
-      }
-    }
+    for (CellValue cell : cells)
+      if (cell != null)
+        cell.decrementRow();
   }
 
   /**
@@ -530,7 +517,7 @@ class RowRecord extends WritableRecordData
 
     if (numColumns  >= cells.length - 1)
     {
-      cells = new CellValue[oldCells.length + growSize];
+      cells = new CellValue[oldCells.length + GROW_SIZE];
     }
     else
     {
@@ -539,7 +526,7 @@ class RowRecord extends WritableRecordData
 
     // Copy in everything up to the new column
     System.arraycopy(oldCells, 0, cells, 0, col);
-    
+
     // Copy in the remaining cells
     System.arraycopy(oldCells, col, cells, col+1, numColumns - col);
 
@@ -553,7 +540,7 @@ class RowRecord extends WritableRecordData
     }
 
     // Adjust the maximum column record
-    numColumns = Math.min(numColumns+1, maxColumns);
+    numColumns = Math.min(numColumns+1, MAX_COLUMNS);
   }
 
   /**
@@ -577,7 +564,7 @@ class RowRecord extends WritableRecordData
 
     // Copy in everything up to the column
     System.arraycopy(oldCells, 0, cells, 0, col);
-    
+
     // Copy in the remaining cells after the column
     System.arraycopy(oldCells, col + 1, cells, col, numColumns - (col+1));
 
@@ -601,7 +588,7 @@ class RowRecord extends WritableRecordData
    */
   public boolean isDefaultHeight()
   {
-    return rowHeight == defaultHeightIndicator;
+    return rowHeight == DEFAULT_HEIGHT_INDICATOR;
   }
 
   /**
@@ -667,40 +654,40 @@ class RowRecord extends WritableRecordData
     return matchesDefFontHeight;
   }
 
-  /** 
+  /**
    * Accessor for the column's outline level
    *
    * @return the column's outline level
    */
-  public int getOutlineLevel() 
+  public int getOutlineLevel()
   {
     return outlineLevel;
   }
 
-  /** 
+  /**
    * Accessor for row's groupStart state
    *
    * @return the row's groupStart state
    */
-  public boolean getGroupStart() 
+  public boolean getGroupStart()
   {
     return groupStart;
   }
 
-  /** 
+  /**
    * Increments the row's outline level.  This is how groups are made as well
    */
-  public void incrementOutlineLevel() 
+  public void incrementOutlineLevel()
   {
     outlineLevel++;
   }
 
-  /** 
-   * Decrements the row's outline level.  This removes it from a grouping 
+  /**
+   * Decrements the row's outline level.  This removes it from a grouping
    * level.  If
    *  all outline levels are gone the uncollapse the row.
    */
-  public void decrementOutlineLevel() 
+  public void decrementOutlineLevel()
   {
     if (0 < outlineLevel)
     {
@@ -713,12 +700,12 @@ class RowRecord extends WritableRecordData
     }
   }
 
-  /** 
+  /**
    * Sets the row's outline level
    *
    * @param level the row's outline level
    */
-  public void setOutlineLevel(int level) 
+  public void setOutlineLevel(int level)
   {
     outlineLevel = level;
   }
@@ -728,7 +715,7 @@ class RowRecord extends WritableRecordData
    *
    * @param value the group start state
    */
-  public void setGroupStart(boolean value) 
+  public void setGroupStart(boolean value)
   {
     groupStart = value;
   }

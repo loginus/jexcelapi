@@ -20,7 +20,6 @@
 package jxl.write.biff;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 
 import jxl.biff.IntegerHelper;
 import jxl.biff.StringHelper;
@@ -48,11 +47,11 @@ class SSTContinueRecord extends WritableRecordData
   /**
    * The list of strings
    */
-  private ArrayList strings;
+  private final ArrayList<String> strings = new ArrayList<>(50);
   /**
    * The list of string lengths
    */
-  private ArrayList stringLengths;
+  private final ArrayList<Integer> stringLengths = new ArrayList<>(50);
   /**
    * The binary data
    */
@@ -65,8 +64,8 @@ class SSTContinueRecord extends WritableRecordData
   /**
    * The maximum amount of bytes available for the SST record
    */
-  private static int maxBytes = 8228 - // max length
-                                4;  // standard biff record stuff
+  private static final int maxBytes = 8228 - // max length
+                                      4;  // standard biff record stuff
 
   /**
    * Constructor
@@ -79,8 +78,6 @@ class SSTContinueRecord extends WritableRecordData
     super(Type.CONTINUE);
 
     byteCount = 0;
-    strings = new ArrayList(50);
-    stringLengths = new ArrayList(50);
   }
 
   /**
@@ -95,16 +92,9 @@ class SSTContinueRecord extends WritableRecordData
     includeLength = b;
     firstStringLength = s.length();
 
-    int bytes = 0;
-
-    if (!includeLength)
-    {
-      bytes = s.length() * 2 + 1;
-    }
-    else
-    {
-      bytes = s.length() * 2 + 3;
-    }
+    int bytes = includeLength
+            ? s.length() * 2 + 3
+            : s.length() * 2 + 1;
 
     if (bytes <= maxBytes)
     {
@@ -115,7 +105,7 @@ class SSTContinueRecord extends WritableRecordData
 
     // Calculate the number of characters we can add
     // The bytes variable will always be an odd number
-    int charsAvailable = includeLength ? (maxBytes - 4) / 2 : 
+    int charsAvailable = includeLength ? (maxBytes - 4) / 2 :
                                          (maxBytes - 2) / 2;
 
     // Add what part of the string we can
@@ -154,7 +144,7 @@ class SSTContinueRecord extends WritableRecordData
       return s.length();
     }
 
-    stringLengths.add(new Integer(s.length()));
+    stringLengths.add(s.length());
 
     if (bytes + byteCount < maxBytes)
     {
@@ -178,14 +168,14 @@ class SSTContinueRecord extends WritableRecordData
 
   /**
    * Gets the binary data for output to file
-   * 
+   *
    * @return the binary data
    */
   public byte[] getData()
   {
     data = new byte[byteCount];
 
-    int pos = 0;
+    int pos;
 
     // Write out the first string
     if (includeLength)
@@ -205,21 +195,16 @@ class SSTContinueRecord extends WritableRecordData
     pos += firstString.length() * 2;
 
     // Now write out the remainder of the strings
-    Iterator i = strings.iterator();
-    String s = null;
-    int length = 0;
     int count = 0;
-    while (i.hasNext())
-    {
-      s = (String) i.next();
-      length = ( (Integer) stringLengths.get(count)).intValue();
+    for (String s : strings) {
+      int length = stringLengths.get(count);
       IntegerHelper.getTwoBytes(length, data, pos);
       data[pos+2] = 0x01;
       StringHelper.getUnicodeBytes(s, data, pos+3);
       pos += s.length() * 2 + 3;
       count++;
     }
-    
+
     return data;
   }
 }

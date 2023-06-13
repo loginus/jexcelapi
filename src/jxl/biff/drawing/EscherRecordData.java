@@ -19,8 +19,6 @@
 
 package jxl.biff.drawing;
 
-import jxl.common.Logger;
-
 import jxl.biff.IntegerHelper;
 
 
@@ -28,12 +26,7 @@ import jxl.biff.IntegerHelper;
  * A single record from an Escher stream.  Basically this a container for
  * the header data for each Escher record
  */
-final class EscherRecordData
-{
-  /**
-   * The logger
-   */
-  private static Logger logger = Logger.getLogger(EscherRecordData.class);
+final class EscherRecordData {
 
   /**
    * The byte position of this record in the escher stream
@@ -53,7 +46,7 @@ final class EscherRecordData
   /**
    * The record id
    */
-  private int recordId;
+  private final int recordId;
 
   /**
    * The length of the record, excluding the 8 byte header
@@ -111,14 +104,7 @@ final class EscherRecordData
     length = IntegerHelper.getInt(data[pos + 4], data[pos + 5],
                                   data[pos + 6], data[pos + 7]);
 
-    if (version == 0x0f)
-    {
-      container = true;
-    }
-    else
-    {
-      container = false;
-    }
+    container = version == 0x0f;
   }
 
   /**

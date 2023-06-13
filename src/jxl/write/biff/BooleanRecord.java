@@ -32,14 +32,14 @@ import jxl.format.CellFormat;
 public abstract class BooleanRecord extends CellValue
 {
   /**
-   * The boolean value of this cell.  If this cell represents an error, 
+   * The boolean value of this cell.  If this cell represents an error,
    * this will be false
    */
   private boolean value;
 
   /**
    * Constructor invoked by the user API
-   * 
+   *
    * @param c the column
    * @param r the row
    * @param val the value
@@ -53,7 +53,7 @@ public abstract class BooleanRecord extends CellValue
   /**
    * Overloaded constructor invoked from the API, which takes a cell
    * format
-   * 
+   *
    * @param c the column
    * @param r the row
    * @param val the value
@@ -67,7 +67,7 @@ public abstract class BooleanRecord extends CellValue
 
   /**
    * Constructor used when copying a workbook
-   * 
+   *
    * @param nc the number to copy
    */
   protected BooleanRecord(BooleanCell nc)
@@ -78,7 +78,7 @@ public abstract class BooleanRecord extends CellValue
 
   /**
    * Copy constructor
-   * 
+   *
    * @param c the column
    * @param r the row
    * @param br the record to copy
@@ -90,7 +90,7 @@ public abstract class BooleanRecord extends CellValue
   }
 
   /**
-   * Interface method which Gets the boolean value stored in this cell.  If 
+   * Interface method which Gets the boolean value stored in this cell.  If
    * this cell contains an error, then returns FALSE.  Always query this cell
    *  type using the accessor method isError() prior to calling this method
    *
@@ -101,21 +101,20 @@ public abstract class BooleanRecord extends CellValue
   {
     return value;
   }
-  
+
   /**
    * Returns the numerical value as a string
-   * 
+   *
    * @return The numerical value of the formula as a string
    */
   public String getContents()
   {
-    // return Boolean.toString(value) - only available in 1.4 or later
-    return (new Boolean(value)).toString();
+    return Boolean.toString(value);
   }
 
   /**
    * Returns the cell type
-   * 
+   *
    * @return The cell type
    */
   public CellType getType()
@@ -125,7 +124,7 @@ public abstract class BooleanRecord extends CellValue
 
   /**
    * Sets the value
-   * 
+   *
    * @param val the boolean value
    */
   protected void setValue(boolean val)
@@ -135,7 +134,7 @@ public abstract class BooleanRecord extends CellValue
 
   /**
    * Gets the binary data for output to file
-   * 
+   *
    * @return the binary data
    */
   public byte[] getData()

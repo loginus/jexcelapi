@@ -19,14 +19,11 @@
 
 package jxl;
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.Locale;
-
-import jxl.common.Logger;
-
+import java.nio.file.*;
+import java.util.*;
 import jxl.biff.CountryCode;
 import jxl.biff.formula.FunctionNames;
+import jxl.common.Logger;
 
 /**
  * This is a bean which client applications may use to set various advanced
@@ -138,7 +135,7 @@ public final class WorkbookSettings
    * The directory for used for the temporary file during write.  If this
    * is NULL, the default system directory is used
    */
-  private File temporaryFileDuringWriteDirectory;
+  private Path temporaryFileDuringWriteDirectory;
 
   /**
    * The locale.  Normally this is the same as the system locale, but there
@@ -181,7 +178,7 @@ public final class WorkbookSettings
   /**
    * A hash map of function names keyed on locale
    */
-  private HashMap localeFunctionNames;
+  private HashMap<Locale, FunctionNames> localeFunctionNames;
 
   /**
    * Flag to indicate whether all external data and pivot stuff should
@@ -225,8 +222,10 @@ public final class WorkbookSettings
    */
   private int hideobj;
 
-  private Integer startColumnCount;
-  private Integer startRowCount;
+  private boolean windowHidden = false;
+
+  private int startColumnCount;
+  private int startRowCount;
 
   /**
    * The HIDEOBJ record stores options selected in the Options dialog,View tab.
@@ -256,7 +255,7 @@ public final class WorkbookSettings
   {
     initialFileSize = DEFAULT_INITIAL_FILE_SIZE;
     arrayGrowSize = DEFAULT_ARRAY_GROW_SIZE;
-    localeFunctionNames = new HashMap();
+    localeFunctionNames = new HashMap<>();
     excelDisplayLanguage = CountryCode.USA.getCode();
     excelRegionalSettings = CountryCode.UK.getCode();
     refreshAll = false;
@@ -289,9 +288,7 @@ public final class WorkbookSettings
         System.getProperty("jxl.temporaryfileduringwritedirectory");
 
       if (tempdir != null)
-      {
-        temporaryFileDuringWriteDirectory = new File(tempdir);
-      }
+        temporaryFileDuringWriteDirectory = Paths.get(tempdir);
 
       encoding = System.getProperty("file.encoding");
     }
@@ -310,7 +307,7 @@ public final class WorkbookSettings
       }
       else
       {
-        locale = new Locale(System.getProperty("jxl.lang"),
+        locale = Locale.of(System.getProperty("jxl.lang"),
                             System.getProperty("jxl.country"));
       }
 
@@ -573,7 +570,7 @@ public final class WorkbookSettings
   {
     if (functionNames == null)
     {
-      functionNames = (FunctionNames) localeFunctionNames.get(locale);
+      functionNames = localeFunctionNames.get(locale);
 
       // have not previously accessed function names for this locale,
       // so create a brand new one and add it to the list
@@ -741,8 +738,7 @@ public final class WorkbookSettings
    * this flag involves an assessment of the trade-offs between memory usage
    * and performance
    *
-   * @return TRUE if a temporary is file is used during writing,
-   * FALSE otherwise
+   * @param temp
    */
   public void setUseTemporaryFileDuringWrite(boolean temp)
   {
@@ -758,7 +754,7 @@ public final class WorkbookSettings
    *
    * @param dir the directory to which temporary files should be written
    */
-  public void setTemporaryFileDuringWriteDirectory(File dir)
+  public void setTemporaryFileDuringWriteDirectory(Path dir)
   {
     temporaryFileDuringWriteDirectory = dir;
   }
@@ -772,7 +768,7 @@ public final class WorkbookSettings
    * @return the temporary directory used during write, or NULL if it is
    *         not set
    */
-  public File getTemporaryFileDuringWriteDirectory()
+  public Path getTemporaryFileDuringWriteDirectory()
   {
     return temporaryFileDuringWriteDirectory;
   }
@@ -837,7 +833,7 @@ public final class WorkbookSettings
   }
 
   /**
-   * @return the windowprotected
+   * @return the windowProtected
    */
   public boolean getWindowProtected()
   {
@@ -845,9 +841,9 @@ public final class WorkbookSettings
   }
 
   /**
-   * @param windowprotected the windowprotected to set
+   * @param windowProtected the windowProtected to set
    */
-  public void setWindowProtected(boolean windowprotected)
+  public void setWindowProtected(boolean windowProtected)
   {
     this.windowProtected = windowProtected;
   }
@@ -892,19 +888,27 @@ public final class WorkbookSettings
     this.writeAccess = writeAccess;
   }
 
-  public Integer getStartColumnCount() {
+  public boolean isWindowHidden() {
+    return windowHidden;
+  }
+
+  public void setWindowHidden(boolean windowHidden) {
+    this.windowHidden = windowHidden;
+  }
+
+  public int getStartColumnCount() {
     return startColumnCount;
   }
 
-  public void setStartColumnCount(Integer startColumnCount) {
+  public void setStartColumnCount(int startColumnCount) {
     this.startColumnCount = startColumnCount;
   }
 
-  public Integer getStartRowCount() {
+  public int getStartRowCount() {
     return startRowCount;
   }
 
-  public void setStartRowCount(Integer startRowCount) {
+  public void setStartRowCount(int startRowCount) {
     this.startRowCount = startRowCount;
   }
 }

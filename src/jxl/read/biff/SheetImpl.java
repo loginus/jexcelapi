@@ -19,37 +19,13 @@
 
 package jxl.read.biff;
 
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.*;
 import java.util.regex.Pattern;
 
-import jxl.common.Logger;
-import jxl.common.Assert;
-
-import jxl.Cell;
-import jxl.CellType;
-import jxl.CellView;
-import jxl.Hyperlink;
-import jxl.Image;
-import jxl.LabelCell;
-import jxl.Range;
-import jxl.Sheet;
-import jxl.SheetSettings;
-import jxl.WorkbookSettings;
-import jxl.biff.BuiltInName;
-import jxl.biff.AutoFilter;
-import jxl.biff.CellFinder;
+import jxl.*;
+import jxl.biff.*;
 import jxl.biff.CellReferenceHelper;
-import jxl.biff.ConditionalFormat;
-import jxl.biff.DataValidation;
-import jxl.biff.EmptyCell;
-import jxl.biff.FormattingRecords;
-import jxl.biff.Type;
-import jxl.biff.WorkspaceInformationRecord;
-import jxl.biff.drawing.Chart;
-import jxl.biff.drawing.Drawing;
-import jxl.biff.drawing.DrawingData;
-import jxl.biff.drawing.DrawingGroupObject;
+import jxl.biff.drawing.*;
 import jxl.format.CellFormat;
 
 /**
@@ -63,33 +39,28 @@ import jxl.format.CellFormat;
 public class SheetImpl implements Sheet
 {
   /**
-   * The logger
-   */
-  private static Logger logger = Logger.getLogger(SheetImpl.class);
-
-  /**
    * The excel file
    */
-  private File excelFile;
+  private final File excelFile;
   /**
    * A handle to the shared string table
    */
-  private SSTRecord sharedStrings;
+  private final SSTRecord sharedStrings;
 
   /**
    * A handle to the sheet BOF record, which indicates the stream type
    */
-  private BOFRecord sheetBof;
+  private final BOFRecord sheetBof;
 
   /**
    * A handle to the workbook BOF record, which indicates the stream type
    */
-  private BOFRecord workbookBof;
+  private final BOFRecord workbookBof;
 
   /**
    * A handle to the formatting records
    */
-  private FormattingRecords formattingRecords;
+  private final FormattingRecords formattingRecords;
 
   /**
    * The name of this sheet
@@ -109,7 +80,7 @@ public class SheetImpl implements Sheet
   /**
    * The cells
    */
-  private Cell[][] cells;
+  private final Map<CellCoordinate, Cell> cells = new HashMap<>();
 
   /**
    * The start position in the stream of this sheet
@@ -129,39 +100,39 @@ public class SheetImpl implements Sheet
   /**
    * The list of non-default row properties
    */
-  private ArrayList rowProperties;
+  private List<RowRecord> rowProperties;
 
   /**
    * An array of column info records.  They are held this way before
    * they are transferred to the more convenient array
    */
-  private ArrayList columnInfosArray;
+  private List<ColumnInfoRecord> columnInfosArray;
 
   /**
    * A list of shared formula groups
    */
-  private ArrayList sharedFormulas;
+  private final List<SharedFormulaRecord> sharedFormulas;
 
   /**
    * A list of hyperlinks on this page
    */
-  private ArrayList hyperlinks;
+  private List<Hyperlink> hyperlinks;
 
   /**
    * A list of charts on this page
    */
-  private ArrayList charts;
+  private List<Chart> charts;
 
   /**
    * A list of drawings on this page
    */
-  private ArrayList drawings;
+  private List<DrawingGroupObject> drawings;
 
   /**
    * A list of drawings (as opposed to comments/validation/charts) on this
    * page
    */
-  private ArrayList images;
+  private List<Image> images;
 
   /**
    * A list of data validations on this page
@@ -171,7 +142,7 @@ public class SheetImpl implements Sheet
   /**
    * A list of merged cells on this page
    */
-  private Range[] mergedCells;
+  private List<Range> mergedCells;
 
   /**
    * Indicates whether the columnInfos array has been initialized
@@ -186,7 +157,7 @@ public class SheetImpl implements Sheet
   /**
    * Indicates whether or not the dates are based around the 1904 date system
    */
-  private boolean nineteenFour;
+  private final boolean nineteenFour;
 
   /**
    * The workspace options
@@ -216,12 +187,12 @@ public class SheetImpl implements Sheet
   /**
    * The horizontal page breaks contained on this sheet
    */
-  private int[] rowBreaks;
+  private HorizontalPageBreaksRecord rowBreaks;
 
   /**
    * The vertical page breaks contained on this sheet
    */
-  private int[] columnBreaks;
+  private VerticalPageBreaksRecord columnBreaks;
 
   /**
    * The maximum row outline level
@@ -236,12 +207,12 @@ public class SheetImpl implements Sheet
   /**
    * The list of local names for this sheet
    */
-  private ArrayList localNames;
+  private List<NameRecord> localNames;
 
   /**
    * The list of conditional formats for this sheet
    */
-  private ArrayList conditionalFormats;
+  private List<ConditionalFormat> conditionalFormats;
 
   /**
    * The autofilter information
@@ -252,12 +223,12 @@ public class SheetImpl implements Sheet
    * A handle to the workbook which contains this sheet.  Some of the records
    * need this in order to reference external sheets
    */
-  private WorkbookParser workbook;
+  private final WorkbookParser workbook;
 
   /**
    * A handle to the workbook settings
    */
-  private WorkbookSettings workbookSettings;
+  private final WorkbookSettings workbookSettings;
 
   /**
    * Constructor
@@ -285,10 +256,10 @@ public class SheetImpl implements Sheet
     formattingRecords = fr;
     sheetBof = sb;
     workbookBof = wb;
-    columnInfosArray = new ArrayList();
-    sharedFormulas = new ArrayList();
-    hyperlinks = new ArrayList();
-    rowProperties = new ArrayList(10);
+    columnInfosArray = new ArrayList<>();
+    sharedFormulas = new ArrayList<>();
+    hyperlinks = new ArrayList<>();
+    rowProperties = new ArrayList<>(10);
     columnInfosInitialized = false;
     rowRecordsInitialized = false;
     nineteenFour = nf;
@@ -304,12 +275,11 @@ public class SheetImpl implements Sheet
       startPosition -= (sheetBof.getLength() + 4);
     }
 
-    Record r = null;
     int bofs = 1;
 
     while (bofs >= 1)
     {
-      r = f.next();
+      Record r = f.next();
 
       // use this form for quick performance
       if (r.getCode() == Type.EOF.value)
@@ -331,6 +301,7 @@ public class SheetImpl implements Sheet
    * @param loc the cell reference
    * @return the cell at the specified co-ordinates
    */
+  @Override
   public Cell getCell(String loc)
   {
     return getCell(CellReferenceHelper.getColumn(loc),
@@ -344,24 +315,15 @@ public class SheetImpl implements Sheet
    * @param column the column number
    * @return the cell at the specified co-ordinates
    */
+  @Override
   public Cell getCell(int column, int row)
   {
     // just in case this has been cleared, but something else holds
     // a reference to it
-    if (cells == null)
-    {
+    if (cells.isEmpty())
       readSheet();
-    }
 
-    Cell c = cells[row][column];
-
-    if (c == null)
-    {
-      c = new EmptyCell(column, row);
-      cells[row][column] = c;
-    }
-
-    return c;
+    return cells.computeIfAbsent(new CellCoordinate(column, row), EmptyCell::new);
   }
 
   /**
@@ -373,6 +335,7 @@ public class SheetImpl implements Sheet
    * @param  contents the string to match
    * @return the Cell whose contents match the paramter, null if not found
    */
+  @Override
   public Cell findCell(String contents)
   {
     CellFinder cellFinder = new CellFinder(this);
@@ -384,7 +347,7 @@ public class SheetImpl implements Sheet
    * If no match is found, then null is returned.  The search is performed
    * on a row by row basis, so the lower the row number, the more
    * efficiently the algorithm will perform
-   * 
+   *
    * @param contents the string to match
    * @param firstCol the first column within the range
    * @param firstRow the first row of the range
@@ -393,19 +356,20 @@ public class SheetImpl implements Sheet
    * @param reverse indicates whether to perform a reverse search or not
    * @return the Cell whose contents match the parameter, null if not found
    */
-  public Cell findCell(String contents, 
-                       int firstCol, 
-                       int firstRow, 
-                       int lastCol, 
-                       int lastRow, 
+  @Override
+  public Cell findCell(String contents,
+                       int firstCol,
+                       int firstRow,
+                       int lastCol,
+                       int lastRow,
                        boolean reverse)
   {
     CellFinder cellFinder = new CellFinder(this);
     return cellFinder.findCell(contents,
-                               firstCol, 
-                               firstRow, 
+                               firstCol,
+                               firstRow,
                                lastCol,
-                               lastRow, 
+                               lastRow,
                                reverse);
   }
 
@@ -414,7 +378,7 @@ public class SheetImpl implements Sheet
    * If no match is found, then null is returned.  The search is performed
    * on a row by row basis, so the lower the row number, the more
    * efficiently the algorithm will perform
-   * 
+   *
    * @param pattern the regular expression string to match
    * @param firstCol the first column within the range
    * @param firstRow the first row of the range
@@ -423,19 +387,20 @@ public class SheetImpl implements Sheet
    * @param reverse indicates whether to perform a reverse search or not
    * @return the Cell whose contents match the parameter, null if not found
    */
-  public Cell findCell(Pattern pattern, 
-                       int firstCol, 
-                       int firstRow, 
-                       int lastCol, 
-                       int lastRow, 
+  @Override
+  public Cell findCell(Pattern pattern,
+                       int firstCol,
+                       int firstRow,
+                       int lastCol,
+                       int lastRow,
                        boolean reverse)
   {
     CellFinder cellFinder = new CellFinder(this);
     return cellFinder.findCell(pattern,
-                               firstCol, 
-                               firstRow, 
+                               firstCol,
+                               firstRow,
                                lastCol,
-                               lastRow, 
+                               lastRow,
                                reverse);
   }
 
@@ -451,6 +416,7 @@ public class SheetImpl implements Sheet
    * @param  contents the string to match
    * @return the Cell whose contents match the paramter, null if not found
    */
+  @Override
   public LabelCell findLabelCell(String contents)
   {
     CellFinder cellFinder = new CellFinder(this);
@@ -462,14 +428,13 @@ public class SheetImpl implements Sheet
    *
    * @return the number of rows in this sheet
    */
+  @Override
   public int getRows()
   {
     // just in case this has been cleared, but something else holds
     // a reference to it
-    if (cells == null)
-    {
+    if (cells.isEmpty())
       readSheet();
-    }
 
     return numRows;
   }
@@ -479,14 +444,13 @@ public class SheetImpl implements Sheet
    *
    * @return the number of columns in this sheet
    */
+  @Override
   public int getColumns()
   {
     // just in case this has been cleared, but something else holds
     // a reference to it
-    if (cells == null)
-    {
+    if (cells.isEmpty())
       readSheet();
-    }
 
     return numCols;
   }
@@ -498,29 +462,19 @@ public class SheetImpl implements Sheet
    * @param row the rows whose cells are to be returned
    * @return the cells on the given row
    */
+  @Override
   public Cell[] getRow(int row)
   {
     // just in case this has been cleared, but something else holds
     // a reference to it
-    if (cells == null)
-    {
+    if (cells.isEmpty())
       readSheet();
-    }
 
-    // Find the last non-null cell
-    boolean found = false;
-    int col = numCols - 1;
-    while (col >= 0 && !found)
-    {
-      if (cells[row][col] != null)
-      {
-        found = true;
-      }
-      else
-      {
-        col--;
-      }
-    }
+    int col = cells.keySet().stream()
+            .filter(coord -> coord.getRow() == row)
+            .mapToInt(CellCoordinate::getColumn)
+            .max()
+            .orElse(-1);
 
     // Only create entries for non-null cells
     Cell[] c = new Cell[col + 1];
@@ -539,29 +493,19 @@ public class SheetImpl implements Sheet
    * @param col the column whose cells are to be returned
    * @return the cells on the specified column
    */
+  @Override
   public Cell[] getColumn(int col)
   {
     // just in case this has been cleared, but something else holds
     // a reference to it
-    if (cells == null)
-    {
+    if (cells.isEmpty())
       readSheet();
-    }
 
-    // Find the last non-null cell
-    boolean found = false;
-    int row = numRows - 1;
-    while (row >= 0 && !found)
-    {
-      if (cells[row][col] != null)
-      {
-        found = true;
-      }
-      else
-      {
-        row--;
-      }
-    }
+    int row = cells.keySet().stream()
+            .filter(coord -> coord.getColumn() == col)
+            .mapToInt(CellCoordinate::getRow)
+            .max()
+            .orElse(-1);
 
     // Only create entries for non-null cells
     Cell[] c = new Cell[row + 1];
@@ -578,6 +522,7 @@ public class SheetImpl implements Sheet
    *
    * @return the name of the sheet
    */
+  @Override
   public String getName()
   {
     return name;
@@ -594,17 +539,6 @@ public class SheetImpl implements Sheet
   }
 
   /**
-   * Determines whether the sheet is hidden
-   *
-   * @return whether or not the sheet is hidden
-   * @deprecated in favour of the getSettings function
-   */
-  public boolean isHidden()
-  {
-    return hidden;
-  }
-
-  /**
    * Gets the column info record for the specified column.  If no
    * column is specified, null is returned
    *
@@ -616,12 +550,7 @@ public class SheetImpl implements Sheet
     if (!columnInfosInitialized)
     {
       // Initialize the array
-      Iterator i = columnInfosArray.iterator();
-      ColumnInfoRecord cir = null;
-      while (i.hasNext())
-      {
-        cir = (ColumnInfoRecord) i.next();
-
+      for (ColumnInfoRecord cir : columnInfosArray) {
         int startcol = Math.max(0, cir.getStartColumn());
         int endcol = Math.min(columnInfos.length - 1, cir.getEndColumn());
 
@@ -650,13 +579,7 @@ public class SheetImpl implements Sheet
   public ColumnInfoRecord[] getColumnInfos()
   {
     // Just chuck all the column infos we have into an array
-    ColumnInfoRecord[] infos = new ColumnInfoRecord[columnInfosArray.size()];
-    for (int i = 0; i < columnInfosArray.size(); i++)
-    {
-      infos[i] = (ColumnInfoRecord) columnInfosArray.get(i);
-    }
-
-    return infos;
+    return columnInfosArray.toArray(ColumnInfoRecord[]::new);
   }
 
   /**
@@ -675,7 +598,7 @@ public class SheetImpl implements Sheet
    */
   final void clear()
   {
-    cells = null;
+    cells.clear();
     mergedCells = null;
     columnInfosArray.clear();
     sharedFormulas.clear();
@@ -693,17 +616,6 @@ public class SheetImpl implements Sheet
    */
   final void readSheet()
   {
-    // If this sheet contains only a chart, then set everything to
-    // empty and do not bother parsing the sheet
-    // Thanks to steve.brophy for spotting this
-    if (!sheetBof.isWorksheet())
-    {
-      numRows = 0;
-      numCols = 0;
-      cells = new Cell[0][0];
-      //      return;
-    }
-
     SheetReader reader = new SheetReader(excelFile,
                                          sharedStrings,
                                          formattingRecords,
@@ -718,7 +630,7 @@ public class SheetImpl implements Sheet
     // Take stuff that was read in
     numRows = reader.getNumRows();
     numCols = reader.getNumCols();
-    cells = reader.getCells();
+    cells.putAll(reader.getCells());
     rowProperties = reader.getRowProperties();
     columnInfosArray = reader.getColumnInfosArray();
     hyperlinks = reader.getHyperlinks();
@@ -738,17 +650,14 @@ public class SheetImpl implements Sheet
     maxRowOutlineLevel = reader.getMaxRowOutlineLevel();
     maxColumnOutlineLevel = reader.getMaxColumnOutlineLevel();
 
-    reader = null;
-
     if (!workbookSettings.getGCDisabled())
     {
       System.gc();
     }
 
-    if (columnInfosArray.size() > 0)
+    if (!columnInfosArray.isEmpty())
     {
-      ColumnInfoRecord cir = (ColumnInfoRecord)
-        columnInfosArray.get(columnInfosArray.size() - 1);
+      ColumnInfoRecord cir = columnInfosArray.get(columnInfosArray.size() - 1);
       columnInfos = new ColumnInfoRecord[cir.getEndColumn() + 1];
     }
     else
@@ -759,9 +668,7 @@ public class SheetImpl implements Sheet
     // Add any local names
     if (localNames != null)
     {
-      for (Iterator it = localNames.iterator(); it.hasNext() ;)
-      {
-        NameRecord nr = (NameRecord) it.next();
+      for (NameRecord nr : localNames) {
         if (nr.getBuiltInName() == BuiltInName.PRINT_AREA)
         {
           if(nr.getRanges().length > 0)
@@ -775,25 +682,22 @@ public class SheetImpl implements Sheet
         }
         else if (nr.getBuiltInName() == BuiltInName.PRINT_TITLES)
        	{
-          // There can be 1 or 2 entries.  
+          // There can be 1 or 2 entries.
           // Row entries have hardwired column entries (first and last
           //  possible column)
-          // Column entries have hardwired row entries (first and last 
+          // Column entries have hardwired row entries (first and last
           // possible row)
-          for (int i = 0 ; i < nr.getRanges().length ; i++)
-          {
-            NameRecord.NameRange rng = nr.getRanges()[i];
+          for (NameRecord.NameRange rng : nr.getRanges())
             if (rng.getFirstColumn() == 0 && rng.getLastColumn() == 255)
             {
               settings.setPrintTitlesRow(rng.getFirstRow(),
-                                         rng.getLastRow());
+                      rng.getLastRow());
             }
             else
             {
               settings.setPrintTitlesCol(rng.getFirstColumn(),
-                                         rng.getLastColumn());
+                      rng.getLastColumn());
             }
-          }
         }
       }
     }
@@ -804,29 +708,22 @@ public class SheetImpl implements Sheet
    *
    * @return an array of hyperlinks
    */
+  @Override
   public Hyperlink[] getHyperlinks()
   {
-    Hyperlink[] hl = new Hyperlink[hyperlinks.size()];
-
-    for (int i = 0; i < hyperlinks.size(); i++)
-    {
-      hl[i] = (Hyperlink) hyperlinks.get(i);
-    }
-
-    return hl;
+    return hyperlinks.toArray(Hyperlink[]::new);
   }
 
   /**
    * Gets the cells which have been merged on this sheet
    *
-   * @return an array of range objects
+   * @return a List of range objects
    */
-  public Range[] getMergedCells()
+  @Override
+  public List<Range> getMergedCells()
   {
     if (mergedCells == null)
-    {
-      return new Range[0];
-    }
+      return List.of();
 
     return mergedCells;
   }
@@ -836,15 +733,8 @@ public class SheetImpl implements Sheet
    *
    * @return an array of row properties
    */
-  public RowRecord[] getRowProperties()
-  {
-    RowRecord[] rp = new RowRecord[rowProperties.size()];
-    for (int i = 0; i < rp.length; i++)
-    {
-      rp[i] = (RowRecord) rowProperties.get(i);
-    }
-
-    return rp;
+  public RowRecord[] getRowProperties() {
+    return rowProperties.toArray(RowRecord[]::new);
   }
 
   /**
@@ -869,18 +759,11 @@ public class SheetImpl implements Sheet
     if (!rowRecordsInitialized)
     {
       rowRecords = new RowRecord[getRows()];
-      Iterator i = rowProperties.iterator();
 
-      int rownum = 0;
-      RowRecord rr = null;
-      while (i.hasNext())
-      {
-        rr = (RowRecord) i.next();
-        rownum = rr.getRowNumber();
+      for (RowRecord rr : rowProperties) {
+        int rownum = rr.getRowNumber();
         if (rownum < rowRecords.length)
-        {
           rowRecords[rownum] = rr;
-        }
       }
 
       rowRecordsInitialized = true;
@@ -894,7 +777,8 @@ public class SheetImpl implements Sheet
    *
    * @return the explicit row breaks
    */
-  public final int[] getRowPageBreaks()
+  @Override
+  public final IHorizontalPageBreaks getRowPageBreaks()
   {
     return rowBreaks;
   }
@@ -904,7 +788,8 @@ public class SheetImpl implements Sheet
    *
    * @return the explicit row breaks
    */
-  public final int[] getColumnPageBreaks()
+  @Override
+  public final IVerticalPageBreaks getColumnPageBreaks()
   {
     return columnBreaks;
   }
@@ -916,13 +801,7 @@ public class SheetImpl implements Sheet
    */
   public final Chart[] getCharts()
   {
-    Chart[] ch = new Chart[charts.size()];
-
-    for (int i = 0; i < ch.length; i++)
-    {
-      ch[i] = (Chart) charts.get(i);
-    }
-    return ch;
+    return charts.toArray(Chart[]::new);
   }
 
   /**
@@ -932,20 +811,7 @@ public class SheetImpl implements Sheet
    */
   public final DrawingGroupObject[] getDrawings()
   {
-    DrawingGroupObject[] dr = new DrawingGroupObject[drawings.size()];
-    dr = (DrawingGroupObject[]) drawings.toArray(dr);
-    return dr;
-  }
-
-  /**
-   * Determines whether the sheet is protected
-   *
-   * @return whether or not the sheet is protected
-   * @deprecated in favour of the getSettings() api
-   */
-  public boolean isProtected()
-  {
-    return settings.isProtected();
+    return drawings.toArray(DrawingGroupObject[]::new);
   }
 
   /**
@@ -964,6 +830,7 @@ public class SheetImpl implements Sheet
    *
    * @return the settings for this sheet
    */
+  @Override
   public SheetSettings getSettings()
   {
     return settings;
@@ -987,6 +854,7 @@ public class SheetImpl implements Sheet
    * @return the column format, or NULL if the column has no specific format
    * @deprecated use getColumnView instead
    */
+  @Override
   public CellFormat getColumnFormat(int col)
   {
     CellView cv = getColumnView(col);
@@ -1000,6 +868,7 @@ public class SheetImpl implements Sheet
    * @return the column width, or the default width if the column has no
    *         specified format
    */
+  @Override
   public int getColumnWidth(int col)
   {
     return getColumnView(col).getSize() / 256;
@@ -1012,6 +881,7 @@ public class SheetImpl implements Sheet
    * @return the column format, or the default format if no override is
              specified
    */
+  @Override
   public CellView getColumnView(int col)
   {
     ColumnInfoRecord cir = getColumnInfo(col);
@@ -1041,6 +911,7 @@ public class SheetImpl implements Sheet
    *         specified format
    * @deprecated use getRowView instead
    */
+  @Override
   public int getRowHeight(int row)
   {
     return getRowView(row).getDimension();
@@ -1053,6 +924,7 @@ public class SheetImpl implements Sheet
    * @return the row format, or the default format if no override is
              specified
    */
+  @Override
   public CellView getRowView(int row)
   {
     RowRecord rr = getRowInfo(row);
@@ -1126,6 +998,7 @@ public class SheetImpl implements Sheet
    *
    * @return the number of images on this sheet
    */
+  @Override
   public int getNumberOfImages()
   {
     if (images == null)
@@ -1142,6 +1015,7 @@ public class SheetImpl implements Sheet
    * @param i the 0 based image number
    * @return  the image at the specified position
    */
+  @Override
   public Image getDrawing(int i)
   {
     if (images == null)
@@ -1149,7 +1023,7 @@ public class SheetImpl implements Sheet
       initializeImages();
     }
 
-    return (Image) images.get(i);
+    return images.get(i);
   }
 
   /**
@@ -1162,16 +1036,12 @@ public class SheetImpl implements Sheet
       return;
     }
 
-    images = new ArrayList();
+    images = new ArrayList<>();
     DrawingGroupObject[] dgos = getDrawings();
 
-    for (int i = 0; i < dgos.length; i++)
-    {
-      if (dgos[i] instanceof Drawing)
-      {
-        images.add(dgos[i]);
-      }
-    }
+    for (DrawingGroupObject dgo : dgos)
+      if (dgo instanceof Drawing)
+        images.add((Image) dgo);
   }
 
   /**
@@ -1201,7 +1071,7 @@ public class SheetImpl implements Sheet
   {
     if (localNames == null)
     {
-      localNames = new ArrayList();
+      localNames = new ArrayList<>();
     }
 
     localNames.add(nr);
@@ -1214,9 +1084,9 @@ public class SheetImpl implements Sheet
    */
   public ConditionalFormat[] getConditionalFormats()
   {
-    ConditionalFormat[] formats = 
+    ConditionalFormat[] formats =
       new ConditionalFormat[conditionalFormats.size()];
-    formats = (ConditionalFormat[]) conditionalFormats.toArray(formats);
+    formats = conditionalFormats.toArray(formats);
     return formats;
   }
 
@@ -1230,22 +1100,22 @@ public class SheetImpl implements Sheet
     return autoFilter;
   }
 
-  /** 
+  /**
    * Accessor for the maximum column outline level.  Used during a copy
    *
    * @return the maximum column outline level, or 0 if no outlines/groups
    */
-  public int getMaxColumnOutlineLevel() 
+  public int getMaxColumnOutlineLevel()
   {
     return maxColumnOutlineLevel;
   }
 
-  /** 
+  /**
    * Accessor for the maximum row outline level.  Used during a copy
    *
    * @return the maximum row outline level, or 0 if no outlines/groups
    */
-  public int getMaxRowOutlineLevel() 
+  public int getMaxRowOutlineLevel()
   {
     return maxRowOutlineLevel;
   }

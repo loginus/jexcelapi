@@ -19,7 +19,6 @@
 
 package jxl.biff;
 
-import jxl.common.Logger;
 import jxl.read.biff.Record;
 
 /**
@@ -27,9 +26,6 @@ import jxl.read.biff.Record;
  */
 public class WorkspaceInformationRecord extends WritableRecordData
 {
-  // the logger
-  private static Logger logger = 
-    Logger.getLogger(WorkspaceInformationRecord.class);
 
   /**
    * The options byte
@@ -69,9 +65,9 @@ public class WorkspaceInformationRecord extends WritableRecordData
     byte[] data = getRecord().getData();
 
     wsoptions = IntegerHelper.getInt(data[0], data[1]);
-    fitToPages = (wsoptions | FIT_TO_PAGES) != 0;
-    rowOutlines = (wsoptions | SHOW_ROW_OUTLINE_SYMBOLS) != 0;
-    columnOutlines = (wsoptions | SHOW_COLUMN_OUTLINE_SYMBOLS) != 0;
+    fitToPages = (wsoptions & FIT_TO_PAGES) != 0;
+    rowOutlines = (wsoptions & SHOW_ROW_OUTLINE_SYMBOLS) != 0;
+    columnOutlines = (wsoptions & SHOW_COLUMN_OUTLINE_SYMBOLS) != 0;
   }
 
   /**

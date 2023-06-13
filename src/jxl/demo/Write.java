@@ -19,51 +19,20 @@
 
 package jxl.demo;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.io.*;
+import java.net.*;
+import java.nio.file.*;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
-import java.util.TimeZone;
-
-import jxl.CellReferenceHelper;
-import jxl.CellView;
-import jxl.HeaderFooter;
-import jxl.Range;
-import jxl.Workbook;
-import jxl.WorkbookSettings;
+import java.util.*;
+import jxl.*;
+import jxl.format.*;
 import jxl.format.Alignment;
 import jxl.format.Border;
 import jxl.format.BorderLineStyle;
 import jxl.format.Colour;
-import jxl.format.Orientation;
-import jxl.format.PageOrder;
-import jxl.format.PageOrientation;
-import jxl.format.PaperSize;
-import jxl.format.ScriptStyle;
-import jxl.format.UnderlineStyle;
-import jxl.write.Blank;
+import jxl.write.*;
 import jxl.write.Boolean;
-import jxl.write.DateFormat;
-import jxl.write.DateFormats;
-import jxl.write.DateTime;
-import jxl.write.Formula;
-import jxl.write.Label;
 import jxl.write.Number;
-import jxl.write.NumberFormat;
-import jxl.write.NumberFormats;
-import jxl.write.WritableCellFeatures;
-import jxl.write.WritableCellFormat;
-import jxl.write.WritableFont;
-import jxl.write.WritableHyperlink;
-import jxl.write.WritableImage;
-import jxl.write.WritableSheet;
-import jxl.write.WritableWorkbook;
-import jxl.write.WriteException;
 
 
 /**
@@ -85,8 +54,8 @@ public class Write
 
   /**
    * Constructor
-   * 
-   * @param fn 
+   *
+   * @param fn
    */
   public Write(String fn)
   {
@@ -95,15 +64,15 @@ public class Write
 
   /**
    * Uses the JExcelAPI to create a spreadsheet
-   * 
+   *
    * @exception IOException
    * @exception WriteException
    */
   public void write() throws IOException, WriteException
   {
     WorkbookSettings ws = new WorkbookSettings();
-    ws.setLocale(new Locale("en", "EN"));
-    workbook = Workbook.createWorkbook(new File(filename), ws);
+    ws.setLocale(Locale.of("en", "EN"));
+    workbook = Workbook.createWorkbook(Paths.get(filename), ws);
 
 
     WritableSheet s2 = workbook.createSheet("Number Formats", 0);
@@ -138,11 +107,11 @@ public class Write
     workbook.write();
     workbook.close();
   }
-  
+
   /**
    * Writes out a sheet containing the various numerical formats
-   * 
-   * @param s 
+   *
+   * @param s
    */
   private void writeNumberFormatSheet(WritableSheet s) throws WriteException
   {
@@ -185,7 +154,7 @@ public class Write
     n = new Number(2,2,-3.1415926535, cf2);
     s.addCell(n);
 
-    l = new Label(0,3,"+/- Pi - custom 3dps", 
+    l = new Label(0,3,"+/- Pi - custom 3dps",
                   wrappedText);
     s.addCell(l);
 
@@ -197,7 +166,7 @@ public class Write
     n = new Number(2,3,-3.1415926535, dp3cell);
     s.addCell(n);
 
-    l = new Label(0,4,"+/- Pi - custom &3.14", 
+    l = new Label(0,4,"+/- Pi - custom &3.14",
                   wrappedText);
     s.addCell(l);
 
@@ -209,7 +178,7 @@ public class Write
     n = new Number(2,4,-3.1415926535, pounddp2cell);
     s.addCell(n);
 
-    l = new Label(0,5,"+/- Pi - custom Text #.### Text", 
+    l = new Label(0,5,"+/- Pi - custom Text #.### Text",
                   wrappedText);
     s.addCell(l);
 
@@ -306,7 +275,7 @@ public class Write
     WritableCellFormat cuspercentf = new WritableCellFormat(cuspercent);
     n = new Number(5, 9, 3.14159265, cuspercentf);
     s.addCell(n);
-    
+
 
     // Booleans
     l = new Label(0,10, "Boolean - TRUE");
@@ -330,8 +299,8 @@ public class Write
 
     l = new Label(4, 21, "UK Pound");
     s.addCell(l);
-    NumberFormat poundCurrency = 
-      new NumberFormat(NumberFormat.CURRENCY_POUND + " #,###.00", 
+    NumberFormat poundCurrency =
+      new NumberFormat(NumberFormat.CURRENCY_POUND + " #,###.00",
                        NumberFormat.COMPLEX_FORMAT);
     WritableCellFormat poundFormat = new WritableCellFormat(poundCurrency);
     n = new Number(5, 21, 12345, poundFormat);
@@ -339,40 +308,40 @@ public class Write
 
     l = new Label(4, 22, "Euro 1");
     s.addCell(l);
-    NumberFormat euroPrefixCurrency = 
-      new NumberFormat(NumberFormat.CURRENCY_EURO_PREFIX + " #,###.00", 
+    NumberFormat euroPrefixCurrency =
+      new NumberFormat(NumberFormat.CURRENCY_EURO_PREFIX + " #,###.00",
                        NumberFormat.COMPLEX_FORMAT);
-    WritableCellFormat euroPrefixFormat = 
+    WritableCellFormat euroPrefixFormat =
       new WritableCellFormat(euroPrefixCurrency);
     n = new Number(5, 22, 12345, euroPrefixFormat);
     s.addCell(n);
 
     l = new Label(4, 23, "Euro 2");
     s.addCell(l);
-    NumberFormat euroSuffixCurrency = 
-      new NumberFormat("#,###.00" + NumberFormat.CURRENCY_EURO_SUFFIX, 
+    NumberFormat euroSuffixCurrency =
+      new NumberFormat("#,###.00" + NumberFormat.CURRENCY_EURO_SUFFIX,
                        NumberFormat.COMPLEX_FORMAT);
-    WritableCellFormat euroSuffixFormat = 
+    WritableCellFormat euroSuffixFormat =
       new WritableCellFormat(euroSuffixCurrency);
     n = new Number(5, 23, 12345, euroSuffixFormat);
     s.addCell(n);
 
     l = new Label(4, 24, "Dollar");
     s.addCell(l);
-    NumberFormat dollarCurrency = 
-      new NumberFormat(NumberFormat.CURRENCY_DOLLAR + " #,###.00", 
+    NumberFormat dollarCurrency =
+      new NumberFormat(NumberFormat.CURRENCY_DOLLAR + " #,###.00",
                        NumberFormat.COMPLEX_FORMAT);
-    WritableCellFormat dollarFormat = 
+    WritableCellFormat dollarFormat =
       new WritableCellFormat(dollarCurrency);
     n = new Number(5, 24, 12345, dollarFormat);
     s.addCell(n);
 
     l = new Label(4, 25, "Japanese Yen");
     s.addCell(l);
-    NumberFormat japaneseYenCurrency = 
-      new NumberFormat(NumberFormat.CURRENCY_JAPANESE_YEN + " #,###.00", 
+    NumberFormat japaneseYenCurrency =
+      new NumberFormat(NumberFormat.CURRENCY_JAPANESE_YEN + " #,###.00",
                        NumberFormat.COMPLEX_FORMAT);
-    WritableCellFormat japaneseYenFormat = 
+    WritableCellFormat japaneseYenFormat =
       new WritableCellFormat(japaneseYenCurrency);
     n = new Number(5, 25, 12345, japaneseYenFormat);
     s.addCell(n);
@@ -383,7 +352,7 @@ public class Write
     l = new Label(4,32, "One digit fraction format", wrappedText);
     s.addCell(l);
 
-    WritableCellFormat fraction1digitformat = 
+    WritableCellFormat fraction1digitformat =
       new WritableCellFormat(NumberFormats.FRACTION_ONE_DIGIT);
     n = new Number(5, 32, 3.18279, fraction1digitformat);
     s.addCell(n);
@@ -391,7 +360,7 @@ public class Write
     l = new Label(4,33, "Two digit fraction format", wrappedText);
     s.addCell(l);
 
-    WritableCellFormat fraction2digitformat = 
+    WritableCellFormat fraction2digitformat =
       new WritableCellFormat(NumberFormats.FRACTION_TWO_DIGITS);
     n = new Number(5, 33, 3.18279, fraction2digitformat);
     s.addCell(n);
@@ -399,10 +368,10 @@ public class Write
     l = new Label(4,34, "Three digit fraction format (improper)", wrappedText);
     s.addCell(l);
 
-    NumberFormat fraction3digit1 = 
-      new NumberFormat(NumberFormat.FRACTION_THREE_DIGITS, 
+    NumberFormat fraction3digit1 =
+      new NumberFormat(NumberFormat.FRACTION_THREE_DIGITS,
                        NumberFormat.COMPLEX_FORMAT);
-    WritableCellFormat fraction3digitformat1 = 
+    WritableCellFormat fraction3digitformat1 =
       new WritableCellFormat(fraction3digit1);
     n = new Number(5, 34, 3.18927, fraction3digitformat1);
     s.addCell(n);
@@ -410,14 +379,14 @@ public class Write
     l = new Label(4,35, "Three digit fraction format (proper)", wrappedText);
     s.addCell(l);
 
-    NumberFormat fraction3digit2 = 
-      new NumberFormat("# " + NumberFormat.FRACTION_THREE_DIGITS, 
+    NumberFormat fraction3digit2 =
+      new NumberFormat("# " + NumberFormat.FRACTION_THREE_DIGITS,
                        NumberFormat.COMPLEX_FORMAT);
-    WritableCellFormat fraction3digitformat2 = 
+    WritableCellFormat fraction3digitformat2 =
       new WritableCellFormat(fraction3digit2);
     n = new Number(5, 35, 3.18927, fraction3digitformat2);
     s.addCell(n);
-    
+
     // Lots of numbers
     for (int row = 0; row < 100; row++)
     {
@@ -441,8 +410,8 @@ public class Write
 
   /**
    * Adds cells to the specified sheet which test the various date formats
-   * 
-   * @param s 
+   *
+   * @param s
    */
   private void writeDateFormatSheet(WritableSheet s) throws WriteException
   {
@@ -498,7 +467,7 @@ public class Write
                         wrappedText);
     s.addCell(l);
 
-    l = new Label(0,1,"Built in formats", 
+    l = new Label(0,1,"Built in formats",
                   wrappedText);
     s.addCell(l);
 
@@ -569,7 +538,7 @@ public class Write
 
     dt = new DateTime(3, 3, date, cf1, DateTime.GMT);
     s.addCell(dt);
- 
+
     df = new DateFormat("hh:mm");
     cf1 = new WritableCellFormat(df);
     l = new Label(2, 4, "hh:mm");
@@ -734,8 +703,8 @@ public class Write
   /**
    * Adds cells to the specified sheet which test the various label formatting
    * styles, such as different fonts, different sizes and bold, underline etc.
-   * 
-   * @param s1 
+   *
+   * @param s1
    */
   private void writeLabelFormatSheet(WritableSheet s1) throws WriteException
   {
@@ -830,7 +799,7 @@ public class Write
     s1.addCell(lr);
 
     WritableFont arial10ptUnderline = new WritableFont
-      (WritableFont.ARIAL, 
+      (WritableFont.ARIAL,
        WritableFont.DEFAULT_POINT_SIZE,
        WritableFont.NO_BOLD,
        false,
@@ -841,7 +810,7 @@ public class Write
     s1.addCell(lr);
 
     WritableFont arial10ptDoubleUnderline = new WritableFont
-      (WritableFont.ARIAL, 
+      (WritableFont.ARIAL,
        WritableFont.DEFAULT_POINT_SIZE,
        WritableFont.NO_BOLD,
        false,
@@ -852,7 +821,7 @@ public class Write
     s1.addCell(lr);
 
     WritableFont arial10ptSingleAcc = new WritableFont
-      (WritableFont.ARIAL, 
+      (WritableFont.ARIAL,
        WritableFont.DEFAULT_POINT_SIZE,
        WritableFont.NO_BOLD,
        false,
@@ -863,7 +832,7 @@ public class Write
     s1.addCell(lr);
 
     WritableFont arial10ptDoubleAcc = new WritableFont
-      (WritableFont.ARIAL, 
+      (WritableFont.ARIAL,
        WritableFont.DEFAULT_POINT_SIZE,
        WritableFont.NO_BOLD,
        false,
@@ -892,7 +861,7 @@ public class Write
        UnderlineStyle.SINGLE);
     WritableCellFormat arialBoldItalicUnderline = new WritableCellFormat
       (arial18ptBoldItalicUnderline);
-    lr = new Label(6,13, "Arial 18 Bold Italic Underline", 
+    lr = new Label(6,13, "Arial 18 Bold Italic Underline",
                    arialBoldItalicUnderline);
     s1.addCell(lr);
 
@@ -928,7 +897,7 @@ public class Write
     lr = new Label(0, 17, "Colours");
     s1.addCell(lr);
 
-    WritableFont red = new WritableFont(WritableFont.ARIAL, 
+    WritableFont red = new WritableFont(WritableFont.ARIAL,
                                         WritableFont.DEFAULT_POINT_SIZE,
                                         WritableFont.NO_BOLD,
                                         false,
@@ -938,7 +907,7 @@ public class Write
     lr = new Label(2, 17, "Red", redFormat);
     s1.addCell(lr);
 
-    WritableFont blue = new WritableFont(WritableFont.ARIAL, 
+    WritableFont blue = new WritableFont(WritableFont.ARIAL,
                                          WritableFont.DEFAULT_POINT_SIZE,
                                          WritableFont.NO_BOLD,
                                          false,
@@ -954,14 +923,14 @@ public class Write
     limeFormat.setWrap(true);
     lr = new Label(4, 18, "Modified palette - was lime, now red", limeFormat);
     s1.addCell(lr);
-    
+
     WritableCellFormat greyBackground = new WritableCellFormat();
     greyBackground.setWrap(true);
     greyBackground.setBackground(Colour.GRAY_50);
     lr = new Label(2, 19, "Grey background", greyBackground);
     s1.addCell(lr);
 
-    WritableFont yellow = new WritableFont(WritableFont.ARIAL, 
+    WritableFont yellow = new WritableFont(WritableFont.ARIAL,
                                            WritableFont.DEFAULT_POINT_SIZE,
                                            WritableFont.NO_BOLD,
                                            false,
@@ -986,10 +955,10 @@ public class Write
     lr = new Label(2, 22, null);
     s1.addCell(lr);
 
-    lr = new Label(0, 24, 
+    lr = new Label(0, 24,
                    "A very long label, more than 255 characters\012" +
                    "Rejoice O shores\012" +
-                   "Sing O bells\012" + 
+                   "Sing O bells\012" +
                    "But I with mournful tread\012" +
                    "Walk the deck my captain lies\012" +
                    "Fallen cold and dead\012"+
@@ -997,21 +966,21 @@ public class Write
                    "With a shower of rain. We stopped in the Colonnade\012" +
                    "A very long label, more than 255 characters\012" +
                    "Rejoice O shores\012" +
-                   "Sing O bells\012" + 
+                   "Sing O bells\012" +
                    "But I with mournful tread\012" +
                    "Walk the deck my captain lies\012" +
                    "Fallen cold and dead\012"+
                    "Summer surprised, coming over the Starnbergersee\012" +
                    "With a shower of rain. We stopped in the Colonnade\012" +                   "A very long label, more than 255 characters\012" +
                    "Rejoice O shores\012" +
-                   "Sing O bells\012" + 
+                   "Sing O bells\012" +
                    "But I with mournful tread\012" +
                    "Walk the deck my captain lies\012" +
                    "Fallen cold and dead\012"+
                    "Summer surprised, coming over the Starnbergersee\012" +
                    "With a shower of rain. We stopped in the Colonnade\012" +                   "A very long label, more than 255 characters\012" +
                    "Rejoice O shores\012" +
-                   "Sing O bells\012" + 
+                   "Sing O bells\012" +
                    "But I with mournful tread\012" +
                    "Walk the deck my captain lies\012" +
                    "Fallen cold and dead\012"+
@@ -1025,7 +994,7 @@ public class Write
     vertical.setOrientation(Orientation.VERTICAL);
     lr = new Label(0, 26, "Vertical orientation", vertical);
     s1.addCell(lr);
-    
+
 
     WritableCellFormat plus_90 = new WritableCellFormat();
     plus_90.setOrientation(Orientation.PLUS_90);
@@ -1051,7 +1020,7 @@ public class Write
     {
       Label l = new Label(0, 30, "Hyperlink to home page");
       s1.addCell(l);
-      
+
       URL url = new URL("http://www.andykhan.com/jexcelapi");
       WritableHyperlink wh = new WritableHyperlink(0, 30, 8, 31, url);
       s1.addHyperlink(wh);
@@ -1063,19 +1032,19 @@ public class Write
       l = new Label(4, 2, "File hyperlink to documentation");
       s1.addCell(l);
 
-      File file = new File("../jexcelapi/docs/index.html");
-      wh = new WritableHyperlink(0, 32, 8, 32, file, 
+      Path file = Paths.get("../jexcelapi/docs/index.html");
+      wh = new WritableHyperlink(0, 32, 8, 32, file,
                                  "JExcelApi Documentation");
       s1.addHyperlink(wh);
 
       // Add a hyperlink to another cell on this sheet
-      wh = new WritableHyperlink(0, 34, 8, 34, 
+      wh = new WritableHyperlink(0, 34, 8, 34,
                                  "Link to another cell",
                                  s1,
                                  0, 180, 1, 181);
       s1.addHyperlink(wh);
 
-      file = new File("\\\\localhost\\file.txt");
+      file = Paths.get("\\\\localhost\\file.txt");
       wh = new WritableHyperlink(0, 36, 8, 36, file);
       s1.addHyperlink(wh);
 
@@ -1125,12 +1094,12 @@ public class Write
 
     Label l5 = new Label(7, 17, "this label won't appear");
     s1.addCell(l5);
-    s1.mergeCells(5, 16, 8, 18);    
+    s1.mergeCells(5, 16, 8, 18);
 
     s1.mergeCells(5, 19, 6, 24);
     s1.mergeCells(6, 18, 10, 19);
     */
-    
+
     WritableFont courier10ptFont = new WritableFont(WritableFont.COURIER, 10);
     WritableCellFormat courier10pt = new WritableCellFormat(courier10ptFont);
     l = new Label(0, 49, "Courier fonts", courier10pt);
@@ -1141,7 +1110,7 @@ public class Write
     l = new Label(0, 50, "Tahoma fonts", tahoma12pt);
     s1.addCell(l);
 
-    WritableFont.FontName wingdingsFont = 
+    WritableFont.FontName wingdingsFont =
       WritableFont.createFont("Wingdings 2");
     WritableFont wingdings210ptFont = new WritableFont(wingdingsFont, 10);
     WritableCellFormat wingdings210pt = new WritableCellFormat
@@ -1154,7 +1123,7 @@ public class Write
     l = new Label(3,53, "Shrunk to fit", shrinkToFit);
     s1.addCell(l);
 
-    l = new Label(3,55, "Some long wrapped text in a merged cell", 
+    l = new Label(3,55, "Some long wrapped text in a merged cell",
                   arial12format);
     s1.addCell(l);
     s1.mergeCells(3,55,4,55);
@@ -1165,7 +1134,7 @@ public class Write
     l.setCellFeatures(cellFeatures);
     s1.addCell(l);
 
-    l = new Label(0, 59, 
+    l = new Label(0, 59,
                   "A cell with a long comment");
     cellFeatures = new WritableCellFeatures();
     cellFeatures.setComment("a very long cell comment indeed that won't " +
@@ -1182,10 +1151,10 @@ public class Write
 
     l = new Label(0, 63, "Data validation:  list");
     s1.addCell(l);
-    
+
     Blank b = new Blank(1,63);
     cellFeatures = new WritableCellFeatures();
-    ArrayList al = new ArrayList();
+    ArrayList<String> al = new ArrayList<>();
     al.add("bagpuss");
     al.add("clangers");
     al.add("ivor the engine");
@@ -1196,7 +1165,7 @@ public class Write
 
     l = new Label(0, 64, "Data validation:  number > 4.5");
     s1.addCell(l);
-    
+
     b = new Blank(1,64);
     cellFeatures = new WritableCellFeatures();
     cellFeatures.setNumberValidation(4.5, WritableCellFeatures.GREATER_THAN);
@@ -1205,7 +1174,7 @@ public class Write
 
     l = new Label(0, 65, "Data validation:  named range");
     s1.addCell(l);
-    
+
     l = new Label(4, 65, "tiger");
     s1.addCell(l);
     l = new Label(5, 65, "sword");
@@ -1232,7 +1201,7 @@ public class Write
     l = new Label(0, 66, "Block of cells B67-F71 with data validation");
     s1.addCell(l);
 
-    al = new ArrayList();
+    al = new ArrayList<>();
     al.add("Achilles");
     al.add("Agamemnon");
     al.add("Hector");
@@ -1261,7 +1230,7 @@ public class Write
   /**
    * Adds cells to the specified sheet which test the various border
    * styles
-   * 
+   *
    * @param s
    */
   private void writeBordersSheet(WritableSheet s) throws WriteException
@@ -1272,7 +1241,7 @@ public class Write
     s.setColumnView(2, 15);
     s.setColumnView(4, 15);
     WritableCellFormat thickLeft = new WritableCellFormat();
-    thickLeft.setBorder(Border.LEFT, BorderLineStyle.THICK); 
+    thickLeft.setBorder(Border.LEFT, BorderLineStyle.THICK);
     Label lr = new Label(1,0, "Thick left", thickLeft);
     s.addCell(lr);
 
@@ -1413,7 +1382,7 @@ public class Write
     // Add some labels to column 5 for autosizing
     Label l6 = new Label(5, 2, "A column for autosizing", wcf2);
     ws.addCell(l6);
-    l6 = new Label(5, 4, "Another label, longer this time and " + 
+    l6 = new Label(5, 4, "Another label, longer this time and " +
                    "in a different font");
     ws.addCell(l6);
 
@@ -1430,13 +1399,13 @@ public class Write
     // Add some cells to manipulate
     Number nc = new Number(0,0,15);
     ws.addCell(nc);
-    
+
     nc = new Number(0,1,16);
     ws.addCell(nc);
 
     nc = new Number(0,2,10);
     ws.addCell(nc);
-    
+
     nc = new Number(0,3, 12);
     ws.addCell(nc);
 
@@ -1642,7 +1611,7 @@ public class Write
     l = new Label(3, 35, "IF(((F1=\"Not Found\")*(F2=\"Not Found\")*(F3=\"\")*(F4=\"\")*(F5=\"\")),1,0)");
     ws.addCell(l);
 
-    f = new Formula(2, 36, 
+    f = new Formula(2, 36,
        "HYPERLINK(\"http://www.amazon.co.uk/exec/obidos/ASIN/0571058086qid=1099836249/sr=1-3/ref=sr_1_11_3/202-6017285-1620664\",  \"Long hyperlink\")");
     ws.addCell(f);
 
@@ -1694,7 +1663,7 @@ public class Write
     ws.addCell(f);
     l = new Label(3, 45, "formulavalue+5");
     ws.addCell(l);
-    
+
     // Errors
     /*
     f = new Formula(2, 25, "PLOP(15)"); // unknown function
@@ -1723,14 +1692,14 @@ public class Write
     ws.addCell(l);
 
     WritableImage wi = new WritableImage
-      (0, 3, 5, 7, new File("resources/wealdanddownland.png"));
+      (0, 3, 5, 7, Paths.get("resources/wealdanddownland.png"));
     ws.addImage(wi);
 
     l = new Label(0, 12, "Merchant Adventurers Hall, York");
     ws.addCell(l);
 
-    wi = new WritableImage(5, 12, 4, 10, 
-                           new File("resources/merchantadventurers.png"));
+    wi = new WritableImage(5, 12, 4, 10,
+                           Paths.get("resources/merchantadventurers.png"));
     ws.addImage(wi);
 
     // An unsupported file type

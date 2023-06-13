@@ -19,10 +19,10 @@
 
 package jxl.read.biff;
 
+import jxl.biff.*;
+import static jxl.biff.Version.*;
 import jxl.common.Logger;
 
-import jxl.biff.IntegerHelper;
-import jxl.biff.RecordData;
 
 /**
  * A Beginning Of File record, found at the commencement of all substreams
@@ -102,6 +102,29 @@ public class BOFRecord extends RecordData
     return version == Biff7;
   }
 
+  public Version getVersion() {
+    switch (version) {
+      case Biff7: return BIFF7;
+      case Biff8: return BIFF8;
+      default: return BIFF5;
+    }
+
+    /*
+     * Note of the IBM Client Access Data Transfer about the differences
+     * of BIFF5 and BIFF7 since there is no difference in the BOF-Version
+     * information:
+     *
+     * BIFF7 is an extension of the BIFF5 file format supported on earlier
+     * versions of data transfer. BIFF5 and BIFF7 support have both been
+     * expanded to allow multiple sheets to be written to an Excel workbook.
+     * To take advantage of this new functionality, select BIFF5 or BIFF7
+     * for the PC file type, then select Details and then Create extra
+     * sheets when first sheet overflows. Only 16,384 records are allowed
+     * per sheet and overflow sheets are created as necessary. This option
+     * is turned OFF by default for the BIFF5 file type. The option is
+     * turned ON by default for the BIFF7 file type.
+     */
+  }
 
   /**
    * Interrogates this substream to see if it represents the commencement of

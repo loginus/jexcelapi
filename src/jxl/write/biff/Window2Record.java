@@ -37,7 +37,7 @@ class Window2Record extends WritableRecordData
   /**
    * Constructor
    */
-  public Window2Record(SheetSettings settings)
+  Window2Record(SheetSettings settings)
   {
     super(Type.WINDOW2);
 
@@ -99,6 +99,7 @@ class Window2Record extends WritableRecordData
    * 
    * @return the binary data
    */
+  @Override
   public byte[] getData()
   {
     return data;

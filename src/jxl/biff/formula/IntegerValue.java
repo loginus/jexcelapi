@@ -92,7 +92,7 @@ class IntegerValue extends NumberValue implements ParsedThing
   byte[] getBytes()
   {
     byte[] data = new byte[3];
-    data[0] = Token.INTEGER.getCode();
+    data[0] = Token.INTEGER.getReferenceCode();
 
     IntegerHelper.getTwoBytes((int) value, data, 1);
 

@@ -26,14 +26,14 @@ import java.util.Stack;
  */
 abstract class UnaryOperator extends Operator implements ParsedThing
 {
-  /** 
+  /**
    * Constructor
    */
   public UnaryOperator()
   {
   }
 
-  /** 
+  /**
    * Reads the ptg data from the array starting at the specified position
    *
    * @param data the RPN array
@@ -45,14 +45,12 @@ abstract class UnaryOperator extends Operator implements ParsedThing
     return 0;
   }
 
-  /** 
+  /**
    * Gets the operands for this operator from the stack
    */
-  public void getOperands(Stack s)
+  public void getOperands(Stack<ParseItem> s)
   {
-    ParseItem o1 = (ParseItem) s.pop();
-
-    add(o1);
+    add(s.pop());
   }
 
   /**
@@ -158,7 +156,7 @@ abstract class UnaryOperator extends Operator implements ParsedThing
     // Add on the operator byte
     byte[] newdata = new byte[data.length + 1];
     System.arraycopy(data, 0, newdata, 0, data.length);
-    newdata[data.length] = getToken().getCode();
+    newdata[data.length] = getToken().getReferenceCode();
 
     return newdata;
   }

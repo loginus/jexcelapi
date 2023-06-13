@@ -19,9 +19,8 @@
 
 package jxl;
 
+import java.nio.file.Path;
 import jxl.common.LengthUnit;
-
-import java.io.File;
 
 /**
  * Accessor functions for an image
@@ -61,7 +60,7 @@ public interface Image
    *
    * @return the file which the image references
    */
-  public File getImageFile();
+  public Path getImageFile();
 
   /**
    * Accessor for the image data

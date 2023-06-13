@@ -22,7 +22,6 @@ package jxl.biff.drawing;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 
 import jxl.common.Assert;
 import jxl.common.Logger;
@@ -64,7 +63,7 @@ public class DrawingGroup implements EscherStream
   /**
    * The list of user added drawings
    */
-  private ArrayList drawings;
+  private final ArrayList<DrawingGroupObject> drawings;
 
   /**
    * The number of blips
@@ -96,7 +95,7 @@ public class DrawingGroup implements EscherStream
    * A hash map of images keyed on the file path, containing the
    * reference count
    */
-  private HashMap imageFiles;
+  private final HashMap<String, Drawing> imageFiles;
 
   /**
    * A count of the next available object id
@@ -116,9 +115,9 @@ public class DrawingGroup implements EscherStream
   public DrawingGroup(Origin o)
   {
     origin = o;
-    initialized = o == Origin.WRITE ? true : false;
-    drawings = new ArrayList();
-    imageFiles = new HashMap();
+    initialized = o == Origin.WRITE;
+    drawings = new ArrayList<>();
+    imageFiles = new HashMap<>();
     drawingsOmitted = false;
     maxObjectId = 1;
     maxShapeId = 1024;
@@ -132,6 +131,7 @@ public class DrawingGroup implements EscherStream
    *
    * @param dg the drawing group to copy
    */
+  @SuppressWarnings("unchecked")
   public DrawingGroup(DrawingGroup dg)
   {
     drawingData = dg.drawingData;
@@ -146,13 +146,13 @@ public class DrawingGroup implements EscherStream
     drawingGroupId = dg.drawingGroupId;
     drawingsOmitted = dg.drawingsOmitted;
     origin = dg.origin;
-    imageFiles = (HashMap) dg.imageFiles.clone();
+    imageFiles = (HashMap<String, Drawing>) dg.imageFiles.clone();
     maxObjectId = dg.maxObjectId;
     maxShapeId = dg.maxShapeId;
 
     // Create this as empty, because all drawings will get added later
     // as part of the sheet copy process
-    drawings = new ArrayList();
+    drawings = new ArrayList<>();
   }
 
   /**
@@ -264,8 +264,7 @@ public class DrawingGroup implements EscherStream
     Drawing drawing = (Drawing) d;
 
     // See if this is referenced elsewhere
-    Drawing refImage =
-      (Drawing) imageFiles.get(d.getImageFilePath());
+    Drawing refImage = imageFiles.get(d.getImageFilePath());
 
     if (refImage == null)
     {
@@ -326,17 +325,13 @@ public class DrawingGroup implements EscherStream
       getBStoreContainer().remove(bse);
 
       // Adjust blipId on the other blips
-      for (Iterator i = drawings.iterator(); i.hasNext();)
-      {
-        DrawingGroupObject drawing = (DrawingGroupObject) i.next();
-
+      for (DrawingGroupObject drawing : drawings)
         if (drawing.getBlipId() > d.getBlipId())
         {
           drawing.setObjectId(drawing.getObjectId(),
-                              drawing.getBlipId() - 1,
-                              drawing.getShapeId());
+                  drawing.getBlipId() - 1,
+                  drawing.getShapeId());
         }
-      }
 
       numBlips--;
     }
@@ -418,18 +413,14 @@ public class DrawingGroup implements EscherStream
       BStoreContainer bstoreCont = new BStoreContainer();
 
       // Create a blip entry for each drawing
-      for (Iterator i = drawings.iterator(); i.hasNext();)
-      {
-        Object o = i.next();
-        if (o instanceof Drawing)
+      for (DrawingGroupObject o : drawings)
+        if (o instanceof Drawing d)
         {
-          Drawing d = (Drawing) o;
           BlipStoreEntry bse = new BlipStoreEntry(d);
 
           bstoreCont.add(bse);
           drawingsAdded++;
         }
-      }
       if (drawingsAdded > 0)
       {
         bstoreCont.setNumBlips(drawingsAdded);
@@ -465,27 +456,22 @@ public class DrawingGroup implements EscherStream
       if (readBStoreContainer != null)
       {
         EscherRecord[] children = readBStoreContainer.getChildren();
-        for (int i = 0; i < children.length; i++)
-        {
-          BlipStoreEntry bse = (BlipStoreEntry) children[i];
+        for (EscherRecord children1 : children) {
+          BlipStoreEntry bse = (BlipStoreEntry) children1;
           bstoreCont.add(bse);
         }
       }
 
       // Create a blip entry for each drawing that has been added
-      for (Iterator i = drawings.iterator(); i.hasNext();)
-      {
-        DrawingGroupObject dgo = (DrawingGroupObject) i.next();
-        if (dgo instanceof Drawing)
+      for (DrawingGroupObject dgo : drawings)
+        if (dgo instanceof Drawing d)
         {
-          Drawing d = (Drawing) dgo;
           if (d.getOrigin() == Origin.WRITE)
           {
             BlipStoreEntry bse = new BlipStoreEntry(d);
             bstoreCont.add(bse);
           }
         }
-      }
 
       dggContainer.add(bstoreCont);
 

@@ -21,8 +21,8 @@ package jxl.read.biff;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.TimeZone;
+import java.time.*;
+import java.util.*;
 
 import jxl.common.Assert;
 import jxl.common.Logger;
@@ -179,10 +179,6 @@ class DateRecord implements DateCell, CellFeaturesAccessor
       numValue += 1;
     }
 
-    // Get rid of any timezone adjustments - we are not interested
-    // in automatic adjustments
-    format.setTimeZone(gmtZone);
-
     // Convert this to the number of days since 01 Jan 1970
     int offsetDays = nf ? utcOffsetDays1904 : utcOffsetDays;
     double utcDays = numValue - offsetDays;
@@ -192,7 +188,11 @@ class DateRecord implements DateCell, CellFeaturesAccessor
     // to a rounding feature of Excel (contributed by Jurgen
     long utcValue = Math.round(utcDays * secondsInADay) * msInASecond;
 
-    date = new Date(utcValue);
+    // Get the current calender, strip timezone information
+    Date d = new Date(utcValue);
+
+    LocalDateTime ldt = LocalDateTime.ofInstant(d.toInstant(), ZoneOffset.UTC);
+    date = Date.from(ldt.atZone(ZoneId.systemDefault()).toInstant());
   }
 
   /**

@@ -32,10 +32,6 @@ import jxl.biff.IntegerHelper;
  */
 class BuiltInFunction extends Operator implements ParsedThing
 {
-  /**
-   * The logger
-   */
-  private static Logger logger = Logger.getLogger(BuiltInFunction.class);
 
   /**
    * The function
@@ -45,7 +41,7 @@ class BuiltInFunction extends Operator implements ParsedThing
   /**
    * The workbook settings
    */
-  private WorkbookSettings settings;
+  private final WorkbookSettings settings;
 
   /**
    * Constructor
@@ -88,22 +84,16 @@ class BuiltInFunction extends Operator implements ParsedThing
    *
    * @param s the token stack
    */
-  public void getOperands(Stack s)
+  public void getOperands(Stack<ParseItem> s)
   {
     // parameters are in the correct order, god damn them
     ParseItem[] items = new ParseItem[function.getNumArgs()];
     // modified in 2.4.3
     for (int i = function.getNumArgs() - 1; i >= 0; i--)
-    {
-      ParseItem pi = (ParseItem) s.pop();
-
-      items[i] = pi;
-    }
+      items[i] = s.pop();
 
     for (int i = 0; i < function.getNumArgs(); i++)
-    {
       add(items[i]);
-    }
   }
 
   /**
@@ -144,12 +134,8 @@ class BuiltInFunction extends Operator implements ParsedThing
    */
   public void adjustRelativeCellReferences(int colAdjust, int rowAdjust)
   {
-    ParseItem[] operands = getOperands();
-
-    for (int i = 0; i < operands.length; i++)
-    {
-      operands[i].adjustRelativeCellReferences(colAdjust, rowAdjust);
-    }
+    for (ParseItem operand : getOperands())
+      operand.adjustRelativeCellReferences(colAdjust, rowAdjust);
   }
 
   /**
@@ -164,11 +150,8 @@ class BuiltInFunction extends Operator implements ParsedThing
    */
   void columnInserted(int sheetIndex, int col, boolean currentSheet)
   {
-    ParseItem[] operands = getOperands();
-    for (int i = 0; i < operands.length; i++)
-    {
-      operands[i].columnInserted(sheetIndex, col, currentSheet);
-    }
+    for (ParseItem operand : getOperands())
+      operand.columnInserted(sheetIndex, col, currentSheet);
   }
 
   /**
@@ -183,11 +166,8 @@ class BuiltInFunction extends Operator implements ParsedThing
    */
   void columnRemoved(int sheetIndex, int col, boolean currentSheet)
   {
-    ParseItem[] operands = getOperands();
-    for (int i = 0; i < operands.length; i++)
-    {
-      operands[i].columnRemoved(sheetIndex, col, currentSheet);
-    }
+    for (ParseItem operand : getOperands())
+      operand.columnRemoved(sheetIndex, col, currentSheet);
   }
 
 
@@ -203,11 +183,8 @@ class BuiltInFunction extends Operator implements ParsedThing
    */
   void rowInserted(int sheetIndex, int row, boolean currentSheet)
   {
-    ParseItem[] operands = getOperands();
-    for (int i = 0; i < operands.length; i++)
-    {
-      operands[i].rowInserted(sheetIndex, row, currentSheet);
-    }
+    for (ParseItem operand : getOperands())
+      operand.rowInserted(sheetIndex, row, currentSheet);
   }
 
   /**
@@ -222,11 +199,8 @@ class BuiltInFunction extends Operator implements ParsedThing
    */
   void rowRemoved(int sheetIndex, int row, boolean currentSheet)
   {
-    ParseItem[] operands = getOperands();
-    for (int i = 0; i < operands.length; i++)
-    {
-      operands[i].rowRemoved(sheetIndex, row, currentSheet);
-    }
+    for (ParseItem operand : getOperands())
+      operand.rowRemoved(sheetIndex, row, currentSheet);
   }
 
   /**
@@ -236,11 +210,8 @@ class BuiltInFunction extends Operator implements ParsedThing
    */
   void handleImportedCellReferences()
   {
-    ParseItem[] operands = getOperands();
-    for (int i = 0 ; i < operands.length ; i++)
-    {
-      operands[i].handleImportedCellReferences();
-    }
+    for (ParseItem operand : getOperands())
+      operand.handleImportedCellReferences();
   }
 
   /**
@@ -254,10 +225,8 @@ class BuiltInFunction extends Operator implements ParsedThing
     ParseItem[] operands = getOperands();
     byte[] data = new byte[0];
 
-    for (int i = 0; i < operands.length; i++)
-    {
-      byte[] opdata = operands[i].getBytes();
-
+    for (ParseItem operand : operands) {
+      byte[] opdata = operand.getBytes();
       // Grow the array
       byte[] newdata = new byte[data.length + opdata.length];
       System.arraycopy(data, 0, newdata, 0, data.length);
@@ -268,8 +237,8 @@ class BuiltInFunction extends Operator implements ParsedThing
     // Add on the operator byte
     byte[] newdata = new byte[data.length + 3];
     System.arraycopy(data, 0, newdata, 0, data.length);
-    newdata[data.length] = !useAlternateCode() ? Token.FUNCTION.getCode() :
-                                                 Token.FUNCTION.getCode2();
+    newdata[data.length] = !useAlternateCode() ? Token.FUNCTION.getReferenceCode() :
+                                                 Token.FUNCTION.getValueCode();
     IntegerHelper.getTwoBytes(function.getCode(), newdata, data.length + 1);
 
     return newdata;

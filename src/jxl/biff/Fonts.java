@@ -35,20 +35,12 @@ public class Fonts
   /**
    * The list of fonts
    */
-  private ArrayList fonts;
+  private ArrayList<FontRecord> fonts = new ArrayList<>();
 
   /**
    * The default number of fonts
    */
   private static final int numDefaultFonts = 4;
-
-  /**
-   * Constructor
-   */
-  public Fonts()
-  {
-    fonts = new ArrayList();
-  }
 
   /**
    * Adds a font record to this workbook.  If the FontRecord passed in has not
@@ -86,11 +78,9 @@ public class Fonts
   {
     // remember to allow for the fact that font index 4 is not used
     if (index > 4)
-    {
       index--;
-    }
 
-    return (FontRecord) fonts.get(index);
+    return fonts.get(index);
   }
 
   /**
@@ -101,14 +91,8 @@ public class Fonts
    */
   public void write(File outputFile) throws IOException
   {
-    Iterator i = fonts.iterator();
-
-    FontRecord font = null;
-    while (i.hasNext())
-    {
-      font = (FontRecord) i.next();
+    for (FontRecord font : fonts)
       outputFile.write(font);
-    }
   }
 
   /**
@@ -121,32 +105,30 @@ public class Fonts
     IndexMapping mapping = new IndexMapping(fonts.size() + 1);
       // allow for skipping record 4
 
-    ArrayList newfonts = new ArrayList();
+    ArrayList<FontRecord> newfonts = new ArrayList<>();
     FontRecord fr = null;
     int numremoved = 0;
 
     // Preserve the default fonts
     for (int i = 0; i < numDefaultFonts; i++)
     {
-      fr = (FontRecord) fonts.get(i);
+      fr = fonts.get(i);
       newfonts.add(fr);
       mapping.setMapping(fr.getFontIndex(), fr.getFontIndex());
     }
 
     // Now do the rest
-    Iterator it = null;
-    FontRecord fr2 = null;
     boolean duplicate = false;
     for (int i = numDefaultFonts; i < fonts.size(); i++)
     {
-      fr = (FontRecord) fonts.get(i);
+      fr = fonts.get(i);
 
       // Compare to all the fonts currently on the list
       duplicate = false;
-      it = newfonts.iterator();
+      Iterator<FontRecord> it = newfonts.iterator();
       while (it.hasNext() && !duplicate)
       {
-        fr2 = (FontRecord) it.next();
+        FontRecord fr2 = it.next();
         if (fr.equals(fr2))
         {
           duplicate = true;
@@ -167,10 +149,10 @@ public class Fonts
     }
 
     // Iterate through the remaining fonts, updating all the font indices
-    it = newfonts.iterator();
+    Iterator<FontRecord> it = newfonts.iterator();
     while (it.hasNext())
     {
-      fr = (FontRecord) it.next();
+      fr = it.next();
       fr.initialize(mapping.getNewIndex(fr.getFontIndex()));
     }
 

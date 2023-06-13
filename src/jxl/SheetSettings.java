@@ -38,7 +38,7 @@ public final class SheetSettings
    * The page orientation
    */
   private PageOrientation orientation;
-  
+
   /**
    * The page order
    */
@@ -228,7 +228,7 @@ public final class SheetSettings
   private boolean recalculateFormulasBeforeSave;
 
   /**
-   * The magnification factor for use during page break preview mode (in 
+   * The magnification factor for use during page break preview mode (in
    * percent)
    */
   private int pageBreakPreviewMagnification;
@@ -241,7 +241,7 @@ public final class SheetSettings
   /**
    * The print area
    */
-  private Range printArea;
+  private SheetRangeImpl printArea;
 
   /**
    * The print row titles
@@ -252,7 +252,7 @@ public final class SheetSettings
    * The print column titles
    */
   private Range printTitlesCol;
-    
+
   /**
    * A handle to the sheet - used internally for ranges
    */
@@ -380,7 +380,7 @@ public final class SheetSettings
          copy.getPrintArea().getBottomRight().getColumn(),
          copy.getPrintArea().getBottomRight().getRow());
     }
-    
+
     if (copy.printTitlesRow != null)
     {
       printTitlesRow = new SheetRangeImpl
@@ -389,7 +389,7 @@ public final class SheetSettings
          copy.getPrintTitlesRow().getTopLeft().getRow(),
          copy.getPrintTitlesRow().getBottomRight().getColumn(),
          copy.getPrintTitlesRow().getBottomRight().getRow());
-    }    
+    }
 
     if (copy.printTitlesCol != null)
     {
@@ -399,7 +399,7 @@ public final class SheetSettings
          copy.getPrintTitlesCol().getTopLeft().getRow(),
          copy.getPrintTitlesCol().getBottomRight().getColumn(),
          copy.getPrintTitlesCol().getBottomRight().getRow());
-    }    
+    }
   }
 
   /**
@@ -424,20 +424,20 @@ public final class SheetSettings
 
   /**
    * Accessor for the order
-   * 
+   *
    * @return
    */
-  public PageOrder getPageOrder() 
+  public PageOrder getPageOrder()
   {
     return pageOrder;
   }
 
   /**
    * Sets the page order for printing this sheet
-   * 
+   *
    * @param order
    */
-  public void setPageOrder(PageOrder order) 
+  public void setPageOrder(PageOrder order)
   {
     this.pageOrder = order;
   }
@@ -1259,12 +1259,12 @@ public final class SheetSettings
    * @param lastCol the last column of the print area
    * @param lastRow the last row of the print area
    */
-  public void setPrintArea(int firstCol, 
-                           int firstRow,  
+  public void setPrintArea(int firstCol,
+                           int firstRow,
                            int lastCol,
                            int lastRow)
   {
-    printArea = new SheetRangeImpl(sheet, firstCol, firstRow, 
+    printArea = new SheetRangeImpl(sheet, firstCol, firstRow,
                                    lastCol, lastRow);
   }
 
@@ -1286,8 +1286,8 @@ public final class SheetSettings
    * @param firstCol the first column of the print column titles
    * @param lastCol the last column of the print column titles
    */
-  public void setPrintTitles(int firstRow, 
-                             int lastRow,  
+  public void setPrintTitles(int firstRow,
+                             int lastRow,
                              int firstCol,
                              int lastCol)
   {
@@ -1301,26 +1301,26 @@ public final class SheetSettings
    * @param firstRow the first row of the print titles
    * @param lastRow the last row of the print titles
    */
-  public void setPrintTitlesRow(int firstRow, 
+  public void setPrintTitlesRow(int firstRow,
                            		int lastRow)
   {
-    printTitlesRow = new SheetRangeImpl(sheet, 0, firstRow, 
+    printTitlesRow = new SheetRangeImpl(sheet, 0, firstRow,
     									     255, lastRow);
   }
-  
+
   /**
    * Sets the print column titles for this sheet
    *
    * @param firstRow the first row of the print titles
    * @param lastRow the last row of the print titles
    */
-  public void setPrintTitlesCol(int firstCol, 
+  public void setPrintTitlesCol(int firstCol,
                            		int lastCol)
   {
-    printTitlesCol = new SheetRangeImpl(sheet, firstCol, 0, 
+    printTitlesCol = new SheetRangeImpl(sheet, firstCol, 0,
                                       		    lastCol, 65535);
   }
-  
+
   /**
    * Accessor for the print row titles
    *
@@ -1330,15 +1330,36 @@ public final class SheetSettings
   {
     return printTitlesRow;
   }
-  
+
   /**
    * Accessor for the print column titles
    *
-   * @return the print column titles, or NULL if one is not defined for this 
+   * @return the print column titles, or NULL if one is not defined for this
    * sheet
    */
   public Range getPrintTitlesCol()
   {
     return printTitlesCol;
   }
+
+  public void insertRowInPrintArea(int row) {
+    if (printArea != null)
+      printArea.insertRow(row);
+  }
+
+  public void removeRowFromPrintArea(int row) {
+    if (printArea != null)
+      printArea.removeRow(row);
+  }
+
+  public void insertColumnInPrintArea(int col) {
+    if (printArea != null)
+      printArea.insertColumn(col);
+  }
+
+  public void removeColumnFromPrintArea(int col) {
+    if (printArea != null)
+      printArea.removeColumn(col);
+  }
+
 }

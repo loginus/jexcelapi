@@ -233,7 +233,7 @@ public class XFRecord extends WritableRecordData implements CellFormat
    */
   private FormattingRecords formattingRecords;
 
-  /** 
+  /**
    * Constants for the used attributes
    */
   private static final int USE_FONT = 0x4;
@@ -383,7 +383,7 @@ public class XFRecord extends WritableRecordData implements CellFormat
       {
         number = true;
         DecimalFormat df = (DecimalFormat) javaNumberFormats[i].clone();
-        DecimalFormatSymbols symbols = 
+        DecimalFormatSymbols symbols =
           new DecimalFormatSymbols(ws.getLocale());
         df.setDecimalFormatSymbols(symbols);
         numberFormat = df;
@@ -443,7 +443,7 @@ public class XFRecord extends WritableRecordData implements CellFormat
     backgroundColour   = Colour.DEFAULT_BACKGROUND;
     indentation        = 0;
     shrinkToFit        = false;
-    usedAttributes     = (byte) (USE_FONT | USE_FORMAT | 
+    usedAttributes     = (byte) (USE_FONT | USE_FORMAT |
                          USE_BACKGROUND | USE_ALIGNMENT | USE_BORDER);
 
     // This will be set by the initialize method and the subclass respectively
@@ -763,9 +763,7 @@ public class XFRecord extends WritableRecordData implements CellFormat
     data[8] = (byte) options;
 
     if (biffType == biff8)
-    {
-      data[9] = (byte) usedAttributes;
-    }
+      data[9] = usedAttributes;
 
     return data;
   }
@@ -869,7 +867,7 @@ public class XFRecord extends WritableRecordData implements CellFormat
    *
    * @return the indentation
    */
-  public int getIndentation() 
+  public int getIndentation()
   {
     if (!formatInfoInitialized)
     {
@@ -1056,8 +1054,8 @@ public class XFRecord extends WritableRecordData implements CellFormat
   protected void setXFBorder(Border b, BorderLineStyle ls, Colour c)
   {
     Assert.verify(!initialized);
-    
-    if (c == Colour.BLACK || c == Colour.UNKNOWN) 
+
+    if (c == Colour.BLACK || c == Colour.UNKNOWN)
     {
       c = Colour.PALETTE_BLACK;
     }
@@ -1183,7 +1181,7 @@ public class XFRecord extends WritableRecordData implements CellFormat
       return bottomBorderColour;
     }
 
-    return Colour.BLACK;  	
+    return Colour.BLACK;
   }
 
 
@@ -1345,15 +1343,10 @@ public class XFRecord extends WritableRecordData implements CellFormat
   private void initializeFormatInformation()
   {
     // Initialize the cell format string
-    if (formatIndex < BuiltInFormat.builtIns.length &&
-        BuiltInFormat.builtIns[formatIndex] != null)
-    {
-      excelFormat = BuiltInFormat.builtIns[formatIndex];
-    }
+    if (formatIndex < BuiltInFormat.builtIns.size())
+      excelFormat = BuiltInFormat.builtIns.get(formatIndex);
     else
-    {
       excelFormat = formattingRecords.getFormatRecord(formatIndex);
-    }
 
     // Initialize the font
     font = formattingRecords.getFonts().getFont(fontIndex);
@@ -1427,7 +1420,7 @@ public class XFRecord extends WritableRecordData implements CellFormat
     topBorderColour = Colour.getInternalColour(borderColourMask & 0x7f);
     bottomBorderColour = Colour.getInternalColour
       ((borderColourMask & 0x3f80) >> 7);
-    
+
     if (biffType == biff8)
     {
       // Get the background pattern.  This is the six most significant bits
@@ -1588,7 +1581,7 @@ public class XFRecord extends WritableRecordData implements CellFormat
 
     if (initialized && xfr.initialized)
     {
-      // Both formats are initialized, so it is sufficient to just do 
+      // Both formats are initialized, so it is sufficient to just do
       // shallow equals on font, format objects,
       // since we are testing for the presence of clones anwyay
       // Use indices rather than objects because of the rationalization
@@ -1669,7 +1662,7 @@ public class XFRecord extends WritableRecordData implements CellFormat
   }
 
   /**
-   * Sets the font object with a workbook specific clone.  Called from 
+   * Sets the font object with a workbook specific clone.  Called from
    * the CellValue object when the font has been identified as a statically
    * shared font
    * Also called to superimpose a HyperlinkFont on an existing label cell
@@ -1679,7 +1672,7 @@ public class XFRecord extends WritableRecordData implements CellFormat
     // This style cannot be initialized, otherwise it would mean it would
     // have been initialized with shared font
     // However, sometimes (when setting a row or column format) an initialized
-    // XFRecord may have its font overridden by the column/row 
+    // XFRecord may have its font overridden by the column/row
 
     font = f;
   }

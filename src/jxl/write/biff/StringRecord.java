@@ -33,7 +33,7 @@ class StringRecord extends WritableRecordData
   /**
    * The string value
    */
-  private String value;
+  private final String value;
 
   /**
    * Constructor
@@ -47,9 +47,10 @@ class StringRecord extends WritableRecordData
 
   /**
    * The binary data to be written out
-   * 
+   *
    * @return the binary data
    */
+  @Override
   public byte[] getData()
   {
     byte[] data = new byte[value.length() * 2 + 3];

@@ -45,14 +45,14 @@ public class DVParser
   private static Logger logger = Logger.getLogger(DVParser.class);
 
   // DV Type
-  public static class DVType 
+  public static class DVType
   {
-    private int value;
-    private String desc;
-    
+    private final int value;
+    private final String desc;
+
     private static DVType[] types = new DVType[0];
-   
-    DVType(int v, String d) 
+
+    DVType(int v, String d)
     {
       value = v;
       desc = d;
@@ -75,7 +75,7 @@ public class DVParser
       return found;
     }
 
-    public int getValue() 
+    public int getValue()
     {
       return value;
     }
@@ -89,11 +89,11 @@ public class DVParser
   // Error Style
   public static class ErrorStyle
   {
-    private int value;
-    
+    private final int value;
+
     private static ErrorStyle[] types = new ErrorStyle[0];
-   
-    ErrorStyle(int v) 
+
+    ErrorStyle(int v)
     {
       value = v;
       ErrorStyle[] oldtypes = types;
@@ -115,7 +115,7 @@ public class DVParser
       return found;
     }
 
-    public int getValue() 
+    public int getValue()
     {
       return value;
     }
@@ -124,12 +124,12 @@ public class DVParser
   // Conditions
   public static class Condition
   {
-    private int value;
-    private MessageFormat format;
-    
+    private final int value;
+    private final MessageFormat format;
+
     private static Condition[] types = new Condition[0];
-   
-    Condition(int v, String pattern) 
+
+    Condition(int v, String pattern)
     {
       value = v;
       format = new MessageFormat(pattern);
@@ -152,7 +152,7 @@ public class DVParser
       return found;
     }
 
-    public int getValue() 
+    public int getValue()
     {
       return value;
     }
@@ -180,7 +180,7 @@ public class DVParser
 
   // The conditions
   public static final Condition BETWEEN = new Condition(0, "{0} <= x <= {1}");
-  public static final Condition NOT_BETWEEN = 
+  public static final Condition NOT_BETWEEN =
     new Condition(1, "!({0} <= x <= {1}");
   public static final Condition EQUAL = new Condition(2, "x == {0}");
   public static final Condition NOT_EQUAL = new Condition(3, "x != {0}");
@@ -320,8 +320,8 @@ public class DVParser
   /**
    * Constructor
    */
-  public DVParser(byte[] data, 
-                  ExternalSheet es, 
+  public DVParser(byte[] data,
+                  ExternalSheet es,
                   WorkbookMethods nt,
                   WorkbookSettings ws)
   {
@@ -354,7 +354,7 @@ public class DVParser
     }
     else if (length > 0)
     {
-      promptTitle = StringHelper.getUnicodeString(data, length, pos + 3);
+      promptTitle = StringHelper.getUnicodeString(data, pos + 3, length);
       pos += length * 2 + 3;
     }
     else
@@ -370,7 +370,7 @@ public class DVParser
     }
     else if (length > 0)
     {
-      errorTitle = StringHelper.getUnicodeString(data, length, pos + 3);
+      errorTitle = StringHelper.getUnicodeString(data, pos + 3, length);
       pos += length * 2 + 3;
     }
     else
@@ -386,7 +386,7 @@ public class DVParser
     }
     else if (length > 0)
     {
-      promptText = StringHelper.getUnicodeString(data, length, pos + 3);
+      promptText = StringHelper.getUnicodeString(data, pos + 3, length);
       pos += length * 2 + 3;
     }
     else
@@ -402,7 +402,7 @@ public class DVParser
     }
     else if (length > 0)
     {
-      errorText = StringHelper.getUnicodeString(data, length, pos + 3);
+      errorText = StringHelper.getUnicodeString(data, pos + 3, length);
       pos += length * 2 + 3;
     }
     else
@@ -434,13 +434,13 @@ public class DVParser
     column2 = IntegerHelper.getInt(data[pos], data[pos+1]);
     pos += 2;
 
-    extendedCellsValidation = (row1 == row2 && column1 == column2) ? 
+    extendedCellsValidation = (row1 == row2 && column1 == column2) ?
       false : true;
 
     // Do the formulas
     try
     {
-      // First, create a temporary  blank cell for any formula relative 
+      // First, create a temporary  blank cell for any formula relative
       // references
       EmptyCell tmprt = new EmptyCell(column1, row1);
 
@@ -448,7 +448,7 @@ public class DVParser
       {
         byte[] tokens = new byte[formula1Length];
         System.arraycopy(data, formula1Pos, tokens, 0, formula1Length);
-        formula1 = new FormulaParser(tokens, tmprt, es, nt,ws, 
+        formula1 = new FormulaParser(tokens, tmprt, es, nt,ws,
                                      ParseContext.DATA_VALIDATION);
         formula1.parse();
       }
@@ -457,15 +457,15 @@ public class DVParser
       {
         byte[] tokens = new byte[formula2Length];
         System.arraycopy(data, formula2Pos, tokens, 0, formula2Length);
-        formula2 = new FormulaParser(tokens, tmprt, es, nt, ws, 
+        formula2 = new FormulaParser(tokens, tmprt, es, nt, ws,
                                      ParseContext.DATA_VALIDATION);
         formula2.parse();
       }
     }
     catch (FormulaException e)
     {
-      logger.warn(e.getMessage() + " for cells " + 
-      CellReferenceHelper.getCellReference(column1, row1)+ "-" + 
+      logger.warn(e.getMessage() + " for cells " +
+      CellReferenceHelper.getCellReference(column1, row1)+ "-" +
       CellReferenceHelper.getCellReference(column2, row2));
     }
   }
@@ -473,14 +473,14 @@ public class DVParser
   /**
    * Constructor called when creating a data validation from the API
    */
-  public DVParser(Collection strings)
+  public DVParser(Collection<String> strings)
   {
     copied = false;
     type = LIST;
     errorStyle = STOP;
     condition = BETWEEN;
     extendedCellsValidation = false;
-    
+
     // the options
     stringListGiven = true;
     emptyCellsAllowed = true;
@@ -492,20 +492,20 @@ public class DVParser
     errorTitle = "\0";
     promptText = "\0";
     errorText = "\0";
-    if (strings.size() == 0)
+    if (strings.isEmpty())
     {
       logger.warn("no validation strings - ignoring");
     }
 
-    Iterator i = strings.iterator();
-    StringBuffer formulaString = new StringBuffer();
+    Iterator<String> i = strings.iterator();
+    StringBuilder formulaString = new StringBuilder();
 
-    formulaString.append(i.next().toString());
+    formulaString.append(i.next());
     while (i.hasNext())
     {
       formulaString.append('\0');
       formulaString.append(' ');
-      formulaString.append(i.next().toString());
+      formulaString.append(i.next());
     }
 
     // If the formula string exceeds
@@ -514,7 +514,7 @@ public class DVParser
     {
       logger.warn("Validation list exceeds maximum number of characters - " +
                   "truncating");
-      formulaString.delete(MAX_VALIDATION_LIST_LENGTH, 
+      formulaString.delete(MAX_VALIDATION_LIST_LENGTH,
                            formulaString.length());
     }
 
@@ -543,7 +543,7 @@ public class DVParser
       suppressArrow = false;
       showPrompt = true;
       showError = true;
-      
+
       promptTitle = "\0";
       errorTitle = "\0";
       promptText = "\0";
@@ -557,7 +557,7 @@ public class DVParser
     errorStyle = STOP;
     condition = BETWEEN;
     extendedCellsValidation = false;
-    
+
     // the options
     stringListGiven = false;
     emptyCellsAllowed = true;
@@ -582,7 +582,7 @@ public class DVParser
     errorStyle = STOP;
     condition = BETWEEN;
     extendedCellsValidation = false;
-    
+
     // the options
     stringListGiven = false;
     emptyCellsAllowed = true;
@@ -611,7 +611,7 @@ public class DVParser
     errorStyle = STOP;
     condition = c;
     extendedCellsValidation = false;
-    
+
     // the options
     stringListGiven = false;
     emptyCellsAllowed = true;
@@ -667,7 +667,7 @@ public class DVParser
       try
       {
         formula1String = copy.formula1.getFormula();
-        formula2String = (copy.formula2 != null) ? 
+        formula2String = (copy.formula2 != null) ?
           copy.formula2.getFormula() : null;
       }
       catch (FormulaException e)
@@ -686,7 +686,7 @@ public class DVParser
     // Compute the length of the data
     byte[] f1Bytes = formula1 != null ? formula1.getBytes() : new byte[0];
     byte[] f2Bytes = formula2 != null ? formula2.getBytes() : new byte[0];
-    int dataLength = 
+    int dataLength =
       4 + // the options
       promptTitle.length() * 2 + 3 + // the prompt title
       errorTitle.length() * 2 + 3 + // the error title
@@ -708,12 +708,12 @@ public class DVParser
     options |= errorStyle.getValue() << 4;
     options |= condition.getValue() << 20;
 
-    if (stringListGiven) 
+    if (stringListGiven)
     {
       options |= STRING_LIST_GIVEN_MASK;
     }
 
-    if (emptyCellsAllowed) 
+    if (emptyCellsAllowed)
     {
       options |= EMPTY_CELLS_ALLOWED_MASK;
     }
@@ -736,7 +736,7 @@ public class DVParser
     // The text
     IntegerHelper.getFourBytes(options, data, pos);
     pos += 4;
-    
+
     IntegerHelper.getTwoBytes(promptTitle.length(), data, pos);
     pos += 2;
 
@@ -783,7 +783,7 @@ public class DVParser
     // Formula 2
     IntegerHelper.getTwoBytes(f2Bytes.length, data, pos);
     pos += 4;
-    
+
     System.arraycopy(f2Bytes, 0, data, pos, f2Bytes.length);
     pos += f2Bytes.length;
 
@@ -973,16 +973,16 @@ public class DVParser
 
     String s1 = formula1.getFormula();
     String s2 = formula2 != null ? formula2.getFormula() : null;
-    return condition.getConditionString(s1, s2) + 
+    return condition.getConditionString(s1, s2) +
       "; x " + type.getDescription();
   }
 
   /**
    * Called by the cell value when the cell features are added to the sheet
    */
-  public void setCell(int col, 
-                      int row, 
-                      ExternalSheet es, 
+  public void setCell(int col,
+                      int row,
+                      ExternalSheet es,
                       WorkbookMethods nt,
                       WorkbookSettings ws) throws FormulaException
   {
@@ -1000,14 +1000,14 @@ public class DVParser
     column2 = col;
 
     formula1 = new FormulaParser(formula1String,
-                                 es, nt, ws, 
+                                 es, nt, ws,
                                  ParseContext.DATA_VALIDATION);
     formula1.parse();
 
     if (formula2String != null)
     {
       formula2 = new FormulaParser(formula2String,
-                                   es, nt, ws, 
+                                   es, nt, ws,
                                    ParseContext.DATA_VALIDATION);
       formula2.parse();
     }

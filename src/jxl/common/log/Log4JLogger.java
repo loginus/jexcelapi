@@ -19,7 +19,8 @@
 
 package jxl.common.log;
 
-import org.apache.log4j.Logger;
+import java.util.logging.*;
+
 
 /**
  * A logger which uses the log4j library from jakarta.  Each instance
@@ -33,7 +34,7 @@ public class Log4JLogger extends jxl.common.Logger
   private Logger log4jLogger;
 
   /**
-   * Default constructor. This constructor is 
+   * Default constructor. This constructor is
    */
   public Log4JLogger()
   {
@@ -55,7 +56,7 @@ public class Log4JLogger extends jxl.common.Logger
    */
   public void debug(Object message)
   {
-    log4jLogger.debug(message);
+    log4jLogger.getAnonymousLogger().log(Level.INFO, message.toString());
   }
 
   /**
@@ -63,7 +64,7 @@ public class Log4JLogger extends jxl.common.Logger
    */
   public void debug(Object message, Throwable t)
   {
-    log4jLogger.debug(message, t);
+    log4jLogger.getAnonymousLogger().log(Level.INFO, message.toString(), t);
   }
 
   /**
@@ -71,7 +72,7 @@ public class Log4JLogger extends jxl.common.Logger
    */
   public void error(Object message)
   {
-    log4jLogger.error(message);
+    log4jLogger.getAnonymousLogger().log(Level.WARNING, message.toString());
   }
 
   /**
@@ -79,7 +80,7 @@ public class Log4JLogger extends jxl.common.Logger
    */
   public void error(Object message, Throwable t)
   {
-    log4jLogger.error(message, t);
+    log4jLogger.getAnonymousLogger().log(Level.WARNING, message.toString(), t);
   }
 
   /**
@@ -87,7 +88,7 @@ public class Log4JLogger extends jxl.common.Logger
    */
   public void fatal(Object message)
   {
-    log4jLogger.fatal(message);
+    log4jLogger.getAnonymousLogger().log(Level.SEVERE, message.toString());
   }
 
   /**
@@ -95,7 +96,7 @@ public class Log4JLogger extends jxl.common.Logger
    */
   public void fatal(Object message, Throwable t)
   {
-    log4jLogger.fatal(message,t);
+    log4jLogger.getAnonymousLogger().log(Level.SEVERE, message.toString(), t);
   }
 
   /**
@@ -103,7 +104,7 @@ public class Log4JLogger extends jxl.common.Logger
    */
   public void info(Object message)
   {
-    log4jLogger.info(message);
+    log4jLogger.getAnonymousLogger().log(Level.INFO, message.toString());
   }
 
   /**
@@ -112,7 +113,7 @@ public class Log4JLogger extends jxl.common.Logger
 
   public void info(Object message, Throwable t)
   {
-    log4jLogger.info(message, t);
+    log4jLogger.getAnonymousLogger().log(Level.INFO, message.toString(), t);
   }
 
   /**
@@ -120,7 +121,7 @@ public class Log4JLogger extends jxl.common.Logger
    */
   public void warn(Object message)
   {
-    log4jLogger.warn(message);
+    log4jLogger.getAnonymousLogger().log(Level.WARNING, message.toString());
   }
 
   /**
@@ -128,15 +129,14 @@ public class Log4JLogger extends jxl.common.Logger
    */
   public void warn(Object message, Throwable t)
   {
-    log4jLogger.warn(message, t);
+    log4jLogger.getAnonymousLogger().log(Level.WARNING, message.toString(), t);
   }
 
   /**
    * Accessor to the logger implementation
    */
-  protected jxl.common.Logger getLoggerImpl(Class cl)
+  protected jxl.common.Logger getLoggerImpl(Class<?> cl)
   {
-    Logger l = Logger.getLogger(cl);
-    return new Log4JLogger(l);
+    return new Log4JLogger();
   }
 }

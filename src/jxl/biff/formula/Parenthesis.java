@@ -26,14 +26,14 @@ import java.util.Stack;
  */
 class Parenthesis extends Operator implements ParsedThing
 {
-  /** 
+  /**
    * Constructor
    */
   public Parenthesis()
   {
   }
 
-  /** 
+  /**
    * Reads the ptg data from the array starting at the specified position
    *
    * @param data the RPN array
@@ -45,14 +45,12 @@ class Parenthesis extends Operator implements ParsedThing
     return 0;
   }
 
-  /** 
+  /**
    * Gets the operands for this operator from the stack
    */
-  public void getOperands(Stack s)
+  public void getOperands(Stack<ParseItem> s)
   {
-    ParseItem pi = (ParseItem) s.pop();
-
-    add(pi);
+    add(s.pop());
   }
 
   public void getString(StringBuffer buf)
@@ -175,13 +173,13 @@ class Parenthesis extends Operator implements ParsedThing
     // Add on the operator byte
     byte[] newdata = new byte[data.length + 1];
     System.arraycopy(data, 0, newdata, 0, data.length);
-    newdata[data.length] = getToken().getCode();
+    newdata[data.length] = getToken().getReferenceCode();
 
     return newdata;
   }
 
   /**
-   * Gets the precedence for this operator.  Operator precedents run from 
+   * Gets the precedence for this operator.  Operator precedents run from
    * 1 to 5, one being the highest, 5 being the lowest
    *
    * @return the operator precedence

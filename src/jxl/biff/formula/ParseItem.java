@@ -26,9 +26,6 @@ import jxl.common.Logger;
  */
 abstract class ParseItem
 {
-  // The logger
-  private static Logger logger = Logger.getLogger(ParseItem.class);
-
   /**
    * The parent of this parse item
    */

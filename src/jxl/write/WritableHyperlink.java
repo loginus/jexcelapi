@@ -19,8 +19,8 @@
 
 package jxl.write;
 
-import java.io.File;
 import java.net.URL;
+import java.nio.file.Path;
 
 import jxl.Hyperlink;
 import jxl.write.biff.HyperlinkRecord;
@@ -95,7 +95,7 @@ public class WritableHyperlink extends HyperlinkRecord implements Hyperlink
    * @param row the row containing this hyperlink
    * @param file the hyperlink
    */
-  public WritableHyperlink(int col, int row, File file)
+  public WritableHyperlink(int col, int row, Path file)
   {
     this(col, row, col, row, file, null);
   }
@@ -108,7 +108,7 @@ public class WritableHyperlink extends HyperlinkRecord implements Hyperlink
    * @param file the hyperlink
    * @param desc the hyperlink description
    */
-  public WritableHyperlink(int col, int row, File file, String desc)
+  public WritableHyperlink(int col, int row, Path file, String desc)
   {
     this(col, row, col, row, file, desc);
   }
@@ -123,7 +123,7 @@ public class WritableHyperlink extends HyperlinkRecord implements Hyperlink
    * @param file the hyperlink
    */
   public WritableHyperlink(int col, int row, int lastcol, int lastrow,
-                           File file)
+                           Path file)
   {
     super(col, row, lastcol, lastrow, file, null);
   }
@@ -142,7 +142,7 @@ public class WritableHyperlink extends HyperlinkRecord implements Hyperlink
                            int row,
                            int lastcol,
                            int lastrow,
-                           File file,
+                           Path file,
                            String desc)
   {
     super(col, row, lastcol, lastrow, file, desc);
@@ -210,7 +210,7 @@ public class WritableHyperlink extends HyperlinkRecord implements Hyperlink
    *
    * @param file the file
    */
-  public void setFile(File file)
+  public void setFile(Path file)
   {
     super.setFile(file);
   }

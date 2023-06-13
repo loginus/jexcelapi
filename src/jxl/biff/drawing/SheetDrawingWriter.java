@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import jxl.common.Logger;
 
 import jxl.WorkbookSettings;
 import jxl.biff.IntegerHelper;
@@ -35,15 +34,11 @@ import jxl.write.biff.File;
  */
 public class SheetDrawingWriter
 {
-  /**
-   * The logger
-   */
-  private static Logger logger = Logger.getLogger(SheetDrawingWriter.class);
 
   /**
    * The drawings on the sheet
    */
-  private ArrayList drawings;
+  private ArrayList<DrawingGroupObject> drawings;
 
   /**
    * Flag indicating whether the drawings on the sheet were modified
@@ -76,7 +71,7 @@ public class SheetDrawingWriter
    * @param dr the list of drawings
    * @param mod flag indicating whether the drawings have been tampered with
    */
-  public void setDrawings(ArrayList dr, boolean mod)
+  public void setDrawings(ArrayList<DrawingGroupObject> dr, boolean mod)
   {
     drawings = dr;
     drawingsModified = mod;
@@ -92,7 +87,7 @@ public class SheetDrawingWriter
   public void write(File outputFile) throws IOException
   {
     // If there are no drawings or charts on this sheet then exit
-    if (drawings.size() == 0 && charts.length == 0)
+    if (drawings.isEmpty() && charts.length == 0)
     {
       return;
     }
@@ -101,20 +96,18 @@ public class SheetDrawingWriter
     boolean modified = drawingsModified;
     int numImages = drawings.size();
 
-    for (Iterator i = drawings.iterator(); i.hasNext() && !modified;)
+    for (Iterator<DrawingGroupObject> i = drawings.iterator(); i.hasNext() && !modified;)
     {
-      DrawingGroupObject d = (DrawingGroupObject) i.next();
+      DrawingGroupObject d = i.next();
       if (d.getOrigin() != Origin.READ)
-      {
         modified = true;
-      }
     }
 
     // If the drawing order has been muddled at all, then we'll need
     // to regenerate the Escher drawing data
     if (numImages > 0 && !modified)
     {
-      DrawingGroupObject d2 = (DrawingGroupObject) drawings.get(0);
+      DrawingGroupObject d2 = drawings.get(0);
       if (!d2.isFirst())
       {
         modified = true;
@@ -146,7 +139,7 @@ public class SheetDrawingWriter
     // and store in an array
     for (int i = 0; i < numImages; i++)
     {
-      DrawingGroupObject drawing = (DrawingGroupObject) drawings.get(i);
+      DrawingGroupObject drawing = drawings.get(i);
 
       EscherContainer spc = drawing.getSpContainer();
 
@@ -224,7 +217,7 @@ public class SheetDrawingWriter
     // test hack for form objects, to remove the ClientTextBox record
     // from the end of the SpContainer
     if (numImages > 0 &&
-        ((DrawingGroupObject) drawings.get(0)).isFormObject())
+        drawings.get(0).isFormObject())
     {
       byte[] msodata2 = new byte[firstMsoData.length - 8];
       System.arraycopy(firstMsoData, 0, msodata2, 0, msodata2.length);
@@ -236,7 +229,7 @@ public class SheetDrawingWriter
 
     if (numImages > 0)
     {
-      DrawingGroupObject firstDrawing = (DrawingGroupObject) drawings.get(0);
+      DrawingGroupObject firstDrawing = drawings.get(0);
       firstDrawing.writeAdditionalRecords(outputFile);
     }
     else
@@ -255,8 +248,7 @@ public class SheetDrawingWriter
 
       // test hack for form objects, to remove the ClientTextBox record
       // from the end of the SpContainer
-      if (i < numImages &&
-          ((DrawingGroupObject) drawings.get(i)).isFormObject())
+      if (i < numImages && drawings.get(i).isFormObject())
       {
         byte[] bytes2 = new byte[bytes.length - 8];
         System.arraycopy(bytes, 0, bytes2, 0, bytes2.length);
@@ -269,7 +261,7 @@ public class SheetDrawingWriter
       if (i < numImages)
       {
         // Write anything else the object needs
-        DrawingGroupObject d = (DrawingGroupObject) drawings.get(i);
+        DrawingGroupObject d = drawings.get(i);
         d.writeAdditionalRecords(outputFile);
       }
       else
@@ -282,11 +274,8 @@ public class SheetDrawingWriter
     }
 
     // Write any tail records that need to be written
-    for (Iterator i = drawings.iterator(); i.hasNext();)
-    {
-      DrawingGroupObject dgo2 = (DrawingGroupObject) i.next();
+    for (DrawingGroupObject dgo2 : drawings)
       dgo2.writeTailRecords(outputFile);
-    }
   }
 
   /**
@@ -297,45 +286,37 @@ public class SheetDrawingWriter
    */
   private void writeUnmodified(File outputFile) throws IOException
   {
-    if (charts.length == 0 && drawings.size() == 0)
+    if (charts.length == 0 && drawings.isEmpty())
     {
       // No drawings or charts
       return;
     }
-    else if (charts.length == 0 && drawings.size() != 0)
+    else if (charts.length == 0 && !drawings.isEmpty())
     {
       // If there are no charts, then write out the drawings and return
-      for (Iterator i = drawings.iterator(); i.hasNext();)
-      {
-        DrawingGroupObject d = (DrawingGroupObject) i.next();
+      for (DrawingGroupObject d : drawings) {
         outputFile.write(d.getMsoDrawingRecord());
         d.writeAdditionalRecords(outputFile);
       }
 
-      for (Iterator i = drawings.iterator(); i.hasNext();)
-      {
-        DrawingGroupObject d = (DrawingGroupObject) i.next();
+      for (DrawingGroupObject d : drawings)
         d.writeTailRecords(outputFile);
-      }
+
       return;
     }
-    else if (drawings.size() == 0 && charts.length != 0)
+    else if (drawings.isEmpty() && charts.length != 0)
     {
       // If there are no drawings, then write out the charts and return
-      Chart curChart = null;
-      for (int i = 0; i < charts.length; i++)
-      {
-        curChart = charts[i];
+      for (Chart chart : charts) {
+        Chart curChart = chart;
         if (curChart.getMsoDrawingRecord() != null)
         {
           outputFile.write(curChart.getMsoDrawingRecord());
         }
-
         if (curChart.getObjRecord() != null)
         {
           outputFile.write(curChart.getObjRecord());
         }
-
         outputFile.write(curChart);
       }
 
@@ -354,7 +335,7 @@ public class SheetDrawingWriter
 
     for (int i = 0; i < numDrawings; i++)
     {
-      DrawingGroupObject d = (DrawingGroupObject) drawings.get(i);
+      DrawingGroupObject d = drawings.get(i);
       spContainers[i] = d.getSpContainer();
 
       if (i > 0)
@@ -423,7 +404,7 @@ public class SheetDrawingWriter
     MsoDrawingRecord msoDrawingRecord = new MsoDrawingRecord(firstMsoData);
     outputFile.write(msoDrawingRecord);
 
-    DrawingGroupObject dgo = (DrawingGroupObject) drawings.get(0);
+    DrawingGroupObject dgo = drawings.get(0);
     dgo.writeAdditionalRecords(outputFile);
 
     // Now do all the others
@@ -446,7 +427,7 @@ public class SheetDrawingWriter
 
       if (i < numDrawings)
       {
-        dgo = (DrawingGroupObject) drawings.get(i);
+        dgo = drawings.get(i);
         dgo.writeAdditionalRecords(outputFile);
       }
       else
@@ -459,11 +440,8 @@ public class SheetDrawingWriter
     }
 
     // Write any tail records that need to be written
-    for (Iterator i = drawings.iterator(); i.hasNext();)
-    {
-      DrawingGroupObject dgo2 = (DrawingGroupObject) i.next();
+    for (DrawingGroupObject dgo2 : drawings)
       dgo2.writeTailRecords(outputFile);
-    }
   }
 
   /**

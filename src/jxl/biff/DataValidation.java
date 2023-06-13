@@ -43,7 +43,7 @@ public class DataValidation
    */
   private static Logger logger = Logger.getLogger(DataValidation.class);
 
-  /** 
+  /**
    * The data validity list
    */
   private DataValidityListRecord validityList;
@@ -51,7 +51,7 @@ public class DataValidation
   /**
    * The list of data validity (DV) records
    */
-  private ArrayList validitySettings;
+  private ArrayList<DataValiditySettingsRecord> validitySettings;
 
   /**
    * Handle to the workbook
@@ -88,7 +88,7 @@ public class DataValidation
   public DataValidation(DataValidityListRecord dvlr)
   {
     validityList = dvlr;
-    validitySettings = new ArrayList(validityList.getNumberOfSettings());
+    validitySettings = new ArrayList<>(validityList.getNumberOfSettings());
     copied = false;
   }
 
@@ -97,13 +97,13 @@ public class DataValidation
    */
   public DataValidation(int objId,
                         ExternalSheet es,
-                        WorkbookMethods wm, 
+                        WorkbookMethods wm,
                         WorkbookSettings ws )
   {
     workbook = wm;
     externalSheet = es;
     workbookSettings = ws;
-    validitySettings = new ArrayList();
+    validitySettings = new ArrayList<>();
     comboBoxObjectId = objId;
     copied = false;
   }
@@ -113,7 +113,7 @@ public class DataValidation
    */
   public DataValidation(DataValidation dv,
                         ExternalSheet es,
-                        WorkbookMethods wm, 
+                        WorkbookMethods wm,
                         WorkbookSettings ws )
   {
     workbook = wm;
@@ -122,16 +122,11 @@ public class DataValidation
     copied = true;
     validityList = new DataValidityListRecord(dv.getDataValidityList());
 
-    validitySettings = new ArrayList();
+    validitySettings = new ArrayList<>();
     DataValiditySettingsRecord[] settings = dv.getDataValiditySettings();
 
-    for (int i = 0; i < settings.length ; i++)
-    {
-      validitySettings.add(new DataValiditySettingsRecord(settings[i],
-                                                          externalSheet,
-                                                          workbook,
-                                                          workbookSettings));
-    }
+    for (DataValiditySettingsRecord setting : settings)
+      validitySettings.add(new DataValiditySettingsRecord(setting, externalSheet, workbook, workbookSettings));
   }
 
   /**
@@ -163,14 +158,13 @@ public class DataValidation
    */
   public DataValiditySettingsRecord[] getDataValiditySettings()
   {
-    DataValiditySettingsRecord[] dvlr = new DataValiditySettingsRecord[0];
-    return (DataValiditySettingsRecord[]) validitySettings.toArray(dvlr);
+    return validitySettings.toArray(DataValiditySettingsRecord[]::new);
   }
 
   /**
    * Writes out the data validation
-   * 
-   * @exception IOException 
+   *
+   * @exception IOException
    * @param outputFile the output file
    */
   public void write(File outputFile) throws IOException
@@ -179,14 +173,14 @@ public class DataValidation
     {
       logger.warn("Maximum number of data validations exceeded - " +
                   "truncating...");
-      validitySettings = new ArrayList
+      validitySettings = new ArrayList<>
         (validitySettings.subList(0, MAX_NO_OF_VALIDITY_SETTINGS - 1));
       Assert.verify(validitySettings.size() <= MAX_NO_OF_VALIDITY_SETTINGS);
     }
 
     if (validityList == null)
     {
-      DValParser dvp = new DValParser(comboBoxObjectId, 
+      DValParser dvp = new DValParser(comboBoxObjectId,
                                       validitySettings.size());
       validityList = new DataValidityListRecord(dvp);
     }
@@ -197,12 +191,9 @@ public class DataValidation
     }
 
     outputFile.write(validityList);
-    
-    for (Iterator i = validitySettings.iterator(); i.hasNext() ; )
-    {
-      DataValiditySettingsRecord dvsr = (DataValiditySettingsRecord) i.next();
+
+    for (DataValiditySettingsRecord dvsr : validitySettings)
       outputFile.write(dvsr);
-    }
   }
 
   /**
@@ -212,11 +203,8 @@ public class DataValidation
    */
   public void insertRow(int row)
   {
-    for (Iterator i = validitySettings.iterator(); i.hasNext() ; )
-    {
-      DataValiditySettingsRecord dv = (DataValiditySettingsRecord) i.next();
+    for (DataValiditySettingsRecord dv : validitySettings)
       dv.insertRow(row);
-    }
   }
 
   /**
@@ -226,9 +214,8 @@ public class DataValidation
    */
   public void removeRow(int row)
   {
-    for (Iterator i = validitySettings.iterator(); i.hasNext() ; )
-    {
-      DataValiditySettingsRecord dv = (DataValiditySettingsRecord) i.next();
+    for (Iterator<DataValiditySettingsRecord> i = validitySettings.iterator(); i.hasNext() ; ) {
+      DataValiditySettingsRecord dv = i.next();
 
       if (dv.getFirstRow() == row && dv.getLastRow() == row)
       {
@@ -249,11 +236,8 @@ public class DataValidation
    */
   public void insertColumn(int col)
   {
-    for (Iterator i = validitySettings.iterator(); i.hasNext() ; )
-    {
-      DataValiditySettingsRecord dv = (DataValiditySettingsRecord) i.next();
+    for (DataValiditySettingsRecord dv : validitySettings)
       dv.insertColumn(col);
-    }
   }
 
   /**
@@ -263,10 +247,10 @@ public class DataValidation
    */
   public void removeColumn(int col)
   {
-    for (Iterator i = validitySettings.iterator(); i.hasNext() ; )
+    for (Iterator<DataValiditySettingsRecord> i = validitySettings.iterator(); i.hasNext() ; )
     {
-      DataValiditySettingsRecord dv = (DataValiditySettingsRecord) i.next();
-      
+      DataValiditySettingsRecord dv = i.next();
+
       if (dv.getFirstColumn() == col && dv.getLastColumn() == col)
       {
         i.remove();
@@ -287,10 +271,10 @@ public class DataValidation
    */
   public void removeDataValidation (int col, int row)
   {
-    for (Iterator i = validitySettings.iterator(); i.hasNext() ; )
+    for (Iterator<DataValiditySettingsRecord> i = validitySettings.iterator(); i.hasNext() ; )
     {
-      DataValiditySettingsRecord dv = (DataValiditySettingsRecord) i.next();
-      
+      DataValiditySettingsRecord dv = i.next();
+
       if (dv.getFirstColumn() == col && dv.getLastColumn() == col &&
           dv.getFirstRow() == row && dv.getLastRow() == row)
       {
@@ -307,13 +291,13 @@ public class DataValidation
    * @param col1 the first column
    * @param row1 the first row
    */
-  public void removeSharedDataValidation (int col1, int row1, 
+  public void removeSharedDataValidation (int col1, int row1,
                                           int col2, int row2)
   {
-    for (Iterator i = validitySettings.iterator(); i.hasNext() ; )
+    for (Iterator<DataValiditySettingsRecord> i = validitySettings.iterator(); i.hasNext() ; )
     {
-      DataValiditySettingsRecord dv = (DataValiditySettingsRecord) i.next();
-      
+      DataValiditySettingsRecord dv = i.next();
+
       if (dv.getFirstColumn() == col1 && dv.getLastColumn() == col2 &&
           dv.getFirstRow() == row1 && dv.getLastRow() == row2)
       {
@@ -332,9 +316,9 @@ public class DataValidation
   {
     boolean found = false;
     DataValiditySettingsRecord foundRecord = null;
-    for (Iterator i = validitySettings.iterator(); i.hasNext() && !found;)
+    for (Iterator<DataValiditySettingsRecord> i = validitySettings.iterator(); i.hasNext() && !found;)
     {
-      DataValiditySettingsRecord dvsr = (DataValiditySettingsRecord) i.next();
+      DataValiditySettingsRecord dvsr = i.next();
       if (dvsr.getFirstColumn() == col && dvsr.getFirstRow() == row)
       {
         found = true;

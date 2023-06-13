@@ -22,69 +22,32 @@ package jxl;
 /**
  * An enumeration type listing the available content types for a cell
  */
-public final class CellType
-{
+public enum CellType {
 
-  /**
-   * The text description of this cell type
-   */
-  private String description;
+  // An empty cell can still contain formatting information and comments
+  EMPTY("Empty"),
+  LABEL("Label"),
+  NUMBER("Number"),
+  BOOLEAN("Boolean"),
+  ERROR("Error"),
+  NUMBER_FORMULA("Numerical Formula"),
+  DATE_FORMULA("Date Formula"),
+  STRING_FORMULA("String Formula"),
+  BOOLEAN_FORMULA("Boolean Formula"),
+  FORMULA_ERROR("Formula Error"),
+  DATE("Date");
 
-  /**
-   * Private constructor
-   * @param desc the description of this type
-   */
-  private CellType(String desc)
-  {
+  private final String description;
+
+  private CellType(String desc) {
     description = desc;
   }
 
-  /**
-   * Returns a string description of this cell
-   *
-   * @return the string description for this type
-   */
+  @Override
   public String toString()
   {
     return description;
   }
-
-  /**
-   * An empty cell can still contain formatting information and comments
-   */
-  public static final CellType EMPTY           = new CellType("Empty");
-  /**
-   */
-  public static final CellType LABEL           = new CellType("Label");
-  /**
-   */
-  public static final CellType NUMBER          = new CellType("Number");
-  /**
-   */
-  public static final CellType BOOLEAN         = new CellType("Boolean");
-  /**
-   */
-  public static final CellType ERROR           = new CellType("Error");
-  /**
-   */
-  public static final CellType NUMBER_FORMULA  =
-                                         new CellType("Numerical Formula");
-  /**
-   */
-  public static final CellType DATE_FORMULA  = new CellType("Date Formula");
-  /**
-   */
-  public static final CellType STRING_FORMULA  = new CellType("String Formula");
-  /**
-   */
-  public static final CellType BOOLEAN_FORMULA =
-                                          new CellType("Boolean Formula");
-  /**
-   */
-  public static final CellType FORMULA_ERROR   = new CellType("Formula Error");
-  /**
-   */
-  public static final CellType DATE            = new CellType("Date");
 
 }
 

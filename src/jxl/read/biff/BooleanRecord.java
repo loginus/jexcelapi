@@ -97,8 +97,7 @@ class BooleanRecord extends CellValue implements BooleanCell
   {
     Assert.verify(!isError());
 
-    // return Boolean.toString(value) - only available in 1.4 or later
-    return (new Boolean(value)).toString();
+    return Boolean.toString(value);
   }
 
   /**
